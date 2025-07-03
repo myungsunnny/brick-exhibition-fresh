@@ -1,0 +1,15 @@
+{
+  "name": "brick-exhibition-fresh",
+  "version": "1.0.0",
+  "description": "대불초등학교 브릭모델 전시관 - 서버 연동 버전",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cloudinary": "^1.40.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
