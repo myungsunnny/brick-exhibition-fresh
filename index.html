@@ -35,15 +35,6 @@
             font-size: 2.5rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .header-logo {
-            max-height: 2.5rem; 
-            margin-right: 15px;
-            vertical-align: middle;
         }
 
         .subtitle {
@@ -58,7 +49,20 @@
             right: 0;
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
+        }
+
+        .status-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .status-section.active {
+            display: block;
+            animation: slideDown 0.3s ease;
         }
 
         .header-btn {
@@ -80,19 +84,18 @@
 
         .header-btn.active {
             background: rgba(255,255,255,0.4);
-            font-weight: bold;
         }
 
-        .panel {
+        .upload-panel, .admin-panel {
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 30px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             display: none;
         }
 
-        .panel.active {
+        .upload-panel.active, .admin-panel.active {
             display: block;
             animation: slideDown 0.3s ease;
         }
@@ -100,76 +103,6 @@
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        .upload-panel, .admin-panel {
-             padding: 30px;
-        }
-        
-        .status-section {
-             padding: 20px;
-        }
-
-        .admin-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .admin-tab {
-            padding: 10px 20px;
-            background: #f8f9fa;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .admin-tab:hover {
-            background: #e9ecef;
-        }
-
-        .admin-tab.active {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .admin-content {
-            display: none;
-        }
-
-        .admin-content.active {
-            display: block;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
         }
 
         .form-group {
@@ -182,14 +115,6 @@
             font-weight: bold;
             color: #2c3e50;
         }
-        
-        .form-group .sub-label {
-            font-weight: normal;
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-
 
         input, select, textarea {
             width: 100%;
@@ -264,9 +189,6 @@
             cursor: pointer;
             font-size: 1rem;
             transition: all 0.3s ease;
-            display: inline-block;
-            text-decoration: none;
-            text-align: center;
         }
 
         .btn-primary {
@@ -288,17 +210,18 @@
         .btn-danger {
             background: #e74c3c;
             color: white;
-            padding: 5px 10px;
+            padding: 8px 15px;
             border-radius: 5px;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
         }
 
-        .btn-warning {
-            background: #f39c12;
+        .btn-edit {
+            background: #3498db;
             color: white;
-            padding: 5px 10px;
+            padding: 8px 15px;
             border-radius: 5px;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            margin-right: 5px;
         }
 
         .btn-secondary {
@@ -309,11 +232,6 @@
 
         .btn-secondary:hover {
             background: #e9ecef;
-        }
-
-        .btn-small {
-            padding: 5px 15px;
-            font-size: 0.8rem;
         }
 
         .gallery {
@@ -355,7 +273,6 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
-            cursor: zoom-in;
         }
 
         .artwork-image img {
@@ -391,6 +308,15 @@
             margin-bottom: 15px;
         }
 
+        .artwork-category {
+            display: inline-block;
+            padding: 5px 12px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
         .artwork-stats {
             display: flex;
             justify-content: space-between;
@@ -416,135 +342,14 @@
             top: 10px;
             right: 10px;
             display: none;
-            gap: 5px;
+            background: rgba(255,255,255,0.95);
+            padding: 5px;
+            border-radius: 5px;
         }
 
-        .admin-mode .admin-controls {
-            display: flex;
+        .admin-panel.active ~ .gallery .admin-controls {
+            display: block;
         }
-
-        .comments-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-
-        .comment {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        
-        .comment-reply {
-            margin-left: 40px;
-            border-left: 3px solid #dee2e6;
-        }
-
-
-        .comment-author {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-
-        .comment-text {
-            line-height: 1.6;
-            color: #555;
-            margin-bottom: 10px;
-        }
-
-        .comment-date {
-            font-size: 0.8rem;
-            color: #999;
-        }
-
-        .comment-actions {
-            font-size: 0.8rem;
-        }
-
-        .comment-actions .reply-btn {
-            color: #667eea;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .comment-actions .reply-btn:hover {
-            text-decoration: underline;
-        }
-
-
-        .comment-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: none;
-            gap: 5px;
-        }
-
-        .admin-mode .comment-controls {
-            display: flex;
-        }
-
-        .comment-form {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        
-        #replyingToInfo {
-            font-size: 0.9rem;
-            color: #555;
-            background: #e9ecef;
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        #cancelReplyBtn {
-            margin-left: 10px;
-            color: #e74c3c;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background: #f8f9fa;
-            font-weight: bold;
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        #artworksTableBody tr {
-            cursor: grab;
-        }
-
-        #artworksTableBody tr.dragging {
-            opacity: 0.5;
-            background: #e9ecef;
-        }
-
 
         .message {
             padding: 15px;
@@ -588,62 +393,28 @@
             color: #856404;
         }
 
-        .grade-info-section {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            text-align: center;
-            color: white;
-            transition: all 0.3s ease;
-            display: none;
-        }
-
-        .grade-info-section.active {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        .grade-info-content h3 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .grade-info-content p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            opacity: 0.9;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .grade-stats {
+        .filters {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-bottom: 30px;
             flex-wrap: wrap;
         }
 
-        .grade-stat {
-            background: rgba(255,255,255,0.1);
-            padding: 15px 20px;
-            border-radius: 10px;
-            text-align: center;
-            min-width: 120px;
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
-        .grade-stat-number {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .grade-stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
         }
 
         .search-container {
@@ -665,37 +436,6 @@
 
         .search-container input::placeholder {
             color: rgba(255,255,255,0.7);
-        }
-        
-        .filters-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        .filters {
-            display: flex;
-            gap: 10px; 
-            flex-wrap: wrap; 
-            justify-content: center; 
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .filter-btn:hover, .filter-btn.active {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.3);
         }
 
         .modal {
@@ -737,132 +477,66 @@
             color: #333;
         }
 
-        .edit-form {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
+        /* 관리자 패널 전용 스타일 */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .bulk-actions {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
+        .admin-table th, .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
         }
-        
-        .settings-options-grid {
+
+        .admin-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .admin-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .admin-stats {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .checkbox-group {
+        .stat-card {
             background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
         }
 
-        .checkbox-group:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
         }
 
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            flex-shrink: 0;
+        .stat-label {
+            color: #6c757d;
+            margin-top: 5px;
         }
-
-        .checkbox-group label {
-            margin-bottom: 0;
-            cursor: pointer;
-        }
-
-        hr {
-            border: none;
-            border-top: 1px solid #eee;
-            margin: 30px 0;
-        }
-
-        .fullscreen-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            cursor: zoom-out;
-        }
-
-        .fullscreen-overlay.show {
-            display: flex;
-        }
-
-        .fullscreen-image {
-            max-width: 90vw;
-            max-height: 90vh;
-            object-fit: contain;
-        }
-
-        .fullscreen-close-btn {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 3rem;
-            color: white;
-            cursor: pointer;
-        }
-
 
         @media (max-width: 768px) {
-            h1 { font-size: 2rem; flex-wrap: wrap; }
-            .header-logo { max-height: 2rem; }
-
             .container { padding: 15px; }
+            h1 { font-size: 2rem; }
             .gallery { grid-template-columns: 1fr; }
             .header-buttons { 
-                position: static; 
-                justify-content: center; 
-                margin-top: 20px;
+                position: relative; 
+                margin: 10px 0; 
+                justify-content: center;
             }
             .search-container input { width: 100%; max-width: 300px; }
-            .admin-tabs { justify-content: center; }
-            .stats-grid { grid-template-columns: 1fr; }
-            
-            .settings-options-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filters-container {
-                padding: 0 15px;
-            }
-            .filters { 
-                padding: 12px 20px;
-                gap: 8px;
-                flex-wrap: wrap;
-                justify-content: center;
-                border-radius: 20px;
-            }
-            .filter-btn {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-                min-width: 55px;
-                border-radius: 15px;
-            }
+            .admin-table { font-size: 0.9rem; }
+            .admin-table th, .admin-table td { padding: 8px; }
         }
     </style>
 </head>
@@ -870,34 +544,30 @@
     <div class="container">
         <header>
             <div class="header-buttons">
-                <button class="header-btn" onclick="toggleUploadPanel()">✏️ 작품 올리기</button>
-                <button class="header-btn" onclick="toggleAdminPanel()">⚙️ 관리자 모드</button>
+                <button class="header-btn" onclick="toggleUpload()">📸 작품 올리기</button>
+                <button class="header-btn" onclick="toggleAdmin()">🔧 관리자 모드</button>
             </div>
-            <h1>
-                <img src="" alt="헤더 로고" id="headerImage" class="header-logo" style="display: none;">
-                <span id="headerTitleText">대불초등학교 브릭모델 전시관</span>
-            </h1>
+            <h1>🧱 대불초등학교 브릭모델 전시관</h1>
             <p class="subtitle">창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요</p>
         </header>
 
-        <div class="panel status-section" id="statusSection">
-            <h3>🚀 시스템 상태</h3>
+        <!-- 시스템 상태 (관리자 모드에서만 표시) -->
+        <div class="status-section" id="statusSection">
+            <h3>🚀 Upstash Redis 데이터베이스 상태</h3>
             <div id="upstashStatus">
-                <span class="status-indicator status-warning">데이터베이스 연결 확인 중...</span>
+                <span class="status-indicator status-warning">Upstash 연결 확인 중...</span>
             </div>
             <div id="artworkCount">
                 <span class="status-indicator">등록된 작품: <strong id="totalCount">0</strong>개</span>
-            </div>
-             <div id="commentCount">
-                <span class="status-indicator">총 댓글: <strong id="totalComments">0</strong>개</span>
             </div>
             <div id="cloudinaryStatus">
                 <span class="status-indicator">이미지 저장: Cloudinary</span>
             </div>
         </div>
 
-        <div class="panel upload-panel" id="uploadPanel">
-            <h2>✏️ 새로운 작품 등록</h2>
+        <!-- 작품 올리기 패널 -->
+        <div class="upload-panel" id="uploadPanel">
+            <h2>📸 새 작품 등록하기</h2>
             <form id="artworkForm">
                 <div class="form-group">
                     <label for="title">작품 제목</label>
@@ -923,6 +593,18 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="category">브릭모델 유형</label>
+                    <select id="category" required>
+                        <option value="">선택하세요</option>
+                        <option value="building">건축물</option>
+                        <option value="vehicle">탈것</option>
+                        <option value="character">캐릭터</option>
+                        <option value="nature">자연</option>
+                        <option value="creative">창작모델</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
                     <label for="description">작품 설명</label>
                     <textarea id="description" placeholder="브릭모델 작품에 대해 설명해주세요..." required></textarea>
                 </div>
@@ -931,7 +613,7 @@
                     <label>작품 사진</label>
                     <div class="image-upload" onclick="document.getElementById('imageFile').click()">
                         <input type="file" id="imageFile" accept="image/*" onchange="previewImage()">
-                        <div id="uploadText">📁 이미지를 선택하세요</div>
+                        <div id="uploadText">📁 이미지를 선택하세요 (Cloudinary에 저장됩니다)</div>
                         <img id="imagePreview" class="image-preview" alt="미리보기">
                     </div>
                     <div class="upload-progress" id="uploadProgress">
@@ -943,17 +625,14 @@
             </form>
         </div>
 
-        <div class="panel admin-panel" id="adminPanel">
-            <h2>⚙️ 관리자 모드</h2>
+        <!-- 관리자 패널 -->
+        <div class="admin-panel" id="adminPanel">
+            <h2>🔧 작품 관리 시스템</h2>
             
-            <div class="stats-grid">
+            <div class="admin-stats">
                 <div class="stat-card">
-                    <div class="stat-number" id="statArtworks">0</div>
-                    <div class="stat-label">총 작품 수</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="statComments">0</div>
-                    <div class="stat-label">총 댓글 수</div>
+                    <div class="stat-number" id="statTotal">0</div>
+                    <div class="stat-label">전체 작품</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="statLikes">0</div>
@@ -965,215 +644,54 @@
                 </div>
             </div>
 
-            <div class="admin-tabs">
-                <button class="admin-tab active" onclick="switchAdminTab('artworks')">작품 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('comments')">댓글 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('users')">사용자 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('settings')">사이트 설정</button>
-            </div>
-
-            <div class="admin-content active" id="artworksContent">
-                <p style="text-align:center; color: #777; margin-bottom: 15px;">💡 작품 순서를 변경하려면 행을 드래그하여 원하는 위치에 놓으세요.</p>
-                <div class="bulk-actions">
-                    <label><input type="checkbox" id="selectAll"> 전체 선택</label>
-                    <button class="btn btn-danger btn-small" onclick="bulkDelete()">선택 삭제</button>
-                    <button class="btn btn-secondary btn-small" onclick="exportData()">데이터 내보내기</button>
-                </div>
-                
-                <div class="table-container">
-                    <table id="artworksTable">
-                        <thead>
-                            <tr>
-                                <th>선택</th>
-                                <th>제목</th>
-                                <th>작가</th>
-                                <th>학년</th>
-                                <th>좋아요</th>
-                                <th>댓글</th>
-                                <th>등록일</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody id="artworksTableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-content" id="commentsContent">
-                <div class="bulk-actions">
-                    <label><input type="checkbox" id="selectAllComments"> 전체 선택</label>
-                    <button class="btn btn-danger btn-small" onclick="bulkDeleteComments()">선택 삭제</button>
-                </div>
-                
-                <div class="table-container">
-                    <table id="commentsTable">
-                        <thead>
-                            <tr>
-                                <th>선택</th>
-                                <th>작품</th>
-                                <th>작성자</th>
-                                <th>댓글 내용</th>
-                                <th>작성일</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody id="commentsTableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-content" id="usersContent">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>사용자명</th>
-                                <th>학년</th>
-                                <th>작품 수</th>
-                                <th>댓글 수</th>
-                                <th>좋아요 받은 수</th>
-                                <th>최근 활동</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-content" id="settingsContent">
-                <h3>기본 설정</h3>
-                <div class="form-group">
-                    <label for="siteTitle">사이트 제목</label>
-                    <input type="text" id="siteTitle">
-                </div>
-                
-                <div class="form-group">
-                    <label>헤더 이미지</label>
-                    <div class="image-upload" onclick="document.getElementById('headerImageFile').click()">
-                        <input type="file" id="headerImageFile" accept="image/*" onchange="previewHeaderImage()">
-                        <div id="headerUploadText">📁 이미지를 선택하세요</div>
-                        <img id="headerImagePreview" class="image-preview" alt="헤더 이미지 미리보기">
-                    </div>
-                    <button class="btn btn-danger btn-small" onclick="removeHeaderImage()">이미지 제거</button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="siteDescription">사이트 설명</label>
-                    <textarea id="siteDescription"></textarea>
-                </div>
-                
-                <div class="settings-options-grid">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="allowComments" checked>
-                        <label for="allowComments">댓글 허용</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="moderateComments">
-                        <label for="moderateComments">댓글 승인 필요</label>
-                    </div>
-                </div>
-                
-                <div class="settings-options-grid">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="useUploadPassword">
-                        <label for="useUploadPassword">업로드 비밀번호 사용</label>
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                         <input type="text" id="uploadPassword" placeholder="업로드용 비밀번호 입력">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="adminPassword">관리자 비밀번호 변경</label>
-                    <input type="password" id="adminPassword" placeholder="새 비밀번호 (비워두면 변경하지 않음)">
-                </div>
-                
-                <hr>
-
-                <h3>학년별 설명 관리</h3>
-                <div class="form-group">
-                    <label for="gradeTitleAll">전체 학년 제목</label>
-                    <input type="text" id="gradeTitleAll">
-                    <label for="gradeDescAll" class="sub-label">전체 학년 설명</label>
-                    <textarea id="gradeDescAll"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle1">1학년 제목</label>
-                    <input type="text" id="gradeTitle1">
-                    <label for="gradeDesc1" class="sub-label">1학년 설명</label>
-                    <textarea id="gradeDesc1"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle2">2학년 제목</label>
-                    <input type="text" id="gradeTitle2">
-                    <label for="gradeDesc2" class="sub-label">2학년 설명</label>
-                    <textarea id="gradeDesc2"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle3">3학년 제목</label>
-                    <input type="text" id="gradeTitle3">
-                    <label for="gradeDesc3" class="sub-label">3학년 설명</label>
-                    <textarea id="gradeDesc3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle4">4학년 제목</label>
-                    <input type="text" id="gradeTitle4">
-                    <label for="gradeDesc4" class="sub-label">4학년 설명</label>
-                    <textarea id="gradeDesc4"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle5">5학년 제목</label>
-                    <input type="text" id="gradeTitle5">
-                    <label for="gradeDesc5" class="sub-label">5학년 설명</label>
-                    <textarea id="gradeDesc5"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle6">6학년 제목</label>
-                    <input type="text" id="gradeTitle6">
-                    <label for="gradeDesc6" class="sub-label">6학년 설명</label>
-                    <textarea id="gradeDesc6"></textarea>
-                </div>
-                
-                <hr>
-
-                <button class="btn btn-primary" onclick="saveSettings()">설정 저장</button>
-                <button class="btn btn-danger" onclick="resetAll()">모든 데이터 초기화</button>
-            </div>
+            <h3>📋 작품 목록</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>작품명</th>
+                        <th>작가</th>
+                        <th>학년</th>
+                        <th>카테고리</th>
+                        <th>좋아요</th>
+                        <th>등록일</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            작품 목록을 불러오는 중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
+        <!-- 검색 -->
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="브릭모델 작품명이나 학생 이름으로 검색...">
         </div>
 
-        <div class="filters-container">
-            <div class="filters">
-                <button class="filter-btn active" data-category="all">전체</button>
-                <button class="filter-btn" data-category="1학년">1학년</button>
-                <button class="filter-btn" data-category="2학년">2학년</button>
-                <button class="filter-btn" data-category="3학년">3학년</button>
-                <button class="filter-btn" data-category="4학년">4학년</button>
-                <button class="filter-btn" data-category="5학년">5학년</button>
-                <button class="filter-btn" data-category="6학년">6학년</button>
-            </div>
+        <!-- 필터 -->
+        <div class="filters">
+            <button class="filter-btn active" data-category="all">전체</button>
+            <button class="filter-btn" data-category="1학년">1학년</button>
+            <button class="filter-btn" data-category="2학년">2학년</button>
+            <button class="filter-btn" data-category="3학년">3학년</button>
+            <button class="filter-btn" data-category="4학년">4학년</button>
+            <button class="filter-btn" data-category="5학년">5학년</button>
+            <button class="filter-btn" data-category="6학년">6학년</button>
         </div>
 
-        <div class="grade-info-section" id="gradeInfoSection">
-            <div class="grade-info-content">
-                <h3 id="gradeInfoTitle"></h3>
-                <p id="gradeInfoDescription"></p>
-            </div>
-        </div>
-
+        <!-- 작품 갤러리 -->
         <div class="gallery" id="gallery">
             <div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;">
-                <h3>🚀 작품을 불러오는 중...</h3>
+                <h3>🚀 Upstash Redis에서 작품을 불러오는 중...</h3>
             </div>
         </div>
     </div>
 
+    <!-- 모달 -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -1181,133 +699,36 @@
         </div>
     </div>
 
-    <div class="fullscreen-overlay" id="fullscreenOverlay" onclick="closeFullscreenImage()">
-        <span class="fullscreen-close-btn">&times;</span>
-        <img src="" alt="Fullscreen Image" class="fullscreen-image" id="fullscreenImage">
-    </div>
-
     <script>
-        // 🔧 설정
-        const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx'; // 본인의 Cloudinary Cloud Name으로 변경
-        const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh'; // 본인의 Cloudinary Upload Preset으로 변경
+        // 🔧 Cloudinary 설정 (본인 값으로 변경 필요!)
+        const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx'; // 실제 값으로 변경
+        const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
 
         // 📊 전역 변수
         let artworks = [];
-        let comments = {};
         let likes = {};
-        let settings = {
-            title: '대불초등학교 브릭모델 전시관',
-            headerImage: '', 
-            description: '창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요',
-            allowComments: true,
-            moderateComments: false,
-            adminPassword: '1234',
-            useUploadPassword: false, 
-            uploadPassword: '',      
-            gradeDescriptions: {
-                'all': { title: '🧱 모든 학년 브릭모델 작품', description: '대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.' },
-                '1학년': { title: '🌟 1학년 브릭모델 작품', description: '1학년 친구들의 첫 번째 브릭모델 작품들입니다. 기본적인 블록 쌓기부터 시작하여 간단한 집, 동물, 자동차 등을 만들며 창의력과 손재주를 기르고 있어요!' },
-                '2학년': { title: '🎨 2학년 브릭모델 작품', description: '2학년 친구들은 더욱 정교한 작품을 만들 수 있게 되었어요. 색깔 조합과 기본 구조를 이해하며 자신만의 개성이 담긴 작품들을 선보입니다.' },
-                '3학년': { title: '🏗️ 3학년 브릭모델 작품', description: '3학년이 되면서 더욱 복잡한 구조물을 만들 수 있게 되었어요. 건축물의 기본 원리를 이해하고 계획적으로 작품을 제작하는 능력이 늘어났습니다.' },
-                '4학년': { title: '🚀 4학년 브릭모델 작품', description: '4학년 친구들은 테마가 있는 작품들을 만들기 시작했어요. 과학적 사고와 창의적 아이디어를 결합하여 미래 도시, 우주선 등 상상력이 풍부한 작품들을 제작합니다.' },
-                '5학년': { title: '🎯 5학년 브릭모델 작품', description: '5학년 작품들은 한층 더 정교하고 완성도가 높아졌어요. 기능적인 요소들을 고려하며 실용적이면서도 아름다운 작품들을 만들어 냅니다.' },
-                '6학년': { title: '🏆 6학년 브릭모델 작품', description: '6학년 친구들의 작품은 정말 놀라워요! 수년간 쌓은 경험과 실력으로 복잡한 메커니즘, 대형 구조물, 정교한 디테일을 가진 작품들을 완성합니다.' }
-            }
-        };
-        let isAdminMode = false;
+        let isUpstashReady = false;
+        let currentEditingId = null;
 
-        // API를 통해 모든 데이터를 서버에 저장하는 함수
-        async function saveAllData() {
-            try {
-                const allData = { artworks, comments, likes, settings };
-                const response = await fetch('/api/db', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(allData)
-                });
-                if (!response.ok) {
-                    const errorResult = await response.json();
-                    throw new Error(errorResult.error || 'Failed to save data');
-                }
-                console.log('☁️ 모든 데이터가 성공적으로 저장되었습니다.');
-                return true;
-            } catch (error) {
-                console.error('데이터 저장 실패:', error);
-                showMessage(`데이터 저장 실패: ${error.message}`, 'error');
-                return false;
-            }
-        }
-
-        // 초기화 (페이지 로딩 시 실행)
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🧱 브릭모델 전시관 로드');
-            try {
-                const response = await fetch('/api/db');
-                if (!response.ok) {
-                    const errorResult = await response.json();
-                    throw new Error(errorResult.error || `HTTP error! status: ${response.status}`);
-                }
-                const result = await response.json();
-                document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-success">✅ 데이터베이스 연결됨</span>';
-
-                if (result.data) {
-                    const data = JSON.parse(result.data);
-                    artworks = data.artworks || [];
-                    comments = data.comments || {};
-                    likes = data.likes || {};
-                    settings = { ...settings, ...data.settings, gradeDescriptions: { ...settings.gradeDescriptions, ...(data.settings?.gradeDescriptions || {}) } };
-                }
-            } catch (error) {
-                 const errorMessage = error.message || "알 수 없는 오류";
-                 console.error('데이터 로딩 실패:', errorMessage);
-                 document.getElementById('upstashStatus').innerHTML = `<span class="status-indicator status-error">❌ 데이터베이스 연결 실패</span>`;
-                 showMessage(`데이터베이스 연결 실패: ${errorMessage}`, 'error');
-            }
-
-            applyHeaderSettings(); 
-            document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>';
-            renderArtworks();
-            updateAdminStats();
-            updateGradeInfo('all');
-            setupDragAndDrop(); 
-            console.log('✅ 초기화 완료');
-        });
-
-        // 나머지 모든 JavaScript 함수들...
-        function showMessage(text, type = 'success') {
-            const existing = document.querySelector('.message');
-            if (existing) existing.remove();
-            const message = document.createElement('div');
-            message.className = `message ${type}`;
-            message.textContent = text;
-            document.querySelector('header').appendChild(message);
-            setTimeout(() => message.remove(), 5000);
-        }
-
-        function toggleUploadPanel() {
+        // 📸 작품 올리기 토글
+        function toggleUpload() {
             const panel = document.getElementById('uploadPanel');
             const adminPanel = document.getElementById('adminPanel');
             const statusSection = document.getElementById('statusSection');
-
-            if (settings.useUploadPassword && !panel.classList.contains('active')) {
-                const password = prompt('작품을 올리려면 비밀번호를 입력하세요:');
-                if (password !== settings.uploadPassword) {
-                    if (password !== null) showMessage('업로드 비밀번호가 틀렸습니다.', 'error');
-                    return;
-                }
-            }
             
-            if (panel.classList.contains('active')) {
-                panel.classList.remove('active');
-            } else {
-                panel.classList.add('active');
-                adminPanel.classList.remove('active');
-                statusSection.classList.remove('active');
-            }
-            updateHeaderButtonStates();
+            // 다른 패널 닫기
+            adminPanel.classList.remove('active');
+            statusSection.classList.remove('active');
+            
+            // 현재 패널 토글
+            panel.classList.toggle('active');
+            
+            // 버튼 활성화 상태 업데이트
+            updateHeaderButtons();
         }
 
-        function toggleAdminPanel() {
+        // 🔐 관리자 모드 토글
+        function toggleAdmin() {
             const panel = document.getElementById('adminPanel');
             const uploadPanel = document.getElementById('uploadPanel');
             const statusSection = document.getElementById('statusSection');
@@ -1315,15 +736,18 @@
             if (!panel.classList.contains('active')) {
                 const password = prompt('관리자 비밀번호를 입력하세요:');
                 
-                if (password === settings.adminPassword) {
+                if (password === '1234') {
+                    // 다른 패널 닫기
+                    uploadPanel.classList.remove('active');
+                    
+                    // 관리자 패널과 상태 섹션 열기
                     panel.classList.add('active');
                     statusSection.classList.add('active');
-                    uploadPanel.classList.remove('active');
-                    isAdminMode = true;
-                    document.body.classList.add('admin-mode');
+                    
+                    // 관리자 테이블 업데이트
+                    updateAdminTable();
                     updateAdminStats();
-                    renderAdminTables();
-                    loadSettingsForm(); 
+                    
                     showMessage('관리자 모드가 활성화되었습니다!', 'success');
                 } else if (password !== null) {
                     showMessage('비밀번호가 틀렸습니다.', 'error');
@@ -1331,132 +755,75 @@
             } else {
                 panel.classList.remove('active');
                 statusSection.classList.remove('active');
-                isAdminMode = false;
-                document.body.classList.remove('admin-mode');
                 showMessage('관리자 모드가 비활성화되었습니다.', 'success');
             }
-            updateHeaderButtonStates();
-        }
-        
-        function updateHeaderButtonStates() {
-            const uploadBtn = document.querySelector('.header-btn[onclick="toggleUploadPanel()"]');
-            const adminBtn = document.querySelector('.header-btn[onclick="toggleAdminPanel()"]');
-            uploadBtn.classList.toggle('active', document.getElementById('uploadPanel').classList.contains('active'));
-            adminBtn.classList.toggle('active', document.getElementById('adminPanel').classList.contains('active'));
+            
+            updateHeaderButtons();
         }
 
-        function switchAdminTab(tab) {
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tab + 'Content').classList.add('active');
+        // 헤더 버튼 활성화 상태 업데이트
+        function updateHeaderButtons() {
+            const buttons = document.querySelectorAll('.header-btn');
+            const uploadPanel = document.getElementById('uploadPanel');
+            const adminPanel = document.getElementById('adminPanel');
+            
+            buttons[0].classList.toggle('active', uploadPanel.classList.contains('active'));
+            buttons[1].classList.toggle('active', adminPanel.classList.contains('active'));
         }
 
+        // 📊 관리자 통계 업데이트
         function updateAdminStats() {
-            const totalArtworks = artworks.length;
-            const totalComments = Object.values(comments).flat().length;
+            // 전체 작품 수
+            document.getElementById('statTotal').textContent = artworks.length;
+            
+            // 총 좋아요 수
             const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
-            const today = new Date().toDateString();
-            const todayArtworks = artworks.filter(artwork => new Date(artwork.createdAt).toDateString() === today).length;
-            
-            document.getElementById('statArtworks').textContent = totalArtworks;
-            document.getElementById('statComments').textContent = totalComments;
             document.getElementById('statLikes').textContent = totalLikes;
-            document.getElementById('statToday').textContent = todayArtworks;
             
-            document.getElementById('totalCount').textContent = totalArtworks;
-            document.getElementById('totalComments').textContent = totalComments;
+            // 오늘 등록된 작품 수
+            const today = new Date().toDateString();
+            const todayCount = artworks.filter(artwork => 
+                new Date(artwork.createdAt).toDateString() === today
+            ).length;
+            document.getElementById('statToday').textContent = todayCount;
         }
 
-        function renderAdminTables() {
-            renderArtworksTable();
-            renderCommentsTable();
-            renderUsersTable();
-        }
-
-        function renderArtworksTable() {
-            const tbody = document.getElementById('artworksTableBody');
-            tbody.innerHTML = '';
-            artworks.forEach(artwork => {
-                const row = document.createElement('tr');
-                row.setAttribute('draggable', true);
-                row.setAttribute('data-id', artwork.id);
-                row.innerHTML = `
-                    <td><input type="checkbox" class="artwork-checkbox" data-id="${artwork.id}"></td>
-                    <td>${artwork.title}</td>
-                    <td>${artwork.author}</td>
-                    <td>${artwork.grade}</td>
-                    <td>${likes[artwork.id] || 0}</td>
-                    <td>${(comments[artwork.id] || []).length}</td>
-                    <td>${new Date(artwork.createdAt).toLocaleDateString()}</td>
-                    <td>
-                        <button class="btn btn-warning btn-small" onclick="editArtwork('${artwork.id}')">수정</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteArtwork('${artwork.id}')">삭제</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function renderCommentsTable() {
-            const tbody = document.getElementById('commentsTableBody');
-            tbody.innerHTML = '';
-            Object.entries(comments).forEach(([artworkId, artworkComments]) => {
-                const artwork = artworks.find(a => a.id === artworkId);
-                artworkComments.forEach(comment => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><input type="checkbox" class="comment-checkbox" data-id="${comment.id}"></td>
-                        <td>${artwork ? artwork.title : '삭제된 작품'}</td>
-                        <td>${comment.author}</td>
-                        <td title="${comment.text}">${comment.text.substring(0, 30)}${comment.text.length > 30 ? '...' : ''}</td>
-                        <td>${new Date(comment.createdAt).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn btn-danger btn-small" onclick="deleteComment('${artworkId}', '${comment.id}')">삭제</button>
+        // 📋 관리자 테이블 업데이트
+        function updateAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
+            
+            if (artworks.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            등록된 작품이 없습니다.
                         </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            });
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = artworks.map(artwork => {
+                const likeCount = likes[artwork.id] || 0;
+                const date = new Date(artwork.createdAt).toLocaleDateString();
+                
+                return `
+                    <tr>
+                        <td>${artwork.title}</td>
+                        <td>${artwork.author}</td>
+                        <td>${artwork.grade}</td>
+                        <td>${getCategoryName(artwork.category)}</td>
+                        <td>❤️ ${likeCount}</td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="btn-edit" onclick="editArtwork('${artwork.id}')">수정</button>
+                            <button class="btn-danger" onclick="deleteArtwork('${artwork.id}')">삭제</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        function renderUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-            const users = {};
-            artworks.forEach(artwork => {
-                if (!users[artwork.author]) {
-                    users[artwork.author] = { name: artwork.author, grade: artwork.grade, artworks: 0, comments: 0, likes: 0, lastActivity: artwork.createdAt };
-                }
-                users[artwork.author].artworks++;
-                users[artwork.author].likes += likes[artwork.id] || 0;
-                if (new Date(artwork.createdAt) > new Date(users[artwork.author].lastActivity)) {
-                    users[artwork.author].lastActivity = artwork.createdAt;
-                }
-            });
-            Object.values(comments).flat().forEach(comment => {
-                if (!users[comment.author]) {
-                    users[comment.author] = { name: comment.author, grade: '미확인', artworks: 0, comments: 0, likes: 0, lastActivity: comment.createdAt };
-                }
-                users[comment.author].comments++;
-                if (new Date(comment.createdAt) > new Date(users[comment.author].lastActivity)) {
-                    users[comment.author].lastActivity = comment.createdAt;
-                }
-            });
-            Object.values(users).forEach(user => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${user.name}</td>
-                    <td>${user.grade}</td>
-                    <td>${user.artworks}</td>
-                    <td>${user.comments}</td>
-                    <td>${user.likes}</td>
-                    <td>${new Date(user.lastActivity).toLocaleDateString()}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-        
         // ✏️ 작품 수정
         function editArtwork(artworkId) {
             const artwork = artworks.find(a => a.id === artworkId);
