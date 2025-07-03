@@ -25,7 +25,17 @@ export default async function handler(req, res) {
       });
 
       const data = await response.json();
-      const artworks = data.result ? JSON.parse(data.result) : [];
+      console.log('Upstash response:', data); // 디버깅용
+      
+      let artworks = [];
+      if (data.result) {
+        try {
+          artworks = JSON.parse(data.result);
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          artworks = [];
+        }
+      }
 
       return res.status(200).json({ success: true, artworks });
 
@@ -41,7 +51,16 @@ export default async function handler(req, res) {
       });
 
       const getData = await getResponse.json();
-      let artworks = getData.result ? JSON.parse(getData.result) : [];
+      let artworks = [];
+      
+      if (getData.result) {
+        try {
+          artworks = JSON.parse(getData.result);
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          artworks = [];
+        }
+      }
 
       // 수정인 경우 기존 작품 업데이트, 신규인 경우 추가
       const existingIndex = artworks.findIndex(a => a.id === artwork.id);
@@ -51,15 +70,16 @@ export default async function handler(req, res) {
         artworks.unshift(artwork);
       }
 
-      // 저장
-      const setResponse = await fetch(`${UPSTASH_REDIS_REST_URL}/set/artworks`, {
+      // 저장 - Upstash REST API 형식에 맞게
+      const setResponse = await fetch(`${UPSTASH_REDIS_REST_URL}/set/artworks/${encodeURIComponent(JSON.stringify(artworks))}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify([JSON.stringify(artworks)]),
       });
+
+      const setData = await setResponse.json();
+      console.log('Set response:', setData); // 디버깅용
 
       if (!setResponse.ok) {
         throw new Error('Failed to save to Upstash');
@@ -82,13 +102,11 @@ export default async function handler(req, res) {
 
       artworks = artworks.filter(a => a.id !== artworkId);
 
-      const setResponse = await fetch(`${UPSTASH_REDIS_REST_URL}/set/artworks`, {
+      const setResponse = await fetch(`${UPSTASH_REDIS_REST_URL}/set/artworks/${encodeURIComponent(JSON.stringify(artworks))}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify([JSON.stringify(artworks)]),
       });
 
       return res.status(200).json({ success: true });
