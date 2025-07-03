@@ -607,6 +607,8 @@
         .filter-btn:hover, .filter-btn.active {
             background: rgba(255,255,255,0.3);
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
         }
 
         .search-container {
@@ -706,18 +708,20 @@
             .search-container input { width: 100%; max-width: 300px; }
             .admin-tabs { justify-content: center; }
             .stats-grid { grid-template-columns: 1fr; }
-            .filters { 
-                justify-content: center;
-                gap: 12px;
-                margin: 0 auto 30px auto;
+            .filters-container {
                 padding: 0 15px;
+            }
+            .filters { 
+                padding: 12px 20px;
+                gap: 10px;
                 max-width: 100%;
+                border-radius: 20px;
             }
             .filter-btn {
-                padding: 8px 16px;
+                padding: 6px 14px;
                 font-size: 0.85rem;
-                flex-shrink: 0;
-                min-width: 70px;
+                min-width: 60px;
+                border-radius: 15px;
             }
         }
     </style>
@@ -954,14 +958,16 @@
         </div>
 
         <!-- 필터 -->
-        <div class="filters">
-            <button class="filter-btn active" data-category="all">전체</button>
-            <button class="filter-btn" data-category="1학년">1학년</button>
-            <button class="filter-btn" data-category="2학년">2학년</button>
-            <button class="filter-btn" data-category="3학년">3학년</button>
-            <button class="filter-btn" data-category="4학년">4학년</button>
-            <button class="filter-btn" data-category="5학년">5학년</button>
-            <button class="filter-btn" data-category="6학년">6학년</button>
+        <div class="filters-container">
+            <div class="filters">
+                <button class="filter-btn active" data-category="all">전체</button>
+                <button class="filter-btn" data-category="1학년">1학년</button>
+                <button class="filter-btn" data-category="2학년">2학년</button>
+                <button class="filter-btn" data-category="3학년">3학년</button>
+                <button class="filter-btn" data-category="4학년">4학년</button>
+                <button class="filter-btn" data-category="5학년">5학년</button>
+                <button class="filter-btn" data-category="6학년">6학년</button>
+            </div>
         </div>
 
         <!-- 학년별 설명 섹션 -->
