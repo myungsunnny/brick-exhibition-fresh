@@ -535,12 +535,62 @@
             color: #856404;
         }
 
-        .filters {
+        .grade-info-section {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: white;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .grade-info-section.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .grade-info-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .grade-info-content p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .grade-stats {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin-top: 20px;
             flex-wrap: wrap;
+        }
+
+        .grade-stat {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .grade-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .grade-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
 
         .filter-btn {
@@ -899,6 +949,14 @@
             <button class="filter-btn" data-category="4학년">4학년</button>
             <button class="filter-btn" data-category="5학년">5학년</button>
             <button class="filter-btn" data-category="6학년">6학년</button>
+        </div>
+
+        <!-- 학년별 설명 섹션 -->
+        <div class="grade-info-section" id="gradeInfoSection">
+            <div class="grade-info-content">
+                <h3 id="gradeInfoTitle">🧱 모든 학년 브릭모델 작품</h3>
+                <p id="gradeInfoDescription">대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.</p>
+            </div>
         </div>
 
         <!-- 작품 갤러리 -->
@@ -1803,6 +1861,9 @@
                 const category = btn.dataset.category;
                 const artworkCards = document.querySelectorAll('.artwork-card');
                 
+                // 학년별 설명 업데이트
+                updateGradeInfo(category);
+                
                 artworkCards.forEach(card => {
                     if (category === 'all' || card.dataset.category === category) {
                         card.style.display = 'block';
@@ -1818,6 +1879,112 @@
                 });
             });
         });
+
+        // 📚 학년별 설명 업데이트
+        function updateGradeInfo(category) {
+            const gradeInfoSection = document.getElementById('gradeInfoSection');
+            const gradeInfoTitle = document.getElementById('gradeInfoTitle');
+            const gradeInfoDescription = document.getElementById('gradeInfoDescription');
+            
+            const gradeDescriptions = {
+                'all': {
+                    title: '🧱 모든 학년 브릭모델 작품',
+                    description: '대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.'
+                },
+                '1학년': {
+                    title: '🌟 1학년 브릭모델 작품',
+                    description: '1학년 친구들의 첫 번째 브릭모델 작품들입니다. 기본적인 블록 쌓기부터 시작하여 간단한 집, 동물, 자동차 등을 만들며 창의력과 손재주를 기르고 있어요!'
+                },
+                '2학년': {
+                    title: '🎨 2학년 브릭모델 작품',
+                    description: '2학년 친구들은 더욱 정교한 작품을 만들 수 있게 되었어요. 색깔 조합과 기본 구조를 이해하며 자신만의 개성이 담긴 작품들을 선보입니다.'
+                },
+                '3학년': {
+                    title: '🏗️ 3학년 브릭모델 작품',
+                    description: '3학년이 되면서 더욱 복잡한 구조물을 만들 수 있게 되었어요. 건축물의 기본 원리를 이해하고 계획적으로 작품을 제작하는 능력이 늘어났습니다.'
+                },
+                '4학년': {
+                    title: '🚀 4학년 브릭모델 작품',
+                    description: '4학년 친구들은 테마가 있는 작품들을 만들기 시작했어요. 과학적 사고와 창의적 아이디어를 결합하여 미래 도시, 우주선 등 상상력이 풍부한 작품들을 제작합니다.'
+                },
+                '5학년': {
+                    title: '🎯 5학년 브릭모델 작품',
+                    description: '5학년 작품들은 한층 더 정교하고 완성도가 높아졌어요. 기능적인 요소들을 고려하며 실용적이면서도 아름다운 작품들을 만들어 냅니다.'
+                },
+                '6학년': {
+                    title: '🏆 6학년 브릭모델 작품',
+                    description: '6학년 친구들의 작품은 정말 놀라워요! 수년간 쌓은 경험과 실력으로 복잡한 메커니즘, 대형 구조물, 정교한 디테일을 가진 작품들을 완성합니다.'
+                }
+            };
+            
+            const info = gradeDescriptions[category] || gradeDescriptions['all'];
+            gradeInfoTitle.textContent = info.title;
+            gradeInfoDescription.textContent = info.description;
+            
+            // 통계 정보 업데이트
+            updateGradeStats(category);
+            
+            // 학년별 설명 섹션 표시
+            gradeInfoSection.classList.add('active');
+        }
+
+        // 📊 학년별 통계 업데이트
+        function updateGradeStats(category) {
+            const gradeInfoSection = document.getElementById('gradeInfoSection');
+            let statsHtml = '';
+            
+            if (category === 'all') {
+                const totalArtworks = artworks.length;
+                const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
+                const totalComments = Object.values(comments).reduce((sum, artworkComments) => sum + artworkComments.length, 0);
+                
+                statsHtml = `
+                    <div class="grade-stats">
+                        <div class="grade-stat">
+                            <div class="grade-stat-number">${totalArtworks}</div>
+                            <div class="grade-stat-label">전체 작품</div>
+                        </div>
+                        <div class="grade-stat">
+                            <div class="grade-stat-number">${totalLikes}</div>
+                            <div class="grade-stat-label">총 좋아요</div>
+                        </div>
+                        <div class="grade-stat">
+                            <div class="grade-stat-number">${totalComments}</div>
+                            <div class="grade-stat-label">총 댓글</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const gradeArtworks = artworks.filter(artwork => artwork.grade === category);
+                const gradeLikes = gradeArtworks.reduce((sum, artwork) => sum + (likes[artwork.id] || 0), 0);
+                const gradeComments = gradeArtworks.reduce((sum, artwork) => sum + (comments[artwork.id] || []).length, 0);
+                
+                statsHtml = `
+                    <div class="grade-stats">
+                        <div class="grade-stat">
+                            <div class="grade-stat-number">${gradeArtworks.length}</div>
+                            <div class="grade-stat-label">작품 수</div>
+                        </div>
+                        <div class="grade-stat">
+                            <div class="grade-stat-number">${gradeLikes}</div>
+                            <div class="grade-stat-label">좋아요</div>
+                        </div>
+                        <div class="grade-stat">
+                            <div class="grade-stat-number">${gradeComments}</div>
+                            <div class="grade-stat-label">댓글</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 기존 통계가 있다면 제거하고 새로 추가
+            const existingStats = gradeInfoSection.querySelector('.grade-stats');
+            if (existingStats) {
+                existingStats.remove();
+            }
+            
+            gradeInfoSection.querySelector('.grade-info-content').insertAdjacentHTML('beforeend', statsHtml);
+        }
 
         // 🔧 전체 선택 기능
         document.getElementById('selectAll').addEventListener('change', function() {
@@ -1875,6 +2042,9 @@
             
             // 화면 렌더링
             renderArtworks();
+            
+            // 초기 학년별 설명 표시
+            updateGradeInfo('all');
             
             // 페이지 제목 동적 업데이트
             if (artworks.length > 0) {
