@@ -1849,63 +1849,11 @@
             if (savedLikes) likes = JSON.parse(savedLikes);
             if (savedSettings) settings = { ...settings, ...JSON.parse(savedSettings) };
             
-            // 샘플 데이터 생성 (최초 실행시만)
+            // 기본 빈 상태로 시작
             if (artworks.length === 0) {
-                const sampleArtwork = {
-                    id: 'sample-1',
-                    title: '우리 학교 모형',
-                    author: '김민수',
-                    grade: '3학년',
-                    category: 'building',
-                    description: '우리 대불초등학교를 브릭으로 만들어보았어요. 운동장과 교실, 도서관까지 세심하게 표현했습니다.',
-                    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
-                    createdAt: new Date().toISOString()
-                };
-                
-                const sampleArtwork2 = {
-                    id: 'sample-2',
-                    title: '꿈의 자동차',
-                    author: '이지영',
-                    grade: '5학년',
-                    category: 'vehicle',
-                    description: '미래의 자동차를 상상해서 만들었어요. 하늘을 날 수 있고 친환경적인 자동차입니다.',
-                    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
-                    createdAt: new Date(Date.now() - 86400000).toISOString()
-                };
-                
-                artworks = [sampleArtwork, sampleArtwork2];
-                likes = { 'sample-1': 8, 'sample-2': 12 };
-                comments = {
-                    'sample-1': [
-                        {
-                            id: 'comment-1',
-                            author: '박선생님',
-                            text: '정말 멋진 작품이네요! 세부적인 부분까지 잘 표현했어요.',
-                            createdAt: new Date(Date.now() - 3600000).toISOString(),
-                            approved: true
-                        },
-                        {
-                            id: 'comment-2',
-                            author: '최학생',
-                            text: '와! 진짜 우리 학교 같아요!',
-                            createdAt: new Date(Date.now() - 1800000).toISOString(),
-                            approved: true
-                        }
-                    ],
-                    'sample-2': [
-                        {
-                            id: 'comment-3',
-                            author: '김선생님',
-                            text: '창의적인 아이디어가 돋보이는 작품입니다.',
-                            createdAt: new Date(Date.now() - 7200000).toISOString(),
-                            approved: true
-                        }
-                    ]
-                };
-                
-                localStorage.setItem('artworks', JSON.stringify(artworks));
-                localStorage.setItem('likes', JSON.stringify(likes));
-                localStorage.setItem('comments', JSON.stringify(comments));
+                artworks = [];
+                likes = {};
+                comments = {};
             }
             
             // 설정 적용
