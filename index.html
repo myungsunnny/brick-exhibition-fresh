@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대불초등학교 브릭모델 전시관</title>
-    
     <style>
-        /* CSS 스타일 코드는 변경 없습니다 */
+        /* CSS 스타일 코드는 변경 없습니다. */
         * {
             margin: 0;
             padding: 0;
@@ -874,6 +873,7 @@
 </head>
 <body>
     <div class="container">
+        <!-- HTML 구조는 변경 없습니다. -->
         <header>
             <div class="header-buttons">
                 <button class="header-btn" onclick="toggleUploadPanel()">✏️ 작품 올리기</button>
@@ -935,7 +935,7 @@
                 
                 <div class="form-group">
                     <label>작품 사진</label>
-                    <div class="image-upload" onclick="document.getElementById('imageFile').click()">
+                    <div class="image-upload" onclick="previewImage()">
                         <input type="file" id="imageFile" accept="image/*" onchange="previewImage()">
                         <div id="uploadText">📁 이미지를 선택하세요</div>
                         <img id="imagePreview" class="image-preview" alt="미리보기">
@@ -972,10 +972,10 @@
             </div>
 
             <div class="admin-tabs">
-                <button class="admin-tab active" onclick="switchAdminTab('artworks')">작품 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('comments')">댓글 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('users')">사용자 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('settings')">사이트 설정</button>
+                <button class="admin-tab active" onclick="switchAdminTab(event, 'artworks')">작품 관리</button>
+                <button class="admin-tab" onclick="switchAdminTab(event, 'comments')">댓글 관리</button>
+                <button class="admin-tab" onclick="switchAdminTab(event, 'users')">사용자 관리</button>
+                <button class="admin-tab" onclick="switchAdminTab(event, 'settings')">사이트 설정</button>
             </div>
 
             <div class="admin-content active" id="artworksContent">
@@ -1144,7 +1144,7 @@
                 
                 <hr>
 
-                <button class="btn btn-primary" onclick="saveSettings()">설정 저장</button>
+                <button class="btn btn-primary" onclick="saveSettings(event)">설정 저장</button>
                 <button class="btn btn-danger" onclick="resetAllData()">모든 데이터 초기화</button>
             </div>
         </div>
@@ -1192,22 +1192,23 @@
     </div>
 
 
+    <!-- 🔽 [수정] Upstash 라이브러리에 onload 속성 추가 🔽 -->
     <script src="https://cdn.jsdelivr.net/npm/@upstash/redis/dist/index.umd.js" onload="initializeApp()"></script>
 
+    <!-- 🔽 [수정] 메인 스크립트 전체를 initializeApp 함수로 감싸기 🔽 -->
     <script>
         function initializeApp() {
             // 🔧 설정
             const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
             const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
-    
-            // 🔽 Upstash 클라이언트 설정 🔽
+
+            // Upstash 클라이언트 설정
             // ⚠️⚠️⚠️ 중요: Upstash에서 복사한 실제 URL과 Token을 따옴표 안에 정확히 입력해주세요! ⚠️⚠️⚠️
             const upstashClient = new upstash.Redis({
-                url: 'https://unique-koi-29481.upstash.io',
-                token: 'AXMpAAIjcDExNzg5MjViZDE5ZDE0YWIyOTBjMGQxZTNiODA4ZTg4ZXAxMA',
+                url: '여기에_UPSTASH_REDIS_REST_URL_붙여넣기',
+                token: '여기에_UPSTASH_REDIS_REST_TOKEN_붙여넣기',
             });
-    
-    
+
             // 📊 전역 변수
             let artworks = [];
             let comments = {};
@@ -1232,15 +1233,15 @@
                     '6학년': { title: '🏆 6학년 브릭모델 작품', description: '6학년 친구들의 작품은 정말 놀라워요! 수년간 쌓은 경험과 실력으로 복잡한 메커니즘, 대형 구조물, 정교한 디테일을 가진 작품들을 완성합니다.' }
                 }
             };
-    
+
             let isAdminMode = false;
-    
-            // 🔐 패널 토글 함수들
-            function toggleUploadPanel() {
+
+            // 🔽 [수정] HTML에서 호출하는 함수들을 전역 window 객체에 할당 🔽
+            window.toggleUploadPanel = function() {
                 const panel = document.getElementById('uploadPanel');
                 const adminPanel = document.getElementById('adminPanel');
                 const statusSection = document.getElementById('statusSection');
-    
+
                 if (settings.useUploadPassword && !panel.classList.contains('active')) {
                     const password = prompt('작품을 올리려면 비밀번호를 입력하세요:');
                     if (password !== settings.uploadPassword) {
@@ -1260,8 +1261,8 @@
                     document.querySelectorAll('.header-btn')[1].classList.remove('active');
                 }
             }
-    
-            function toggleAdminPanel() {
+
+            window.toggleAdminPanel = function() {
                 const panel = document.getElementById('adminPanel');
                 const uploadPanel = document.getElementById('uploadPanel');
                 const statusSection = document.getElementById('statusSection');
@@ -1293,9 +1294,8 @@
                     showMessage('관리자 모드가 비활성화되었습니다.', 'success');
                 }
             }
-    
-            // 🎯 관리자 탭 전환
-            function switchAdminTab(tab) {
+
+            window.switchAdminTab = function(event, tab) {
                 document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
                 
@@ -1306,159 +1306,8 @@
                 else if (tab === 'comments') renderCommentsTable();
                 else if (tab === 'users') renderUsersTable();
             }
-    
-            // 📊 관리자 통계 업데이트
-            function updateAdminStats() {
-                const totalArtworks = artworks.length;
-                const totalComments = Object.values(comments).flat().length;
-                const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
-                const today = new Date().toDateString();
-                const todayArtworks = artworks.filter(artwork => new Date(artwork.createdAt).toDateString() === today).length;
-                
-                document.getElementById('statArtworks').textContent = totalArtworks;
-                document.getElementById('statComments').textContent = totalComments;
-                document.getElementById('statLikes').textContent = totalLikes;
-                document.getElementById('statToday').textContent = todayArtworks;
-                
-                document.getElementById('totalCount').textContent = totalArtworks;
-                document.getElementById('totalComments').textContent = totalComments;
-            }
-            
-            // 데이터 저장 함수 (Upstash)
-            async function saveDataToUpstash() {
-                try {
-                    Object.keys(likes).forEach(key => {
-                        if (likes[key] == null) {
-                            likes[key] = 0;
-                        }
-                    });
-                    
-                    await upstashClient.set('gallery_data', JSON.stringify({
-                        artworks,
-                        comments,
-                        likes,
-                        settings
-                    }));
-                    console.log('✅ 데이터가 Upstash에 성공적으로 저장되었습니다.');
-                } catch (error) {
-                    console.error('Upstash 저장 실패:', error);
-                    showMessage('데이터 저장에 실패했습니다. 인터넷 연결을 확인해주세요.', 'error');
-                }
-            }
-    
-            // 📋 작품 관리 테이블 렌더링
-            function renderArtworksTable() {
-                const tbody = document.getElementById('artworksTableBody');
-                tbody.innerHTML = '';
-                
-                artworks.forEach(artwork => {
-                    const row = document.createElement('tr');
-                    row.setAttribute('draggable', true);
-                    row.setAttribute('data-id', artwork.id);
-    
-                    const artworkComments = comments[artwork.id] || [];
-                    const artworkLikes = likes[artwork.id] || 0;
-                    
-                    row.innerHTML = `
-                        <td><input type="checkbox" class="artwork-checkbox" data-id="${artwork.id}"></td>
-                        <td>${artwork.title}</td>
-                        <td>${artwork.author}</td>
-                        <td>${artwork.grade}</td>
-                        <td>${artworkLikes}</td>
-                        <td>${artworkComments.length}</td>
-                        <td>${new Date(artwork.createdAt).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn btn-warning btn-small" onclick="editArtwork('${artwork.id}')">수정</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteArtwork('${artwork.id}')">삭제</button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-    
-            // 💬 댓글 관리 테이블 렌더링
-            function renderCommentsTable() {
-                const tbody = document.getElementById('commentsTableBody');
-                tbody.innerHTML = '';
-                
-                Object.entries(comments).forEach(([artworkId, artworkComments]) => {
-                    const artwork = artworks.find(a => a.id === artworkId);
-                    artworkComments.forEach(comment => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><input type="checkbox" class="comment-checkbox" data-id="${comment.id}" data-artwork-id="${artworkId}"></td>
-                            <td>${artwork ? artwork.title : '삭제된 작품'}</td>
-                            <td>${comment.author}</td>
-                            <td>${comment.text.substring(0, 50)}${comment.text.length > 50 ? '...' : ''}</td>
-                            <td>${new Date(comment.createdAt).toLocaleDateString()}</td>
-                            <td>
-                                <button class="btn btn-warning btn-small" onclick="editComment('${artworkId}', '${comment.id}')">수정</button>
-                                <button class="btn btn-danger btn-small" onclick="deleteComment('${artworkId}', '${comment.id}')">삭제</button>
-                            </td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                });
-            }
-    
-            // 👤 사용자 관리 테이블 렌더링
-            function renderUsersTable() {
-                const tbody = document.getElementById('usersTableBody');
-                tbody.innerHTML = '';
-                
-                const users = {};
-                
-                artworks.forEach(artwork => {
-                    if (!users[artwork.author]) {
-                        users[artwork.author] = {
-                            name: artwork.author,
-                            grade: artwork.grade,
-                            artworks: 0,
-                            comments: 0,
-                            likes: 0,
-                            lastActivity: artwork.createdAt
-                        };
-                    }
-                    users[artwork.author].artworks++;
-                    users[artwork.author].likes += likes[artwork.id] || 0;
-                    if (new Date(artwork.createdAt) > new Date(users[artwork.author].lastActivity)) {
-                        users[artwork.author].lastActivity = artwork.createdAt;
-                    }
-                });
-                
-                Object.values(comments).flat().forEach(comment => {
-                    if (!users[comment.author]) {
-                        users[comment.author] = {
-                            name: comment.author,
-                            grade: '미확인',
-                            artworks: 0,
-                            comments: 0,
-                            likes: 0,
-                            lastActivity: comment.createdAt
-                        };
-                    }
-                    users[comment.author].comments++;
-                     if (new Date(comment.createdAt) > new Date(users[comment.author].lastActivity)) {
-                        users[comment.author].lastActivity = comment.createdAt;
-                    }
-                });
-                
-                Object.values(users).forEach(user => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${user.name}</td>
-                        <td>${user.grade}</td>
-                        <td>${user.artworks}</td>
-                        <td>${user.comments}</td>
-                        <td>${user.likes}</td>
-                        <td>${new Date(user.lastActivity).toLocaleDateString()}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-    
-            // ✏️ 작품 수정
-            function editArtwork(artworkId) {
+
+            window.editArtwork = function(artworkId) {
                 const artwork = artworks.find(a => a.id === artworkId);
                 if (!artwork) return;
                 
@@ -1501,9 +1350,8 @@
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
             }
-    
-            // 💾 작품 수정 저장
-            async function saveArtworkEdit(artworkId) {
+            
+            window.saveArtworkEdit = async function(artworkId) {
                 const artwork = artworks.find(a => a.id === artworkId);
                 if (!artwork) return;
                 
@@ -1519,9 +1367,8 @@
                 renderArtworksTable();
                 showMessage('작품이 수정되었습니다.', 'success');
             }
-    
-            // 💬 댓글 수정
-            async function editComment(artworkId, commentId) {
+
+            window.editComment = async function(artworkId, commentId) {
                 const comment = comments[artworkId]?.find(c => c.id === commentId);
                 if (!comment) return;
                 
@@ -1539,9 +1386,8 @@
                     showMessage('댓글이 수정되었습니다.', 'success');
                 }
             }
-    
-            // 🗑️ 댓글 삭제
-            async function deleteComment(artworkId, commentId) {
+
+            window.deleteComment = async function(artworkId, commentId) {
                 if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
                 
                 if (comments[artworkId]) {
@@ -1561,9 +1407,8 @@
                     showMessage('댓글이 삭제되었습니다.', 'success');
                 }
             }
-    
-            // 📤 일괄 삭제
-            async function bulkDelete() {
+            
+            window.bulkDelete = async function() {
                 const selected = document.querySelectorAll('.artwork-checkbox:checked');
                 if (selected.length === 0) {
                     showMessage('삭제할 작품을 선택하세요.', 'error');
@@ -1586,8 +1431,8 @@
                 updateAdminStats();
                 showMessage(`${selected.length}개의 작품이 삭제되었습니다.`, 'success');
             }
-    
-            async function bulkDeleteComments() {
+
+            window.bulkDeleteComments = async function() {
                 const selected = document.querySelectorAll('.comment-checkbox:checked');
                 if (selected.length === 0) {
                     showMessage('삭제할 댓글을 선택하세요.', 'error');
@@ -1618,44 +1463,12 @@
                 updateAdminStats();
                 showMessage(`${deletedCount}개의 댓글이 삭제되었습니다.`, 'success');
             }
-    
-            function loadSettingsForm() {
-                document.getElementById('siteTitle').value = settings.title;
-                document.getElementById('siteDescription').value = settings.description;
-                document.getElementById('allowComments').checked = settings.allowComments;
-                document.getElementById('moderateComments').checked = settings.moderateComments;
-                document.getElementById('useUploadPassword').checked = settings.useUploadPassword;
-                document.getElementById('uploadPassword').value = settings.uploadPassword;
-                
-                const headerPreview = document.getElementById('headerImagePreview');
-                const headerUploadText = document.getElementById('headerUploadText');
-                if(settings.headerImage) {
-                    headerPreview.src = settings.headerImage;
-                    headerPreview.style.display = 'block';
-                    headerUploadText.style.display = 'none';
-                } else {
-                    headerPreview.style.display = 'none';
-                    headerUploadText.style.display = 'block';
-                }
-    
-                for(let i = 1; i <= 6; i++) {
-                    const gradeKey = `${i}학년`;
-                    if(settings.gradeDescriptions[gradeKey]) {
-                        document.getElementById(`gradeTitle${i}`).value = settings.gradeDescriptions[gradeKey].title;
-                        document.getElementById(`gradeDesc${i}`).value = settings.gradeDescriptions[gradeKey].description;
-                    }
-                }
-                 if(settings.gradeDescriptions['all']) {
-                    document.getElementById('gradeTitleAll').value = settings.gradeDescriptions['all'].title;
-                    document.getElementById('gradeDescAll').value = settings.gradeDescriptions['all'].description;
-                }
-            }
             
-            async function saveSettings() {
+            window.saveSettings = async function(event) {
                 const saveBtn = event.target;
                 saveBtn.disabled = true;
                 saveBtn.textContent = '저장 중...';
-    
+
                 try {
                     const headerImageFile = document.getElementById('headerImageFile').files[0];
                     if (headerImageFile) {
@@ -1666,7 +1479,7 @@
                             throw new Error("헤더 이미지 업로드 실패");
                         }
                     }
-    
+
                     settings.title = document.getElementById('siteTitle').value;
                     settings.description = document.getElementById('siteDescription').value;
                     settings.allowComments = document.getElementById('allowComments').checked;
@@ -1678,7 +1491,7 @@
                     if (newPassword.trim() !== '') {
                         settings.adminPassword = newPassword;
                     }
-    
+
                     settings.gradeDescriptions['all'].title = document.getElementById('gradeTitleAll').value;
                     settings.gradeDescriptions['all'].description = document.getElementById('gradeDescAll').value;
                     for(let i = 1; i <= 6; i++) {
@@ -1703,8 +1516,8 @@
                     saveBtn.textContent = '설정 저장';
                 }
             }
-    
-            async function resetAllData() {
+
+            window.resetAllData = async function() {
                 if (!confirm('정말로 모든 데이터를 초기화하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) return;
                 const confirmText = prompt('확인을 위해 "초기화"를 입력하세요:');
                 if (confirmText !== '초기화') return;
@@ -1716,8 +1529,8 @@
                     showMessage('데이터 초기화에 실패했습니다.', 'error');
                 }
             }
-    
-            function exportData() {
+
+            window.exportData = function() {
                 const data = {
                     artworks: artworks,
                     comments: comments,
@@ -1735,31 +1548,12 @@
                 URL.revokeObjectURL(url);
                 showMessage('데이터가 내보내기되었습니다.', 'success');
             }
-    
-            // 🔧 유틸리티 함수들
-            function renderAdminTables() {
-                renderArtworksTable();
-                renderCommentsTable();
-                renderUsersTable();
-            }
-    
-            function previewImage() {
-                const file = document.getElementById('imageFile').files[0];
-                const preview = document.getElementById('imagePreview');
-                const uploadText = document.getElementById('uploadText');
-                
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                        uploadText.style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
             
-            function previewHeaderImage() {
+            window.previewImage = function() {
+                document.getElementById('imageFile').click();
+            }
+
+            window.previewHeaderImage = function() {
                 const file = document.getElementById('headerImageFile').files[0];
                 const preview = document.getElementById('headerImagePreview');
                 const uploadText = document.getElementById('headerUploadText');
@@ -1774,15 +1568,188 @@
                     reader.readAsDataURL(file);
                 }
             }
-    
-            function removeHeaderImage() {
+
+            window.removeHeaderImage = function() {
                 if(confirm("헤더 이미지를 제거하시겠습니까? '설정 저장' 버튼을 눌러야 최종 반영됩니다.")) {
                     settings.headerImage = '';
                     document.getElementById('headerImageFile').value = '';
                     loadSettingsForm(); 
                 }
             }
-    
+
+            window.toggleLike = async function(artworkId) {
+                const isCurrentlyLiked = localStorage.getItem(`liked_${artworkId}`) === 'true';
+                
+                if (isCurrentlyLiked) {
+                    localStorage.removeItem(`liked_${artworkId}`);
+                    likes[artworkId] = Math.max(0, (likes[artworkId] || 0) - 1);
+                } else {
+                    localStorage.setItem(`liked_${artworkId}`, 'true');
+                    likes[artworkId] = (likes[artworkId] || 0) + 1;
+                }
+                
+                await saveDataToUpstash();
+                renderArtworks();
+                if (isAdminMode) updateAdminStats();
+            }
+
+            window.deleteArtwork = async function(artworkId) {
+                if (!confirm('정말로 이 작품을 삭제하시겠습니까?')) return;
+                
+                artworks = artworks.filter(artwork => artwork.id !== artworkId);
+                delete comments[artworkId];
+                delete likes[artworkId];
+                localStorage.removeItem(`liked_${artworkId}`);
+
+                await saveDataToUpstash();
+                
+                renderArtworks();
+                if(isAdminMode) {
+                  renderArtworksTable();
+                  updateAdminStats();
+                }
+                showMessage('작품이 삭제되었습니다.', 'success');
+            }
+            
+            window.showFullscreenImage = function(imageUrl) {
+                if (!imageUrl) return;
+                const overlay = document.getElementById('fullscreenOverlay');
+                const image = document.getElementById('fullscreenImage');
+                image.src = imageUrl;
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            window.closeFullscreenImage = function() {
+                const overlay = document.getElementById('fullscreenOverlay');
+                overlay.classList.remove('show');
+                if (document.getElementById('modal').style.display === 'none') {
+                     document.body.style.overflow = 'auto';
+                }
+            }
+
+            window.submitComment = async function(artworkId) {
+                const author = document.getElementById('commentAuthor').value.trim();
+                const text = document.getElementById('commentText').value.trim();
+                
+                if (!author || !text) {
+                    showMessage('이름과 댓글을 모두 입력해주세요.', 'error');
+                    return;
+                }
+
+                const commentForm = document.querySelector('.comment-form');
+                const parentId = commentForm.dataset.replyTo || 'root';
+                
+                const newComment = await addComment(artworkId, author, text, parentId);
+                
+                if (newComment) {
+                    document.getElementById('commentAuthor').value = '';
+                    document.getElementById('commentText').value = '';
+                    cancelReply();
+                    
+                    if (settings.moderateComments) {
+                        showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success');
+                    } else {
+                        showMessage('댓글이 등록되었습니다.', 'success');
+                        renderCommentTree(artworkId);
+                    }
+                    
+                    renderArtworks();
+                    updateAdminStats();
+                    if(isAdminMode) {
+                        renderCommentsTable();
+                    }
+                }
+            }
+            
+            window.closeModal = function() {
+                document.getElementById('modal').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+
+            window.shareArtwork = function(title) {
+                if (navigator.share) {
+                    navigator.share({
+                        title: `${title} - ${settings.title}`,
+                        text: `멋진 브릭모델 작품을 확인해보세요!`,
+                        url: window.location.href
+                    });
+                } else {
+                    const url = window.location.href;
+                    navigator.clipboard.writeText(url).then(() => {
+                        showMessage('링크가 클립보드에 복사되었습니다!', 'success');
+                    }).catch(() => {
+                        showMessage('링크 복사에 실패했습니다.', 'error');
+                    });
+                }
+            }
+            
+            window.prepareReply = function(commentId, author) {
+                const commentForm = document.querySelector('.comment-form');
+                commentForm.dataset.replyTo = commentId;
+
+                const replyingToInfo = document.getElementById('replyingToInfo');
+                document.getElementById('replyingToUser').textContent = author;
+                replyingToInfo.style.display = 'block';
+
+                document.getElementById('commentText').focus();
+            }
+
+            window.cancelReply = function() {
+                const commentForm = document.querySelector('.comment-form');
+                commentForm.dataset.replyTo = 'root';
+                document.getElementById('replyingToInfo').style.display = 'none';
+            }
+
+            // 🚀 앱 초기화 및 데이터 로딩
+            async function loadApp() {
+                console.log('🧱 브릭모델 전시관 로드');
+                const statusDiv = document.getElementById('upstashStatus');
+                const gallery = document.getElementById('gallery');
+
+                try {
+                    const data = await upstashClient.get('gallery_data');
+
+                    if (data) {
+                        console.log('✅ Upstash에서 데이터를 성공적으로 불러왔습니다.');
+                        const { artworks: savedArtworks, comments: savedComments, likes: savedLikes, settings: savedSettings } = data;
+
+                        if (savedArtworks) artworks = savedArtworks;
+                        if (savedComments) comments = savedComments;
+                        if (savedLikes) likes = savedLikes;
+                        
+                        if (savedSettings) {
+                            settings = {
+                                ...settings,
+                                ...savedSettings,
+                                gradeDescriptions: {
+                                    ...settings.gradeDescriptions, 
+                                    ...(savedSettings.gradeDescriptions || {}) 
+                                }
+                            };
+                        }
+                        statusDiv.innerHTML = '<span class="status-indicator status-success">✅ Upstash DB 연결됨</span>';
+                    } else {
+                        console.log('ℹ️ Upstash에 데이터가 없습니다. 새 데이터로 시작합니다.');
+                        statusDiv.innerHTML = '<span class="status-indicator status-warning">ℹ️ DB에 데이터 없음</span>';
+                    }
+                } catch (error) {
+                    console.error('Upstash 연결 실패:', error);
+                    statusDiv.innerHTML = '<span class="status-indicator status-error">❌ DB 연결 실패</span>';
+                    showMessage('데이터베이스 연결에 실패했습니다. URL과 토큰을 다시 확인해주세요.', 'error');
+                    gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>데이터베이스 연결에 실패했습니다.</h3><p>인터넷 연결을 확인하거나 관리자에게 문의해주세요.</p></div>`;
+                } finally {
+                    applyHeaderSettings();
+                    renderArtworks();
+                    updateGradeInfo('all');
+                    updateAdminStats();
+                    setupDragAndDrop();
+                    document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>';
+                    console.log('✅ 초기화 완료');
+                }
+            }
+
+            // 나머지 함수들 (내부 헬퍼 함수)
             function showMessage(text, type = 'success') {
                 const existing = document.querySelector('.message');
                 if (existing) existing.remove();
@@ -1795,25 +1762,25 @@
                 
                 setTimeout(() => message.remove(), 5000);
             }
-    
+
             async function uploadImageToCloudinary(file) {
                 if (!file) return null;
-    
+
                 try {
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    
+
                     const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
                         method: 'POST',
                         body: formData
                     });
-    
+
                     if (!response.ok) throw new Error('이미지 업로드 실패');
-    
+
                     const result = await response.json();
                     return result.secure_url;
-    
+
                 } catch (error) {
                     console.error('이미지 업로드 오류:', error);
                     return null;
@@ -1844,8 +1811,7 @@
                 
                 return newComment;
             }
-    
-            // 🖼️ 작품 렌더링
+            
             function renderArtworks() {
                 const gallery = document.getElementById('gallery');
                 gallery.innerHTML = '';
@@ -1892,44 +1858,7 @@
                     setTimeout(() => card.classList.add('show'), index * 100);
                 });
             }
-    
-            // ❤️ 좋아요 토글
-            async function toggleLike(artworkId) {
-                const isCurrentlyLiked = localStorage.getItem(`liked_${artworkId}`) === 'true';
-                
-                if (isCurrentlyLiked) {
-                    localStorage.removeItem(`liked_${artworkId}`);
-                    likes[artworkId] = Math.max(0, (likes[artworkId] || 0) - 1);
-                } else {
-                    localStorage.setItem(`liked_${artworkId}`, 'true');
-                    likes[artworkId] = (likes[artworkId] || 0) + 1;
-                }
-                
-                await saveDataToUpstash();
-                renderArtworks();
-                if (isAdminMode) updateAdminStats();
-            }
-    
-            // 🗑️ 작품 삭제
-            async function deleteArtwork(artworkId) {
-                if (!confirm('정말로 이 작품을 삭제하시겠습니까?')) return;
-                
-                artworks = artworks.filter(artwork => artwork.id !== artworkId);
-                delete comments[artworkId];
-                delete likes[artworkId];
-                localStorage.removeItem(`liked_${artworkId}`);
-    
-                await saveDataToUpstash();
-                
-                renderArtworks();
-                if(isAdminMode) {
-                  renderArtworksTable();
-                  updateAdminStats();
-                }
-                showMessage('작품이 삭제되었습니다.', 'success');
-            }
-            
-            // 🖼️ 작품 상세 모달
+
             function showArtworkModal(artwork) {
                 const modal = document.getElementById('modal');
                 const modalContent = document.getElementById('modalContent');
@@ -1981,24 +1910,23 @@
                 document.body.style.overflow = 'hidden';
             }
             
-            // 계층형 댓글 렌더링 함수들
             function renderCommentTree(artworkId) {
                 const commentsListContainer = document.getElementById('commentsList');
                 if(!commentsListContainer) return;
-    
+
                 const allComments = (comments[artworkId] || []).filter(c => c.approved);
                 
                 allComments.forEach(c => {
                     if(!c.parentId) c.parentId = 'root';
                 });
-    
+
                 commentsListContainer.innerHTML = buildCommentHTML(allComments, 'root', artworkId);
             }
-    
+
             function buildCommentHTML(allComments, parentId, artworkId, isReply = false) {
                 const children = allComments.filter(comment => comment.parentId === parentId);
                 if (children.length === 0) return '';
-    
+
                 let html = '';
                 children.forEach(comment => {
                     html += `
@@ -2019,77 +1947,7 @@
                 });
                 return html;
             }
-    
-            function prepareReply(commentId, author) {
-                const commentForm = document.querySelector('.comment-form');
-                commentForm.dataset.replyTo = commentId;
-    
-                const replyingToInfo = document.getElementById('replyingToInfo');
-                document.getElementById('replyingToUser').textContent = author;
-                replyingToInfo.style.display = 'block';
-    
-                document.getElementById('commentText').focus();
-            }
-    
-            function cancelReply() {
-                const commentForm = document.querySelector('.comment-form');
-                commentForm.dataset.replyTo = 'root';
-                document.getElementById('replyingToInfo').style.display = 'none';
-            }
-    
-    
-            function showFullscreenImage(imageUrl) {
-                if (!imageUrl) return;
-                const overlay = document.getElementById('fullscreenOverlay');
-                const image = document.getElementById('fullscreenImage');
-                image.src = imageUrl;
-                overlay.classList.add('show');
-                document.body.style.overflow = 'hidden';
-            }
-    
-            function closeFullscreenImage() {
-                const overlay = document.getElementById('fullscreenOverlay');
-                overlay.classList.remove('show');
-                if (document.getElementById('modal').style.display === 'none') {
-                     document.body.style.overflow = 'auto';
-                }
-            }
-    
-            async function submitComment(artworkId) {
-                const author = document.getElementById('commentAuthor').value.trim();
-                const text = document.getElementById('commentText').value.trim();
-                
-                if (!author || !text) {
-                    showMessage('이름과 댓글을 모두 입력해주세요.', 'error');
-                    return;
-                }
-    
-                const commentForm = document.querySelector('.comment-form');
-                const parentId = commentForm.dataset.replyTo || 'root';
-                
-                const newComment = await addComment(artworkId, author, text, parentId);
-                
-                if (newComment) {
-                    document.getElementById('commentAuthor').value = '';
-                    document.getElementById('commentText').value = '';
-                    cancelReply();
-                    
-                    if (settings.moderateComments) {
-                        showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success');
-                    } else {
-                        showMessage('댓글이 등록되었습니다.', 'success');
-                        renderCommentTree(artworkId);
-                    }
-                    
-                    renderArtworks();
-                    updateAdminStats();
-                    if(isAdminMode) {
-                        renderCommentsTable();
-                    }
-                }
-            }
-    
-            // 모달 좋아요 업데이트
+
             function updateModalLike(artworkId) {
                 const likeBtn = document.getElementById('modalLikeBtn');
                 if (likeBtn) {
@@ -2097,32 +1955,120 @@
                     likeBtn.innerHTML = `❤️ ${likeCount} 좋아요`;
                 }
             }
-    
-            // 모달 닫기
-            function closeModal() {
-                document.getElementById('modal').style.display = 'none';
-                document.body.style.overflow = 'auto';
+            
+            function updateGradeInfo(category) {
+                const gradeInfoSection = document.getElementById('gradeInfoSection');
+                const gradeInfoTitle = document.getElementById('gradeInfoTitle');
+                const gradeInfoDescription = document.getElementById('gradeInfoDescription');
+                
+                const gradeKey = category.includes('학년') ? category : 'all';
+                const info = settings.gradeDescriptions[gradeKey];
+                
+                if (info) {
+                  gradeInfoTitle.textContent = info.title;
+                  gradeInfoDescription.textContent = info.description;
+                }
+                
+                updateGradeStats(category);
+                
+                gradeInfoSection.classList.add('active');
             }
-    
-            // 📤 공유 기능
-            function shareArtwork(title) {
-                if (navigator.share) {
-                    navigator.share({
-                        title: `${title} - ${settings.title}`,
-                        text: `멋진 브릭모델 작품을 확인해보세요!`,
-                        url: window.location.href
-                    });
+
+            function updateGradeStats(category) {
+                const gradeInfoSection = document.getElementById('gradeInfoSection');
+                let statsHtml = '';
+                
+                if (category === 'all') {
+                    const totalArtworks = artworks.length;
+                    const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
+                    const totalComments = Object.values(comments).flat().length;
+                    statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${totalArtworks}</div><div class="grade-stat-label">전체 작품</div></div><div class="grade-stat"><div class="grade-stat-number">${totalLikes}</div><div class="grade-stat-label">총 좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${totalComments}</div><div class="grade-stat-label">총 댓글</div></div></div>`;
                 } else {
-                    const url = window.location.href;
-                    navigator.clipboard.writeText(url).then(() => {
-                        showMessage('링크가 클립보드에 복사되었습니다!', 'success');
-                    }).catch(() => {
-                        showMessage('링크 복사에 실패했습니다.', 'error');
-                    });
+                    const gradeArtworks = artworks.filter(artwork => artwork.grade === category);
+                    const gradeLikes = gradeArtworks.reduce((sum, artwork) => sum + (likes[artwork.id] || 0), 0);
+                    const gradeComments = gradeArtworks.reduce((sum, artwork) => sum + (comments[artwork.id] || []).length, 0);
+                    statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${gradeArtworks.length}</div><div class="grade-stat-label">작품 수</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeLikes}</div><div class="grade-stat-label">좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeComments}</div><div class="grade-stat-label">댓글</div></div></div>`;
+                }
+                
+                const existingStats = gradeInfoSection.querySelector('.grade-stats');
+                if (existingStats) existingStats.remove();
+                
+                gradeInfoSection.querySelector('.grade-info-content').insertAdjacentHTML('beforeend', statsHtml);
+            }
+
+            function applyHeaderSettings() {
+                const headerImageElem = document.getElementById('headerImage');
+                const headerTitleElem = document.getElementById('headerTitleText');
+                
+                headerTitleElem.textContent = settings.title;
+                document.title = settings.title;
+                document.querySelector('.subtitle').textContent = settings.description;
+
+                if (settings.headerImage && settings.headerImage.trim() !== '') {
+                    headerImageElem.src = settings.headerImage;
+                    headerImageElem.style.display = 'inline-block';
+                } else {
+                    headerImageElem.style.display = 'none';
                 }
             }
-    
-            // 📋 폼 제출 처리
+
+            function setupDragAndDrop() {
+                const tableBody = document.getElementById('artworksTableBody');
+                let draggedItem = null;
+
+                tableBody.addEventListener('dragstart', e => {
+                    if (e.target.tagName === 'TR') {
+                        draggedItem = e.target;
+                        setTimeout(() => e.target.classList.add('dragging'), 0);
+                    }
+                });
+
+                tableBody.addEventListener('dragend', e => {
+                     if (draggedItem) {
+                        draggedItem.classList.remove('dragging');
+                        draggedItem = null;
+                    }
+                });
+
+                tableBody.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(tableBody, e.clientY);
+                    const currentlyDragged = document.querySelector('.dragging');
+                    if (currentlyDragged) {
+                        if (afterElement == null) {
+                            tableBody.appendChild(currentlyDragged);
+                        } else {
+                            tableBody.insertBefore(currentlyDragged, afterElement);
+                        }
+                    }
+                });
+
+                tableBody.addEventListener('drop', async e => {
+                    e.preventDefault();
+                    if(draggedItem) {
+                        const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
+                        artworks = newOrderedIds.map(id => artworks.find(a => a.id === id)).filter(Boolean);
+                        await saveDataToUpstash();
+                        renderArtworks();
+                        showMessage('작품 순서가 저장되었습니다.', 'success');
+                    }
+                });
+
+                function getDragAfterElement(container, y) {
+                    const draggableElements = [...container.querySelectorAll('tr:not(.dragging)')];
+                    return draggableElements.reduce((closest, child) => {
+                        const box = child.getBoundingClientRect();
+                        const offset = y - box.top - box.height / 2;
+                        if (offset < 0 && offset > closest.offset) {
+                            return { offset: offset, element: child };
+                        } else {
+                            return closest;
+                        }
+                    }, { offset: Number.NEGATIVE_INFINITY }).element;
+                }
+            }
+            
+            // 이벤트 리스너 설정
             document.getElementById('artworkForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
@@ -2184,8 +2130,7 @@
                     submitBtn.textContent = originalText;
                 }
             });
-    
-            // 🔍 검색 기능
+
             document.getElementById('searchInput').addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 const artworkCards = document.querySelectorAll('.artwork-card');
@@ -2205,8 +2150,7 @@
                     }
                 });
             });
-    
-            // 🎛️ 필터 기능
+
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -2227,122 +2171,15 @@
                     });
                 });
             });
-    
-            function updateGradeInfo(category) {
-                const gradeInfoSection = document.getElementById('gradeInfoSection');
-                const gradeInfoTitle = document.getElementById('gradeInfoTitle');
-                const gradeInfoDescription = document.getElementById('gradeInfoDescription');
-                
-                const gradeKey = category.includes('학년') ? category : 'all';
-                const info = settings.gradeDescriptions[gradeKey];
-                
-                if (info) {
-                  gradeInfoTitle.textContent = info.title;
-                  gradeInfoDescription.textContent = info.description;
-                }
-                
-                updateGradeStats(category);
-                
-                gradeInfoSection.classList.add('active');
-            }
-    
-            function updateGradeStats(category) {
-                const gradeInfoSection = document.getElementById('gradeInfoSection');
-                let statsHtml = '';
-                
-                if (category === 'all') {
-                    const totalArtworks = artworks.length;
-                    const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
-                    const totalComments = Object.values(comments).flat().length;
-                    statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${totalArtworks}</div><div class="grade-stat-label">전체 작품</div></div><div class="grade-stat"><div class="grade-stat-number">${totalLikes}</div><div class="grade-stat-label">총 좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${totalComments}</div><div class="grade-stat-label">총 댓글</div></div></div>`;
-                } else {
-                    const gradeArtworks = artworks.filter(artwork => artwork.grade === category);
-                    const gradeLikes = gradeArtworks.reduce((sum, artwork) => sum + (likes[artwork.id] || 0), 0);
-                    const gradeComments = gradeArtworks.reduce((sum, artwork) => sum + (comments[artwork.id] || []).length, 0);
-                    statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${gradeArtworks.length}</div><div class="grade-stat-label">작품 수</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeLikes}</div><div class="grade-stat-label">좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeComments}</div><div class="grade-stat-label">댓글</div></div></div>`;
-                }
-                
-                const existingStats = gradeInfoSection.querySelector('.grade-stats');
-                if (existingStats) existingStats.remove();
-                
-                gradeInfoSection.querySelector('.grade-info-content').insertAdjacentHTML('beforeend', statsHtml);
-            }
-    
-            // 🔧 전체 선택 기능
+
             document.getElementById('selectAll').addEventListener('change', function() {
                 document.querySelectorAll('.artwork-checkbox').forEach(c => c.checked = this.checked);
             });
-    
+
             document.getElementById('selectAllComments').addEventListener('change', function() {
                 document.querySelectorAll('.comment-checkbox').forEach(c => c.checked = this.checked);
             });
-    
-            function applyHeaderSettings() {
-                const headerImageElem = document.getElementById('headerImage');
-                const headerTitleElem = document.getElementById('headerTitleText');
-                
-                headerTitleElem.textContent = settings.title;
-                document.title = settings.title;
-                document.querySelector('.subtitle').textContent = settings.description;
-    
-                if (settings.headerImage && settings.headerImage.trim() !== '') {
-                    headerImageElem.src = settings.headerImage;
-                    headerImageElem.style.display = 'inline-block';
-                } else {
-                    headerImageElem.style.display = 'none';
-                }
-            }
-    
-            // 🚀 초기화
-            document.addEventListener('DOMContentLoaded', async function() {
-                console.log('🧱 브릭모델 전시관 로드');
-                const statusDiv = document.getElementById('upstashStatus');
-                const gallery = document.getElementById('gallery');
-    
-                try {
-                    // Upstash에서 데이터 불러오기
-                    const data = await upstashClient.get('gallery_data');
-    
-                    if (data) {
-                        console.log('✅ Upstash에서 데이터를 성공적으로 불러왔습니다.');
-                        const { artworks: savedArtworks, comments: savedComments, likes: savedLikes, settings: savedSettings } = data;
-    
-                        if (savedArtworks) artworks = savedArtworks;
-                        if (savedComments) comments = savedComments;
-                        if (savedLikes) likes = savedLikes;
-                        
-                        if (savedSettings) {
-                            settings = {
-                                ...settings,
-                                ...savedSettings,
-                                gradeDescriptions: {
-                                    ...settings.gradeDescriptions, 
-                                    ...(savedSettings.gradeDescriptions || {}) 
-                                }
-                            };
-                        }
-                        statusDiv.innerHTML = '<span class="status-indicator status-success">✅ Upstash DB 연결됨</span>';
-                    } else {
-                        console.log('ℹ️ Upstash에 데이터가 없습니다. 새 데이터로 시작합니다.');
-                        statusDiv.innerHTML = '<span class="status-indicator status-warning">ℹ️ DB에 데이터 없음</span>';
-                    }
-                } catch (error) {
-                    console.error('Upstash 연결 실패:', error);
-                    statusDiv.innerHTML = '<span class="status-indicator status-error">❌ DB 연결 실패</span>';
-                    showMessage('데이터베이스 연결에 실패했습니다. URL과 토큰을 다시 확인해주세요.', 'error');
-                    gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>데이터베이스 연결에 실패했습니다.</h3><p>인터넷 연결을 확인하거나 관리자에게 문의해주세요.</p></div>`;
-                } finally {
-                    applyHeaderSettings();
-                    renderArtworks();
-                    updateGradeInfo('all');
-                    updateAdminStats();
-                    setupDragAndDrop();
-                    document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>';
-                    console.log('✅ 초기화 완료');
-                }
-            });
-    
-            // 🔧 키보드 단축키 및 기타 이벤트
+
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeModal();
@@ -2352,69 +2189,13 @@
                 if (e.ctrlKey && e.key === 'u') { e.preventDefault(); toggleUploadPanel(); }
                 if (e.ctrlKey && e.key === 'a' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) { e.preventDefault(); toggleAdminPanel(); }
             });
-    
+
             document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
             window.addEventListener('online', () => showMessage('✅ 인터넷 연결이 복구되었습니다.', 'success'));
             window.addEventListener('offline', () => showMessage('⚠️ 인터넷 연결이 끊어졌습니다.', 'error'));
-            
-            function setupDragAndDrop() {
-                const tableBody = document.getElementById('artworksTableBody');
-                let draggedItem = null;
-    
-                tableBody.addEventListener('dragstart', e => {
-                    if (e.target.tagName === 'TR') {
-                        draggedItem = e.target;
-                        setTimeout(() => e.target.classList.add('dragging'), 0);
-                    }
-                });
-    
-                tableBody.addEventListener('dragend', e => {
-                     if (draggedItem) {
-                        draggedItem.classList.remove('dragging');
-                        draggedItem = null;
-                    }
-                });
-    
-                tableBody.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    const afterElement = getDragAfterElement(tableBody, e.clientY);
-                    const currentlyDragged = document.querySelector('.dragging');
-                    if (currentlyDragged) {
-                        if (afterElement == null) {
-                            tableBody.appendChild(currentlyDragged);
-                        } else {
-                            tableBody.insertBefore(currentlyDragged, afterElement);
-                        }
-                    }
-                });
-    
-                tableBody.addEventListener('drop', async e => {
-                    e.preventDefault();
-                    if(draggedItem) {
-                        const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
-                        artworks = newOrderedIds.map(id => artworks.find(a => a.id === id)).filter(Boolean);
-                        await saveDataToUpstash();
-                        renderArtworks();
-                        showMessage('작품 순서가 저장되었습니다.', 'success');
-                    }
-                });
-    
-                function getDragAfterElement(container, y) {
-                    const draggableElements = [...container.querySelectorAll('tr:not(.dragging)')];
-                    return draggableElements.reduce((closest, child) => {
-                        const box = child.getBoundingClientRect();
-                        const offset = y - box.top - box.height / 2;
-                        if (offset < 0 && offset > closest.offset) {
-                            return { offset: offset, element: child };
-                        } else {
-                            return closest;
-                        }
-                    }, { offset: Number.NEGATIVE_INFINITY }).element;
-                }
-            }
-    
-            console.log('🚀 브릭모델 전시관 준비 완료');
-            console.log('📋 단축키: Ctrl+K(검색), Ctrl+U(작품 올리기), Ctrl+A(관리자), Esc(모달/전체화면 닫기)');
+
+            // 앱 로딩 시작
+            loadApp();
         }
     </script>
 </body>
