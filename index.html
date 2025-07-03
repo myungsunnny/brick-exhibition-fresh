@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@upstash/redis/dist/index.umd.js"></script>
 
     <style>
+        /* CSS 스타일 코드는 이전과 동일하게 유지합니다. */
         * {
             margin: 0;
             padding: 0;
@@ -444,11 +445,9 @@
             position: relative;
         }
         
-        /* 🔽 [추가된 부분] 답글 들여쓰기를 위한 스타일 🔽 */
         .comment-reply {
             margin-left: 40px;
         }
-        /* 🔼 [추가된 부분] 여기까지 🔼 */
 
 
         .comment-author {
@@ -461,6 +460,7 @@
             line-height: 1.6;
             color: #555;
             margin-bottom: 10px;
+            white-space: pre-wrap; /* 줄바꿈 표시 */
         }
 
         .comment-date {
@@ -502,7 +502,6 @@
             margin-top: 20px;
         }
         
-        /* 🔽 [추가된 부분] 답글 작성 시 안내 메시지 스타일 🔽 */
         #replyingToInfo {
             font-size: 0.9rem;
             color: #555;
@@ -519,7 +518,6 @@
             cursor: pointer;
             font-weight: bold;
         }
-        /* 🔼 [추가된 부분] 여기까지 🔼 */
 
         .table-container {
             overflow-x: auto;
@@ -1201,13 +1199,13 @@
         const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
         const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
 
-        // 🔽 [수정] Upstash 클라이언트 설정 (Vercel 환경 변수 사용) 🔽
-        // Vercel에 설정한 환경 변수를 가져와서 Upstash 클라이언트를 초기화합니다.
+        // 🔽 [수정됨] Upstash 클라이언트 설정 🔽
+        // ⚠️⚠️⚠️ 중요: Vercel 환경 변수 대신 실제 URL과 Token을 직접 입력해주세요! ⚠️⚠️⚠️
         const upstashClient = new upstash.Redis({
-            url: '<%= process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_URL %>',
-            token: '<%= process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_TOKEN %>',
+            url: '여기에_UPSTASH_REDIS_REST_URL_붙여넣기',
+            token: '여기에_UPSTASH_REDIS_REST_TOKEN_붙여넣기',
         });
-        // 🔼 [수정] 여기까지 🔼
+        // 🔼 [수정됨] 여기까지 🔼
 
 
         // 📊 전역 변수
@@ -1222,8 +1220,8 @@
             allowComments: true,
             moderateComments: false,
             adminPassword: '1234',
-            useUploadPassword: false, // 업로드 비밀번호 사용 여부
-            uploadPassword: '',      // 업로드 비밀번호
+            useUploadPassword: false, 
+            uploadPassword: '',      
             gradeDescriptions: {
                 'all': { title: '🧱 모든 학년 브릭모델 작품', description: '대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.' },
                 '1학년': { title: '🌟 1학년 브릭모델 작품', description: '1학년 친구들의 첫 번째 브릭모델 작품들입니다. 기본적인 블록 쌓기부터 시작하여 간단한 집, 동물, 자동차 등을 만들며 창의력과 손재주를 기르고 있어요!' },
@@ -1326,7 +1324,7 @@
             document.getElementById('totalComments').textContent = totalComments;
         }
         
-        // 🔽 [수정] 데이터 저장 함수 (Upstash) 🔽
+        // 데이터 저장 함수 (Upstash)
         async function saveDataToUpstash() {
             try {
                 // likes 객체에서 null/undefined 값을 0으로 변환
@@ -1495,7 +1493,7 @@
                         <textarea id="editDescription">${artwork.description}</textarea>
                     </div>
                     <div style="text-align: center; margin-top: 20px;">
-                        <button class="btn btn-primary" onclick="saveArtworkEdit('${artworkId}')">저장</button>
+                        <button class="btn btn-primary" onclick="saveArtworkEdit('${artwork.id}')">저장</button>
                         <button class="btn btn-secondary" onclick="closeModal()">취소</button>
                     </div>
                 </div>
@@ -1548,6 +1546,7 @@
             if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
             
             if (comments[artworkId]) {
+                const artwork = artworks.find(a => a.id === artworkId);
                 comments[artworkId] = comments[artworkId].filter(c => c.id !== commentId);
                 if (comments[artworkId].length === 0) {
                     delete comments[artworkId];
@@ -1557,8 +1556,8 @@
                 renderCommentsTable();
                 renderArtworks();
                 updateAdminStats();
-                if(document.getElementById('modal').style.display === 'block') {
-                    showArtworkModal(artworks.find(a => a.id === artworkId));
+                if(document.getElementById('modal').style.display === 'block' && artwork) {
+                    showArtworkModal(artwork);
                 }
                 showMessage('댓글이 삭제되었습니다.', 'success');
             }
@@ -1834,7 +1833,7 @@
                 text: commentText,
                 createdAt: new Date().toISOString(),
                 approved: !settings.moderateComments,
-                parentId: parentId // 부모 댓글 ID 저장
+                parentId: parentId
             };
             
             if (!comments[artworkId]) {
@@ -2074,7 +2073,7 @@
             if (newComment) {
                 document.getElementById('commentAuthor').value = '';
                 document.getElementById('commentText').value = '';
-                cancelReply(); // 답글 상태 초기화
+                cancelReply();
                 
                 if (settings.moderateComments) {
                     showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success');
@@ -2083,7 +2082,7 @@
                     renderCommentTree(artworkId);
                 }
                 
-                renderArtworks(); // 메인 갤러리 댓글 수 업데이트
+                renderArtworks();
                 updateAdminStats();
                 if(isAdminMode) {
                     renderCommentsTable();
@@ -2315,9 +2314,9 @@
                     
                     if (savedSettings) {
                         settings = {
-                            ...settings, // 기본값 유지
-                            ...savedSettings, // 저장된 값으로 덮어쓰기
-                            gradeDescriptions: { // 객체는 깊은 병합 필요
+                            ...settings,
+                            ...savedSettings,
+                            gradeDescriptions: {
                                 ...settings.gradeDescriptions, 
                                 ...(savedSettings.gradeDescriptions || {}) 
                             }
@@ -2333,9 +2332,7 @@
                 statusDiv.innerHTML = '<span class="status-indicator status-error">❌ DB 연결 실패</span>';
                 showMessage('데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.', 'error');
                 gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>데이터베이스 연결에 실패했습니다.</h3><p>인터넷 연결을 확인하거나 관리자에게 문의해주세요.</p></div>`;
-
             } finally {
-                // 나머지 초기화 로직은 DB연결 성공/실패와 관계없이 실행
                 applyHeaderSettings();
                 renderArtworks();
                 updateGradeInfo('all');
@@ -2394,11 +2391,13 @@
 
             tableBody.addEventListener('drop', async e => {
                 e.preventDefault();
-                const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
-                artworks = newOrderedIds.map(id => artworks.find(a => a.id === id));
-                await saveDataToUpstash();
-                renderArtworks();
-                showMessage('작품 순서가 저장되었습니다.', 'success');
+                if(draggedItem) {
+                    const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
+                    artworks = newOrderedIds.map(id => artworks.find(a => a.id === id)).filter(Boolean); // filter(Boolean) to remove undefined if any
+                    await saveDataToUpstash();
+                    renderArtworks();
+                    showMessage('작품 순서가 저장되었습니다.', 'success');
+                }
             });
 
             function getDragAfterElement(container, y) {
