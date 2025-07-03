@@ -2,8 +2,8 @@ import { Redis } from '@upstash/redis';
 
 // Upstash Redis 클라이언트 초기화
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL, // 이 부분 확인
-  token: process.env.UPSTASH_REDIS_REST_TOKEN, // 이 부분 확인
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
 export default async function handler(request, response) {
@@ -14,12 +14,21 @@ export default async function handler(request, response) {
       if (artworkIds.length === 0) {
         return response.status(200).json({ success: true, artworks: [] });
       }
-      const artworks = await redis.mget(...artworkIds.map(id => `artwork:${id}`));
-      // 최신순으로 정렬
-      const sortedArtworks = artworks.filter(a => a).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // 1. Upstash에서 데이터를 가져옵니다. (아직 문자열 상태)
+      const rawArtworks = await redis.mget(...artworkIds.map(id => `artwork:${id}`));
+
+      // 2. 문자열을 실제 자바스크립트 객체로 변환하고, null 값은 걸러냅니다.
+      const artworks = rawArtworks
+        .filter(artwork => artwork !== null)
+        .map(artwork => JSON.parse(artwork)); 
+
+      // 3. 객체가 된 데이터를 최신순으로 정렬합니다.
+      const sortedArtworks = artworks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       
       return response.status(200).json({ success: true, artworks: sortedArtworks });
     } catch (error) {
+      console.error('Artworks GET Error:', error);
       return response.status(500).json({ success: false, error: '데이터를 불러오는데 실패했습니다.' });
     }
   }
@@ -34,10 +43,8 @@ export default async function handler(request, response) {
 
       const isEditing = await redis.exists(`artwork:${artwork.id}`);
 
-      // 작품 데이터를 JSON 형태로 저장
       await redis.set(`artwork:${artwork.id}`, JSON.stringify(artwork));
       
-      // 수정이 아닌 새 등록일 경우, 작품 목록에 ID 추가
       if (!isEditing) {
         await redis.lpush('artworks', artwork.id);
       }
@@ -46,6 +53,7 @@ export default async function handler(request, response) {
       return response.status(200).json({ success: true, total });
 
     } catch (error) {
+      console.error('Artworks POST Error:', error);
       return response.status(500).json({ success: false, error: '데이터 저장에 실패했습니다.' });
     }
   }
@@ -58,17 +66,17 @@ export default async function handler(request, response) {
         return response.status(400).json({ success: false, error: '삭제할 작품 ID가 없습니다.' });
       }
 
-      await redis.del(`artwork:${artworkId}`); // 작품 데이터 삭제
-      await redis.lrem('artworks', 1, artworkId); // 목록에서 ID 제거
-      await redis.hdel('likes', artworkId); // 좋아요 데이터도 함께 삭제
+      await redis.del(`artwork:${artworkId}`);
+      await redis.lrem('artworks', 1, artworkId);
+      await redis.hdel('likes', artworkId);
 
       return response.status(200).json({ success: true });
 
     } catch (error) {
+        console.error('Artworks DELETE Error:', error);
         return response.status(500).json({ success: false, error: '데이터 삭제에 실패했습니다.' });
     }
   }
 
-  // 지원하지 않는 메소드
   return response.status(405).json({ success: false, error: '허용되지 않는 요청입니다.' });
 }
