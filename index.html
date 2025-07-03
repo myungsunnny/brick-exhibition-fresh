@@ -905,6 +905,7 @@
 
             <!-- 사이트 설정 -->
             <div class="admin-content" id="settingsContent">
+                <h3>🎯 기본 설정</h3>
                 <div class="form-group">
                     <label for="siteTitle">사이트 제목</label>
                     <input type="text" id="siteTitle" value="대불초등학교 브릭모델 전시관">
@@ -930,8 +931,35 @@
                     <input type="password" id="adminPassword" placeholder="새 비밀번호 (비워두면 변경하지 않음)">
                 </div>
                 
-                <button class="btn btn-primary" onclick="saveSettings()">설정 저장</button>
-                <button class="btn btn-danger" onclick="resetAll()">모든 데이터 초기화</button>
+                <h3 style="margin-top: 40px;">📚 학년별 설명 관리</h3>
+                <div class="admin-tabs" style="margin-bottom: 20px;">
+                    <button class="admin-tab active" onclick="switchGradeDescTab('all')">전체</button>
+                    <button class="admin-tab" onclick="switchGradeDescTab('1학년')">1학년</button>
+                    <button class="admin-tab" onclick="switchGradeDescTab('2학년')">2학년</button>
+                    <button class="admin-tab" onclick="switchGradeDescTab('3학년')">3학년</button>
+                    <button class="admin-tab" onclick="switchGradeDescTab('4학년')">4학년</button>
+                    <button class="admin-tab" onclick="switchGradeDescTab('5학년')">5학년</button>
+                    <button class="admin-tab" onclick="switchGradeDescTab('6학년')">6학년</button>
+                </div>
+                
+                <div id="gradeDescEditor">
+                    <div class="form-group">
+                        <label for="gradeTitle">제목</label>
+                        <input type="text" id="gradeTitle" placeholder="학년별 제목을 입력하세요">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gradeDescription">설명</label>
+                        <textarea id="gradeDescription" placeholder="학년별 설명을 입력하세요" style="height: 120px;"></textarea>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveGradeDescription()">학년별 설명 저장</button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 40px;">
+                    <button class="btn btn-primary" onclick="saveSettings()">설정 저장</button>
+                    <button class="btn btn-danger" onclick="resetAll()">모든 데이터 초기화</button>
+                </div>
             </div>
         </div>
 
@@ -991,6 +1019,37 @@
             moderateComments: false,
             adminPassword: '1234'
         };
+        let gradeDescriptions = {
+            'all': {
+                title: '🧱 모든 학년 브릭모델 작품',
+                description: '대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.'
+            },
+            '1학년': {
+                title: '🌟 1학년 브릭모델 작품',
+                description: '1학년 친구들의 첫 번째 브릭모델 작품들입니다. 기본적인 블록 쌓기부터 시작하여 간단한 집, 동물, 자동차 등을 만들며 창의력과 손재주를 기르고 있어요!'
+            },
+            '2학년': {
+                title: '🎨 2학년 브릭모델 작품',
+                description: '2학년 친구들은 더욱 정교한 작품을 만들 수 있게 되었어요. 색깔 조합과 기본 구조를 이해하며 자신만의 개성이 담긴 작품들을 선보입니다.'
+            },
+            '3학년': {
+                title: '🏗️ 3학년 브릭모델 작품',
+                description: '3학년이 되면서 더욱 복잡한 구조물을 만들 수 있게 되었어요. 건축물의 기본 원리를 이해하고 계획적으로 작품을 제작하는 능력이 늘어났습니다.'
+            },
+            '4학년': {
+                title: '🚀 4학년 브릭모델 작품',
+                description: '4학년 친구들은 테마가 있는 작품들을 만들기 시작했어요. 과학적 사고와 창의적 아이디어를 결합하여 미래 도시, 우주선 등 상상력이 풍부한 작품들을 제작합니다.'
+            },
+            '5학년': {
+                title: '🎯 5학년 브릭모델 작품',
+                description: '5학년 작품들은 한층 더 정교하고 완성도가 높아졌어요. 기능적인 요소들을 고려하며 실용적이면서도 아름다운 작품들을 만들어 냅니다.'
+            },
+            '6학년': {
+                title: '🏆 6학년 브릭모델 작품',
+                description: '6학년 친구들의 작품은 정말 놀라워요! 수년간 쌓은 경험과 실력으로 복잡한 메커니즘, 대형 구조물, 정교한 디테일을 가진 작품들을 완성합니다.'
+            }
+        };
+        let currentGradeDescTab = 'all';
         let isUpstashReady = false;
         let isAdminMode = false;
 
@@ -1346,8 +1405,56 @@
             showMessage(`${deletedCount}개의 댓글이 삭제되었습니다.`, 'success');
         }
 
-        // 🔧 설정 저장
-        function saveSettings() {
+        // 📚 학년별 설명 탭 전환
+        function switchGradeDescTab(grade) {
+            // 기존 선택 해제
+            document.querySelectorAll('#settingsContent .admin-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 새로운 탭 선택
+            event.target.classList.add('active');
+            currentGradeDescTab = grade;
+            
+            // 에디터에 해당 학년 정보 로드
+            loadGradeDescriptionToEditor(grade);
+        }
+
+        // 📝 학년별 설명 에디터에 로드
+        function loadGradeDescriptionToEditor(grade) {
+            const gradeInfo = gradeDescriptions[grade];
+            document.getElementById('gradeTitle').value = gradeInfo.title;
+            document.getElementById('gradeDescription').value = gradeInfo.description;
+        }
+
+        // 💾 학년별 설명 저장
+        function saveGradeDescription() {
+            const title = document.getElementById('gradeTitle').value.trim();
+            const description = document.getElementById('gradeDescription').value.trim();
+            
+            if (!title || !description) {
+                showMessage('제목과 설명을 모두 입력해주세요.', 'error');
+                return;
+            }
+            
+            // 학년별 설명 업데이트
+            gradeDescriptions[currentGradeDescTab] = {
+                title: title,
+                description: description
+            };
+            
+            // 로컬 스토리지에 저장
+            localStorage.setItem('gradeDescriptions', JSON.stringify(gradeDescriptions));
+            
+            // 현재 선택된 학년 정보 업데이트
+            const activeFilterBtn = document.querySelector('.filter-btn.active');
+            if (activeFilterBtn) {
+                const activeCategory = activeFilterBtn.dataset.category;
+                updateGradeInfo(activeCategory);
+            }
+            
+            showMessage(`${currentGradeDescTab === 'all' ? '전체' : currentGradeDescTab} 설명이 저장되었습니다.`, 'success');
+        }
             settings.title = document.getElementById('siteTitle').value;
             settings.description = document.getElementById('siteDescription').value;
             settings.allowComments = document.getElementById('allowComments').checked;
@@ -1380,9 +1487,43 @@
             comments = {};
             likes = {};
             
+            // 학년별 설명도 기본값으로 초기화
+            gradeDescriptions = {
+                'all': {
+                    title: '🧱 모든 학년 브릭모델 작품',
+                    description: '대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.'
+                },
+                '1학년': {
+                    title: '🌟 1학년 브릭모델 작품',
+                    description: '1학년 친구들의 첫 번째 브릭모델 작품들입니다. 기본적인 블록 쌓기부터 시작하여 간단한 집, 동물, 자동차 등을 만들며 창의력과 손재주를 기르고 있어요!'
+                },
+                '2학년': {
+                    title: '🎨 2학년 브릭모델 작품',
+                    description: '2학년 친구들은 더욱 정교한 작품을 만들 수 있게 되었어요. 색깔 조합과 기본 구조를 이해하며 자신만의 개성이 담긴 작품들을 선보입니다.'
+                },
+                '3학년': {
+                    title: '🏗️ 3학년 브릭모델 작품',
+                    description: '3학년이 되면서 더욱 복잡한 구조물을 만들 수 있게 되었어요. 건축물의 기본 원리를 이해하고 계획적으로 작품을 제작하는 능력이 늘어났습니다.'
+                },
+                '4학년': {
+                    title: '🚀 4학년 브릭모델 작품',
+                    description: '4학년 친구들은 테마가 있는 작품들을 만들기 시작했어요. 과학적 사고와 창의적 아이디어를 결합하여 미래 도시, 우주선 등 상상력이 풍부한 작품들을 제작합니다.'
+                },
+                '5학년': {
+                    title: '🎯 5학년 브릭모델 작품',
+                    description: '5학년 작품들은 한층 더 정교하고 완성도가 높아졌어요. 기능적인 요소들을 고려하며 실용적이면서도 아름다운 작품들을 만들어 냅니다.'
+                },
+                '6학년': {
+                    title: '🏆 6학년 브릭모델 작품',
+                    description: '6학년 친구들의 작품은 정말 놀라워요! 수년간 쌓은 경험과 실력으로 복잡한 메커니즘, 대형 구조물, 정교한 디테일을 가진 작품들을 완성합니다.'
+                }
+            };
+            
             renderArtworks();
             renderAdminTables();
             updateAdminStats();
+            loadGradeDescriptionToEditor(currentGradeDescTab);
+            updateGradeInfo('all');
             showMessage('모든 데이터가 초기화되었습니다.', 'success');
         }
 
@@ -1886,6 +2027,20 @@
             const gradeInfoTitle = document.getElementById('gradeInfoTitle');
             const gradeInfoDescription = document.getElementById('gradeInfoDescription');
             
+            const info = gradeDescriptions[category] || gradeDescriptions['all'];
+            gradeInfoTitle.textContent = info.title;
+            gradeInfoDescription.textContent = info.description;
+            
+            // 통계 정보 업데이트
+            updateGradeStats(category);
+            
+            // 학년별 설명 섹션 표시
+            gradeInfoSection.classList.add('active');
+        }
+            const gradeInfoSection = document.getElementById('gradeInfoSection');
+            const gradeInfoTitle = document.getElementById('gradeInfoTitle');
+            const gradeInfoDescription = document.getElementById('gradeInfoDescription');
+            
             const gradeDescriptions = {
                 'all': {
                     title: '🧱 모든 학년 브릭모델 작품',
@@ -2010,11 +2165,13 @@
             const savedComments = localStorage.getItem('comments');
             const savedLikes = localStorage.getItem('likes');
             const savedSettings = localStorage.getItem('settings');
+            const savedGradeDescriptions = localStorage.getItem('gradeDescriptions');
             
             if (savedArtworks) artworks = JSON.parse(savedArtworks);
             if (savedComments) comments = JSON.parse(savedComments);
             if (savedLikes) likes = JSON.parse(savedLikes);
             if (savedSettings) settings = { ...settings, ...JSON.parse(savedSettings) };
+            if (savedGradeDescriptions) gradeDescriptions = { ...gradeDescriptions, ...JSON.parse(savedGradeDescriptions) };
             
             // 기본 빈 상태로 시작
             if (artworks.length === 0) {
@@ -2033,6 +2190,9 @@
             document.getElementById('siteDescription').value = settings.description;
             document.getElementById('allowComments').checked = settings.allowComments;
             document.getElementById('moderateComments').checked = settings.moderateComments;
+            
+            // 학년별 설명 에디터 초기화
+            loadGradeDescriptionToEditor('all');
             
             // 상태 표시
             document.getElementById('upstashStatus').innerHTML = 
