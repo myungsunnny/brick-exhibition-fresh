@@ -342,6 +342,7 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            cursor: zoom-in;
         }
 
         .artwork-image img {
@@ -375,15 +376,6 @@
             line-height: 1.6;
             color: #555;
             margin-bottom: 15px;
-        }
-
-        .artwork-category {
-            display: inline-block;
-            padding: 5px 12px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border-radius: 15px;
-            font-size: 0.8rem;
         }
 
         .artwork-stats {
@@ -492,6 +484,18 @@
         tr:hover {
             background: #f8f9fa;
         }
+
+        /* 🔽 [추가된 부분] 드래그 앤 드롭 순서 변경을 위한 스타일 🔽 */
+        #artworksTableBody tr {
+            cursor: grab;
+        }
+
+        #artworksTableBody tr.dragging {
+            opacity: 0.5;
+            background: #e9ecef;
+        }
+        /* 🔼 [추가된 부분] 여기까지 🔼 */
+
 
         .message {
             padding: 15px;
@@ -715,6 +719,42 @@
             margin: 30px 0;
         }
 
+        /* 🔽 [추가된 부분] 전체 화면 이미지 뷰를 위한 스타일 🔽 */
+        .fullscreen-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+
+        .fullscreen-overlay.show {
+            display: flex;
+        }
+
+        .fullscreen-image {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .fullscreen-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 3rem;
+            color: white;
+            cursor: pointer;
+        }
+        /* 🔼 [추가된 부분] 여기까지 🔼 */
+
+
         @media (max-width: 768px) {
             .container { padding: 15px; }
             h1 { font-size: 2rem; }
@@ -800,18 +840,6 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="category">브릭모델 유형</label>
-                    <select id="category" required>
-                        <option value="">선택하세요</option>
-                        <option value="building">건축물</option>
-                        <option value="vehicle">탈것</option>
-                        <option value="character">캐릭터</option>
-                        <option value="nature">자연</option>
-                        <option value="creative">창작모델</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
                     <label for="description">작품 설명</label>
                     <textarea id="description" placeholder="브릭모델 작품에 대해 설명해주세요..." required></textarea>
                 </div>
@@ -862,6 +890,7 @@
             </div>
 
             <div class="admin-content active" id="artworksContent">
+                <p style="text-align:center; color: #777; margin-bottom: 15px;">💡 작품 순서를 변경하려면 행을 드래그하여 원하는 위치에 놓으세요.</p>
                 <div class="bulk-actions">
                     <label><input type="checkbox" id="selectAll"> 전체 선택</label>
                     <button class="btn btn-danger btn-small" onclick="bulkDelete()">선택 삭제</button>
@@ -876,7 +905,6 @@
                                 <th>제목</th>
                                 <th>작가</th>
                                 <th>학년</th>
-                                <th>카테고리</th>
                                 <th>좋아요</th>
                                 <th>댓글</th>
                                 <th>등록일</th>
@@ -990,6 +1018,7 @@
                     <label for="gradeDesc6">6학년 설명</label>
                     <textarea id="gradeDesc6"></textarea>
                 </div>
+                
                 <hr>
 
                 <button class="btn btn-primary" onclick="saveSettings()">설정 저장</button>
@@ -1034,6 +1063,10 @@
         </div>
     </div>
 
+    <div class="fullscreen-overlay" id="fullscreenOverlay" onclick="closeFullscreenImage()">
+        <span class="fullscreen-close-btn">&times;</span>
+        <img src="" alt="Fullscreen Image" class="fullscreen-image" id="fullscreenImage">
+    </div>
     <script>
         // 🔧 설정
         const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
@@ -1044,7 +1077,6 @@
         let comments = {};
         let likes = {};
         
-        // 🔽 [수정된 부분] settings 객체에 학년별 설명을 포함하고 기본값을 정의
         let settings = {
             title: '대불초등학교 브릭모델 전시관',
             description: '창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요',
@@ -1082,7 +1114,6 @@
                 }
             }
         };
-        // 🔼 [수정된 부분] 여기까지
 
         let isUpstashReady = false;
         let isAdminMode = false;
@@ -1123,7 +1154,7 @@
                     document.body.classList.add('admin-mode');
                     updateAdminStats();
                     renderAdminTables();
-                    loadSettingsForm(); // 🔽 [추가된 부분] 관리자 모드 진입 시 설정 폼 로드
+                    loadSettingsForm(); 
                     showMessage('관리자 모드가 활성화되었습니다!', 'success');
                 } else if (password !== null) {
                     showMessage('비밀번호가 틀렸습니다.', 'error');
@@ -1175,6 +1206,10 @@
             
             artworks.forEach(artwork => {
                 const row = document.createElement('tr');
+                // 🔽 [수정된 부분] 드래그 기능을 위해 draggable 속성과 데이터 속성 추가
+                row.setAttribute('draggable', true);
+                row.setAttribute('data-id', artwork.id);
+
                 const artworkComments = comments[artwork.id] || [];
                 const artworkLikes = likes[artwork.id] || 0;
                 
@@ -1183,7 +1218,6 @@
                     <td>${artwork.title}</td>
                     <td>${artwork.author}</td>
                     <td>${artwork.grade}</td>
-                    <td>${getCategoryName(artwork.category)}</td>
                     <td>${artworkLikes}</td>
                     <td>${artworkComments.length}</td>
                     <td>${new Date(artwork.createdAt).toLocaleDateString()}</td>
@@ -1228,7 +1262,6 @@
             
             const users = {};
             
-            // 작품 작성자 통계
             artworks.forEach(artwork => {
                 if (!users[artwork.author]) {
                     users[artwork.author] = {
@@ -1247,7 +1280,6 @@
                 }
             });
             
-            // 댓글 작성자 통계
             Object.values(comments).forEach(artworkComments => {
                 artworkComments.forEach(comment => {
                     if (!users[comment.author]) {
@@ -1312,16 +1344,6 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>카테고리</label>
-                        <select id="editCategory">
-                            <option value="building" ${artwork.category === 'building' ? 'selected' : ''}>건축물</option>
-                            <option value="vehicle" ${artwork.category === 'vehicle' ? 'selected' : ''}>탈것</option>
-                            <option value="character" ${artwork.category === 'character' ? 'selected' : ''}>캐릭터</option>
-                            <option value="nature" ${artwork.category === 'nature' ? 'selected' : ''}>자연</option>
-                            <option value="creative" ${artwork.category === 'creative' ? 'selected' : ''}>창작모델</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
                         <label>설명</label>
                         <textarea id="editDescription">${artwork.description}</textarea>
                     </div>
@@ -1344,10 +1366,8 @@
             artwork.title = document.getElementById('editTitle').value;
             artwork.author = document.getElementById('editAuthor').value;
             artwork.grade = document.getElementById('editGrade').value;
-            artwork.category = document.getElementById('editCategory').value;
             artwork.description = document.getElementById('editDescription').value;
             
-            // 로컬 스토리지에 저장
             localStorage.setItem('artworks', JSON.stringify(artworks));
             
             closeModal();
@@ -1440,21 +1460,18 @@
             showMessage(`${deletedCount}개의 댓글이 삭제되었습니다.`, 'success');
         }
 
-        // 🔽 [추가된 부분] 설정 폼에 데이터를 불러오는 함수
         function loadSettingsForm() {
             document.getElementById('siteTitle').value = settings.title;
             document.getElementById('siteDescription').value = settings.description;
             document.getElementById('allowComments').checked = settings.allowComments;
             document.getElementById('moderateComments').checked = settings.moderateComments;
             
-            // 학년별 설명 로드
             document.getElementById('gradeDescAll').value = settings.gradeDescriptions['all'].description;
             for(let i = 1; i <= 6; i++) {
                 document.getElementById(`gradeDesc${i}`).value = settings.gradeDescriptions[`${i}학년`].description;
             }
         }
 
-        // 🔽 [수정된 부분] 설정 저장 함수에 학년별 설명 저장 로직 추가
         function saveSettings() {
             settings.title = document.getElementById('siteTitle').value;
             settings.description = document.getElementById('siteDescription').value;
@@ -1466,7 +1483,6 @@
                 settings.adminPassword = newPassword;
             }
 
-            // 학년별 설명 저장
             settings.gradeDescriptions['all'].description = document.getElementById('gradeDescAll').value;
             for(let i = 1; i <= 6; i++) {
                 settings.gradeDescriptions[`${i}학년`].description = document.getElementById(`gradeDesc${i}`).value;
@@ -1474,14 +1490,12 @@
             
             localStorage.setItem('settings', JSON.stringify(settings));
             
-            // 사이트 제목과 설명 즉시 업데이트
             document.querySelector('h1').textContent = '🧱 ' + settings.title;
             document.querySelector('.subtitle').textContent = settings.description;
             document.title = settings.title;
             
             showMessage('설정이 저장되었습니다.', 'success');
             
-            // 현재 필터에 맞는 설명으로 즉시 업데이트
             const currentFilter = document.querySelector('.filter-btn.active').dataset.category;
             updateGradeInfo(currentFilter);
         }
@@ -1494,7 +1508,7 @@
             if (confirmText !== '초기화') return;
             
             localStorage.clear();
-            location.reload(); // 페이지를 새로고침하여 기본값으로 완전 초기화
+            location.reload(); 
         }
 
         // 💾 데이터 내보내기
@@ -1618,18 +1632,6 @@
             }
         }
 
-        // 🎨 카테고리 이름 변환
-        function getCategoryName(category) {
-            const names = {
-                building: '건축물',
-                vehicle: '탈것', 
-                character: '캐릭터',
-                nature: '자연',
-                creative: '창작모델'
-            };
-            return names[category] || category;
-        }
-
         // 💬 댓글 추가
         function addComment(artworkId, authorName, commentText) {
             if (!settings.allowComments) {
@@ -1684,14 +1686,13 @@
                         <button class="btn-warning" onclick="event.stopPropagation(); editArtwork('${artwork.id}')">수정</button>
                         <button class="btn-danger" onclick="event.stopPropagation(); deleteArtwork('${artwork.id}')">삭제</button>
                     </div>
-                    <div class="artwork-image">
+                    <div class="artwork-image" onclick="event.stopPropagation(); showFullscreenImage('${artwork.image}')">
                         ${artwork.image ? `<img src="${artwork.image}" alt="${artwork.title}" loading="lazy">` : '<div class="placeholder">🧱</div>'}
                     </div>
                     <div class="artwork-info">
                         <h3 class="artwork-title">${artwork.title}</h3>
                         <p class="artwork-author">${artwork.author} (${artwork.grade})</p>
                         <p class="artwork-description">${artwork.description}</p>
-                        <span class="artwork-category">${getCategoryName(artwork.category)}</span>
                         <div class="artwork-stats">
                             <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${artwork.id}')">
                                 ❤️ ${likeCount}
@@ -1701,11 +1702,7 @@
                     </div>
                 `;
                 
-                card.addEventListener('click', (e) => {
-                    if (!e.target.closest('.admin-controls') && !e.target.closest('.like-btn')) {
-                        showArtworkModal(artwork);
-                    }
-                });
+                card.addEventListener('click', () => showArtworkModal(artwork));
                 
                 gallery.appendChild(card);
                 
@@ -1752,12 +1749,11 @@
             
             modalContent.innerHTML = `
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 20px; cursor: zoom-in;" onclick="showFullscreenImage('${artwork.image}')">
                         ${artwork.image ? `<img src="${artwork.image}" alt="${artwork.title}" style="max-width: 100%; max-height: 400px; border-radius: 10px;">` : '<div style="font-size: 5rem;">🧱</div>'}
                     </div>
                     <h2 style="color: #2c3e50; margin-bottom: 10px;">${artwork.title}</h2>
                     <p style="color: #7f8c8d; font-size: 1.1rem; margin-bottom: 20px;">${artwork.author} (${artwork.grade})</p>
-                    <span style="display: inline-block; padding: 8px 16px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border-radius: 20px; margin-bottom: 20px;">${getCategoryName(artwork.category)}</span>
                 </div>
                 <p style="line-height: 1.8; color: #555; font-size: 1.1rem; text-align: center; margin-bottom: 20px;">${artwork.description}</p>
                 <div style="text-align: center; margin-bottom: 20px;">
@@ -1772,15 +1768,15 @@
                     <h3>댓글 (${approvedComments.length})</h3>
                     <div id="commentsList">
                         ${approvedComments.map(comment => `
-                                                            <div class="comment">
-                                    <div class="comment-controls">
-                                        <button class="btn-warning" onclick="editComment('${artwork.id}', '${comment.id}')">수정</button>
-                                        <button class="btn-danger" onclick="deleteComment('${artwork.id}', '${comment.id}')">삭제</button>
-                                    </div>
-                                    <div class="comment-author">${comment.author}</div>
-                                    <div class="comment-text">${comment.text}</div>
-                                    <div class="comment-date">${new Date(comment.createdAt).toLocaleString()}</div>
+                            <div class="comment">
+                                <div class="comment-controls">
+                                    <button class="btn-warning" onclick="editComment('${artwork.id}', '${comment.id}')">수정</button>
+                                    <button class="btn-danger" onclick="deleteComment('${artwork.id}', '${comment.id}')">삭제</button>
                                 </div>
+                                <div class="comment-author">${comment.author}</div>
+                                <div class="comment-text">${comment.text}</div>
+                                <div class="comment-date">${new Date(comment.createdAt).toLocaleString()}</div>
+                            </div>
                         `).join('')}
                     </div>
                     
@@ -1805,6 +1801,27 @@
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
+        
+        // 🔽 [추가된 부분] 전체 화면 이미지 관련 함수들 🔽
+        function showFullscreenImage(imageUrl) {
+            if (!imageUrl) return;
+            const overlay = document.getElementById('fullscreenOverlay');
+            const image = document.getElementById('fullscreenImage');
+            image.src = imageUrl;
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFullscreenImage() {
+            const overlay = document.getElementById('fullscreenOverlay');
+            overlay.classList.remove('show');
+            // 모달이 열려있는 상태에서 전체화면을 닫을 경우, body 스크롤은 여전히 막아야 함
+            if (!document.getElementById('modal').style.display || document.getElementById('modal').style.display === 'none') {
+                 document.body.style.overflow = 'auto';
+            }
+        }
+        // 🔼 [추가된 부분] 여기까지 🔼
+
 
         // 💬 댓글 제출
         function submitComment(artworkId) {
@@ -1826,7 +1843,6 @@
                     showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success');
                 } else {
                     showMessage('댓글이 등록되었습니다.', 'success');
-                    // 모달 새로고침
                     const artwork = artworks.find(a => a.id === artworkId);
                     if (artwork) showArtworkModal(artwork);
                 }
@@ -1883,16 +1899,13 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = '등록 중...';
                 
-                // 폼 데이터 수집
                 const formData = {
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
                     grade: document.getElementById('grade').value + '학년',
-                    category: document.getElementById('category').value,
                     description: document.getElementById('description').value
                 };
                 
-                // 이미지 업로드
                 const imageFile = document.getElementById('imageFile').files[0];
                 let imageUrl = '';
                 
@@ -1905,7 +1918,6 @@
                     }
                 }
                 
-                // 작품 데이터 생성
                 const newArtwork = {
                     id: Date.now().toString(),
                     ...formData,
@@ -1913,20 +1925,16 @@
                     createdAt: new Date().toISOString()
                 };
                 
-                // 배열에 추가
                 artworks.unshift(newArtwork);
                 
-                // 로컬 스토리지에 저장
                 localStorage.setItem('artworks', JSON.stringify(artworks));
                 
-                // 화면 새로고침
                 renderArtworks();
                 if (isAdminMode) {
                     updateAdminStats();
                     renderArtworksTable();
                 }
                 
-                // 폼 초기화
                 this.reset();
                 document.getElementById('imagePreview').style.display = 'none';
                 document.getElementById('uploadText').style.display = 'block';
@@ -1972,7 +1980,6 @@
                 const category = btn.dataset.category;
                 const artworkCards = document.querySelectorAll('.artwork-card');
                 
-                // 학년별 설명 업데이트
                 updateGradeInfo(category);
                 
                 artworkCards.forEach(card => {
@@ -1991,13 +1998,11 @@
             });
         });
 
-        // 🔽 [수정된 부분] 학년별 설명 업데이트 함수가 settings 객체를 사용하도록 변경
         function updateGradeInfo(category) {
             const gradeInfoSection = document.getElementById('gradeInfoSection');
             const gradeInfoTitle = document.getElementById('gradeInfoTitle');
             const gradeInfoDescription = document.getElementById('gradeInfoDescription');
             
-            // 저장된 settings에서 설명을 가져옴
             const info = settings.gradeDescriptions[category] || settings.gradeDescriptions['all'];
             
             gradeInfoTitle.textContent = info.title;
@@ -2093,10 +2098,8 @@
             if (savedComments) comments = JSON.parse(savedComments);
             if (savedLikes) likes = JSON.parse(savedLikes);
             
-            // 🔽 [수정된 부분] 저장된 설정이 있으면 덮어쓰고, 없으면 기본값 사용
             if (savedSettings) {
                 const loadedSettings = JSON.parse(savedSettings);
-                // 기본 구조를 유지하면서 저장된 값으로 덮어쓰기 (향후 새로운 설정이 추가되어도 안전)
                 settings = {
                     ...settings,
                     ...loadedSettings,
@@ -2113,15 +2116,10 @@
                 comments = {};
             }
             
-            // 설정 적용
             document.querySelector('h1').textContent = '🧱 ' + settings.title;
             document.querySelector('.subtitle').textContent = settings.description;
             document.title = settings.title;
             
-            // 설정 폼 초기화 (관리자 모드 진입 시 로드되도록 변경)
-            // loadSettingsForm();
-            
-            // 상태 표시
             document.getElementById('upstashStatus').innerHTML = 
                 '<span class="status-indicator status-success">✅ 로컬 스토리지 연결됨</span>';
             document.getElementById('cloudinaryStatus').innerHTML = 
@@ -2129,6 +2127,7 @@
             
             renderArtworks();
             updateGradeInfo('all');
+            setupDragAndDrop(); // 🔽 [추가된 부분] 드래그 앤 드롭 기능 초기화
             
             if (artworks.length > 0) {
                 document.title = `${settings.title} (${artworks.length}개 작품)`;
@@ -2139,24 +2138,18 @@
 
         // 🔧 키보드 단축키
         document.addEventListener('keydown', function(e) {
-            // Ctrl + K: 검색창 포커스
+            if (e.key === 'Escape') {
+                closeModal();
+                closeFullscreenImage();
+            }
             if (e.ctrlKey && e.key === 'k') {
                 e.preventDefault();
                 document.getElementById('searchInput').focus();
             }
-            
-            // Esc: 모달 닫기
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-            
-            // Ctrl + U: 작품 올리기 패널 토글
             if (e.ctrlKey && e.key === 'u') {
                 e.preventDefault();
                 toggleUploadPanel();
             }
-            
-            // Ctrl + A: 관리자 모드 (페이지에서 Ctrl+A 방지)
             if (e.ctrlKey && e.key === 'a' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
                 e.preventDefault();
                 toggleAdminPanel();
@@ -2178,10 +2171,71 @@
         window.addEventListener('offline', () => {
             showMessage('⚠️ 인터넷 연결이 끊어졌습니다. 로컬 데이터를 사용합니다.', 'error');
         });
+        
+        // 🔽 [추가된 부분] 드래그 앤 드롭 순서 변경 기능 🔽
+        function setupDragAndDrop() {
+            const tableBody = document.getElementById('artworksTableBody');
+            let draggedItem = null;
+
+            tableBody.addEventListener('dragstart', e => {
+                draggedItem = e.target;
+                setTimeout(() => {
+                    e.target.classList.add('dragging');
+                }, 0);
+            });
+
+            tableBody.addEventListener('dragend', e => {
+                setTimeout(() => {
+                    e.target.classList.remove('dragging');
+                    draggedItem = null;
+                }, 0);
+            });
+
+            tableBody.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(tableBody, e.clientY);
+                const currentlyDragged = document.querySelector('.dragging');
+                if (afterElement == null) {
+                    tableBody.appendChild(currentlyDragged);
+                } else {
+                    tableBody.insertBefore(currentlyDragged, afterElement);
+                }
+            });
+
+            tableBody.addEventListener('drop', e => {
+                e.preventDefault();
+                updateArtworkOrder();
+            });
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('tr:not(.dragging)')];
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            function updateArtworkOrder() {
+                const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
+                const newArtworks = newOrderedIds.map(id => artworks.find(a => a.id === id));
+                
+                artworks = newArtworks;
+                localStorage.setItem('artworks', JSON.stringify(artworks));
+                
+                renderArtworks(); // 메인 갤러리도 새 순서로 다시 렌더링
+                showMessage('작품 순서가 저장되었습니다.', 'success');
+            }
+        }
+        // 🔼 [추가된 부분] 여기까지 🔼
 
         // 디버깅 정보
         console.log('🚀 브릭모델 전시관 준비 완료');
-        console.log('📋 단축키: Ctrl+K(검색), Ctrl+U(작품 올리기), Ctrl+A(관리자), Esc(모달 닫기)');
+        console.log('📋 단축키: Ctrl+K(검색), Ctrl+U(작품 올리기), Ctrl+A(관리자), Esc(모달/전체화면 닫기)');
     </script>
 </body>
 </html>
