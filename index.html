@@ -28,6 +28,7 @@
             text-align: center;
             margin-bottom: 40px;
             color: white;
+            position: relative;
         }
 
         h1 {
@@ -48,19 +49,27 @@
             padding: 20px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none; /* 기본적으로 숨김 */
+        }
+
+        .status-section.active {
+            display: block;
+            animation: slideDown 0.3s ease;
         }
 
         .admin-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 15px 30px;
+            padding: 10px 20px;
             border-radius: 25px;
             cursor: pointer;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
-            font-size: 1rem;
-            margin: 20px;
+            font-size: 0.9rem;
         }
 
         .admin-toggle:hover {
@@ -459,13 +468,13 @@
 <body>
     <div class="container">
         <header>
+            <button class="admin-toggle" onclick="toggleAdmin()">관리자 모드</button>
             <h1>🧱 대불초등학교 브릭모델 전시관</h1>
             <p class="subtitle">창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요</p>
-            <button class="admin-toggle" onclick="toggleAdmin()">관리자 모드</button>
         </header>
 
-        <!-- 시스템 상태 -->
-        <div class="status-section">
+        <!-- 시스템 상태 (관리자 모드에서만 표시) -->
+        <div class="status-section" id="statusSection">
             <h3>🚀 Upstash Redis 데이터베이스 상태</h3>
             <div id="upstashStatus">
                 <span class="status-indicator status-warning">Upstash 연결 확인 중...</span>
@@ -572,7 +581,7 @@
 
     <script>
         // 🔧 Cloudinary 설정 (본인 값으로 변경 필요!)
-        const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx'; // 실제 값으로 변경
+        const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME_HERE'; // 실제 값으로 변경
         const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
 
         // 📊 전역 변수
@@ -583,18 +592,21 @@
         // 🔐 관리자 모드 토글
         function toggleAdmin() {
             const panel = document.getElementById('adminPanel');
+            const statusSection = document.getElementById('statusSection');
             
             if (!panel.classList.contains('active')) {
                 const password = prompt('관리자 비밀번호를 입력하세요:');
                 
                 if (password === '1234') {
                     panel.classList.add('active');
+                    statusSection.classList.add('active'); // 상태 섹션도 표시
                     showMessage('관리자 모드가 활성화되었습니다!', 'success');
                 } else if (password !== null) {
                     showMessage('비밀번호가 틀렸습니다.', 'error');
                 }
             } else {
                 panel.classList.remove('active');
+                statusSection.classList.remove('active'); // 상태 섹션도 숨김
                 showMessage('관리자 모드가 비활성화되었습니다.', 'success');
             }
         }
