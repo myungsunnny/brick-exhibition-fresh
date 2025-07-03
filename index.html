@@ -964,7 +964,8 @@
         async function loadArtworksFromUpstash() {
             try {
                 console.log('Upstash에서 작품 로드 시작...');
-                const response = await fetch('/api/artworks');
+                // 캐시 버스팅을 위해 타임스탬프 추가
+                const response = await fetch(`/api/artworks?t=${Date.now()}`);
                 const result = await response.json();
                 
                 console.log('Upstash 응답:', result);
@@ -1014,7 +1015,8 @@
         // 📖 Upstash에서 좋아요 데이터 불러오기
         async function loadLikesFromUpstash() {
             try {
-                const response = await fetch('/api/likes');
+                // 캐시 버스팅을 위해 타임스탬프 추가
+                const response = await fetch(`/api/likes?t=${Date.now()}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -1235,7 +1237,7 @@
         // 🔄 Upstash 연결 상태 확인
         async function checkUpstashConnection() {
             try {
-                const response = await fetch('/api/artworks');
+                const response = await fetch(`/api/artworks?t=${Date.now()}`);
                 const result = await response.json();
                 
                 if (result.success) {
