@@ -1,73 +1,47 @@
-export default async function handler(req, res) {
-  const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
-  const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+import { Redis } from '@upstash/redis';
 
-  // CORS 헤더 설정
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  try {
-    if (req.method === 'GET') {
-      // 모든 좋아요 데이터 가져오기
-      const response = await fetch(`${UPSTASH_REDIS_REST_URL}/get/likes`, {
-        headers: {
-          Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-        },
-      });
-
-      const data = await response.json();
-      const likes = data.result ? JSON.parse(data.result) : {};
-
-      return res.status(200).json({ success: true, likes });
-
-    } else if (req.method === 'POST') {
-      // 좋아요 토글
-      const { artworkId, action } = req.body;
-
-      // 기존 좋아요 데이터 가져오기
-      const getResponse = await fetch(`${UPSTASH_REDIS_REST_URL}/get/likes`, {
-        headers: {
-          Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-        },
-      });
-
-      const getData = await getResponse.json();
-      const likes = getData.result ? JSON.parse(getData.result) : {};
-
-      // 좋아요 수 업데이트
-      if (!likes[artworkId]) {
-        likes[artworkId] = 0;
-      }
-
-      if (action === 'like') {
-        likes[artworkId]++;
-      } else if (action === 'unlike' && likes[artworkId] > 0) {
-        likes[artworkId]--;
-      }
-
-      // 저장
-      const setResponse = await fetch(`${UPSTASH_REDIS_REST_URL}/set/likes`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify([JSON.stringify(likes)]),
-      });
-
-      return res.status(200).json({ 
-        success: true, 
-        likeCount: likes[artworkId] 
-      });
+export default async function handler(request, response) {
+  // GET: 모든 좋아요 데이터 조회
+  if (request.method === 'GET') {
+    try {
+      const likes = await redis.hgetall('likes');
+      return response.status(200).json({ success: true, likes: likes || {} });
+    } catch (error) {
+      return response.status(500).json({ success: false, error: '좋아요 데이터를 불러오지 못했습니다.' });
     }
-
-  } catch (error) {
-    console.error('Upstash error:', error);
-    return res.status(500).json({ success: false, error: error.message });
   }
+
+  // POST: 좋아요/좋아요 취소
+  if (request.method === 'POST') {
+    try {
+      const { artworkId, action } = request.body;
+      if (!artworkId || !action) {
+        return response.status(400).json({ success: false, error: '필요한 정보가 부족합니다.' });
+      }
+
+      let likeCount;
+      if (action === 'like') {
+        likeCount = await redis.hincrby('likes', artworkId, 1);
+      } else {
+        likeCount = await redis.hincrby('likes', artworkId, -1);
+      }
+      
+      // 좋아요 수가 0보다 작아지지 않도록 보정
+      if (likeCount < 0) {
+        likeCount = 0;
+        await redis.hset('likes', { [artworkId]: 0 });
+      }
+
+      return response.status(200).json({ success: true, likeCount });
+    } catch (error) {
+      return response.status(500).json({ success: false, error: '좋아요 처리에 실패했습니다.' });
+    }
+  }
+
+  return response.status(405).json({ success: false, error: '허용되지 않는 요청입니다.' });
 }
