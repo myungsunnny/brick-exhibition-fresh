@@ -1,1 +1,21 @@
-
+{
+  "name": "daebul-brick-gallery",
+  "version": "1.0.0",
+  "description": "Daebul Elementary School Brick Model Exhibition Hall",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lego",
+    "brick",
+    "gallery",
+    "upstash"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "@upstash/redis": "^1.31.5"
+  }
+}
