@@ -2,8 +2,8 @@ import { Redis } from '@upstash/redis';
 
 // Upstash Redis 클라이언트 초기화
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  url: process.env.UPSTASH_REDIS_REST_URL, // 이 부분 확인
+  token: process.env.UPSTASH_REDIS_REST_TOKEN, // 이 부분 확인
 });
 
 export default async function handler(request, response) {
