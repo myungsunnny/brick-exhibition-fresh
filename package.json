@@ -1,13 +1,10 @@
 {
   "name": "brick-exhibition-fresh",
   "version": "1.0.0",
-  "description": "대불초등학교 브릭모델 전시관 - 서버 연동 버전",
-  "main": "index.html",
-  "scripts": {
-    "start": "node server.js"
-  },
+  "description": "대불초등학교 브릭모델 전시관 - Upstash Redis 연동",
   "dependencies": {
-    "cloudinary": "^1.40.0"
+    "cloudinary": "^1.40.0",
+    "@upstash/redis": "^1.25.1"
   },
   "engines": {
     "node": "18.x"
