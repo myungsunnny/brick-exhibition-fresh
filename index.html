@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대불초등학교 브릭모델 전시관</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@upstash/redis/dist/index.umd.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -1146,7 +1149,7 @@
                 <hr>
 
                 <button class="btn btn-primary" onclick="saveSettings()">설정 저장</button>
-                <button class="btn btn-danger" onclick="resetAll()">모든 데이터 초기화</button>
+                <button class="btn btn-danger" onclick="resetAllData()">모든 데이터 초기화</button>
             </div>
         </div>
 
@@ -1198,6 +1201,15 @@
         const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
         const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
 
+        // 🔽 [수정] Upstash 클라이언트 설정 (Vercel 환경 변수 사용) 🔽
+        // Vercel에 설정한 환경 변수를 가져와서 Upstash 클라이언트를 초기화합니다.
+        const upstashClient = new upstash.Redis({
+            url: '<%= process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_URL %>',
+            token: '<%= process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_TOKEN %>',
+        });
+        // 🔼 [수정] 여기까지 🔼
+
+
         // 📊 전역 변수
         let artworks = [];
         let comments = {};
@@ -1231,7 +1243,6 @@
             const adminPanel = document.getElementById('adminPanel');
             const statusSection = document.getElementById('statusSection');
 
-            // 🔽 [수정된 부분] 업로드 비밀번호 확인 로직
             if (settings.useUploadPassword && !panel.classList.contains('active')) {
                 const password = prompt('작품을 올리려면 비밀번호를 입력하세요:');
                 if (password !== settings.uploadPassword) {
@@ -1301,7 +1312,7 @@
         // 📊 관리자 통계 업데이트
         function updateAdminStats() {
             const totalArtworks = artworks.length;
-            const totalComments = Object.values(comments).reduce((sum, artworkComments) => sum + artworkComments.length, 0);
+            const totalComments = Object.values(comments).flat().length;
             const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
             const today = new Date().toDateString();
             const todayArtworks = artworks.filter(artwork => new Date(artwork.createdAt).toDateString() === today).length;
@@ -1313,6 +1324,29 @@
             
             document.getElementById('totalCount').textContent = totalArtworks;
             document.getElementById('totalComments').textContent = totalComments;
+        }
+        
+        // 🔽 [수정] 데이터 저장 함수 (Upstash) 🔽
+        async function saveDataToUpstash() {
+            try {
+                // likes 객체에서 null/undefined 값을 0으로 변환
+                Object.keys(likes).forEach(key => {
+                    if (likes[key] == null) {
+                        likes[key] = 0;
+                    }
+                });
+                
+                await upstashClient.set('gallery_data', JSON.stringify({
+                    artworks,
+                    comments,
+                    likes,
+                    settings
+                }));
+                console.log('✅ 데이터가 Upstash에 성공적으로 저장되었습니다.');
+            } catch (error) {
+                console.error('Upstash 저장 실패:', error);
+                showMessage('데이터 저장에 실패했습니다. 인터넷 연결을 확인해주세요.', 'error');
+            }
         }
 
         // 📋 작품 관리 테이블 렌더링
@@ -1355,7 +1389,7 @@
                 artworkComments.forEach(comment => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><input type="checkbox" class="comment-checkbox" data-id="${comment.id}"></td>
+                        <td><input type="checkbox" class="comment-checkbox" data-id="${comment.id}" data-artwork-id="${artworkId}"></td>
                         <td>${artwork ? artwork.title : '삭제된 작품'}</td>
                         <td>${comment.author}</td>
                         <td>${comment.text.substring(0, 50)}${comment.text.length > 50 ? '...' : ''}</td>
@@ -1395,23 +1429,21 @@
                 }
             });
             
-            Object.values(comments).forEach(artworkComments => {
-                artworkComments.forEach(comment => {
-                    if (!users[comment.author]) {
-                        users[comment.author] = {
-                            name: comment.author,
-                            grade: '미확인',
-                            artworks: 0,
-                            comments: 0,
-                            likes: 0,
-                            lastActivity: comment.createdAt
-                        };
-                    }
-                    users[comment.author].comments++;
-                    if (new Date(comment.createdAt) > new Date(users[comment.author].lastActivity)) {
-                        users[comment.author].lastActivity = comment.createdAt;
-                    }
-                });
+            Object.values(comments).flat().forEach(comment => {
+                if (!users[comment.author]) {
+                    users[comment.author] = {
+                        name: comment.author,
+                        grade: '미확인',
+                        artworks: 0,
+                        comments: 0,
+                        likes: 0,
+                        lastActivity: comment.createdAt
+                    };
+                }
+                users[comment.author].comments++;
+                 if (new Date(comment.createdAt) > new Date(users[comment.author].lastActivity)) {
+                    users[comment.author].lastActivity = comment.createdAt;
+                }
             });
             
             Object.values(users).forEach(user => {
@@ -1474,7 +1506,7 @@
         }
 
         // 💾 작품 수정 저장
-        function saveArtworkEdit(artworkId) {
+        async function saveArtworkEdit(artworkId) {
             const artwork = artworks.find(a => a.id === artworkId);
             if (!artwork) return;
             
@@ -1483,7 +1515,7 @@
             artwork.grade = document.getElementById('editGrade').value;
             artwork.description = document.getElementById('editDescription').value;
             
-            localStorage.setItem('artworks', JSON.stringify(artworks));
+            await saveDataToUpstash();
             
             closeModal();
             renderArtworks();
@@ -1492,7 +1524,7 @@
         }
 
         // 💬 댓글 수정
-        function editComment(artworkId, commentId) {
+        async function editComment(artworkId, commentId) {
             const comment = comments[artworkId]?.find(c => c.id === commentId);
             if (!comment) return;
             
@@ -1501,15 +1533,18 @@
                 comment.text = newText.trim();
                 comment.editedAt = new Date().toISOString();
                 
-                localStorage.setItem('comments', JSON.stringify(comments));
+                await saveDataToUpstash();
                 renderCommentsTable();
                 renderArtworks();
+                if(document.getElementById('modal').style.display === 'block') {
+                    renderCommentTree(artworkId);
+                }
                 showMessage('댓글이 수정되었습니다.', 'success');
             }
         }
 
         // 🗑️ 댓글 삭제
-        function deleteComment(artworkId, commentId) {
+        async function deleteComment(artworkId, commentId) {
             if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
             
             if (comments[artworkId]) {
@@ -1518,16 +1553,19 @@
                     delete comments[artworkId];
                 }
                 
-                localStorage.setItem('comments', JSON.stringify(comments));
+                await saveDataToUpstash();
                 renderCommentsTable();
                 renderArtworks();
                 updateAdminStats();
+                if(document.getElementById('modal').style.display === 'block') {
+                    showArtworkModal(artworks.find(a => a.id === artworkId));
+                }
                 showMessage('댓글이 삭제되었습니다.', 'success');
             }
         }
 
         // 📤 일괄 삭제
-        function bulkDelete() {
+        async function bulkDelete() {
             const selected = document.querySelectorAll('.artwork-checkbox:checked');
             if (selected.length === 0) {
                 showMessage('삭제할 작품을 선택하세요.', 'error');
@@ -1536,15 +1574,22 @@
             
             if (!confirm(`선택한 ${selected.length}개의 작품을 삭제하시겠습니까?`)) return;
             
-            selected.forEach(checkbox => {
-                const artworkId = checkbox.dataset.id;
-                deleteArtworkById(artworkId);
+            const idsToDelete = Array.from(selected).map(cb => cb.dataset.id);
+            artworks = artworks.filter(artwork => !idsToDelete.includes(artwork.id));
+            idsToDelete.forEach(id => {
+                delete comments[id];
+                delete likes[id];
             });
             
+            await saveDataToUpstash();
+            
+            renderArtworks();
+            renderArtworksTable();
+            updateAdminStats();
             showMessage(`${selected.length}개의 작품이 삭제되었습니다.`, 'success');
         }
 
-        function bulkDeleteComments() {
+        async function bulkDeleteComments() {
             const selected = document.querySelectorAll('.comment-checkbox:checked');
             if (selected.length === 0) {
                 showMessage('삭제할 댓글을 선택하세요.', 'error');
@@ -1556,19 +1601,20 @@
             let deletedCount = 0;
             selected.forEach(checkbox => {
                 const commentId = checkbox.dataset.id;
-                Object.keys(comments).forEach(artworkId => {
-                    const index = comments[artworkId].findIndex(c => c.id === commentId);
-                    if (index !== -1) {
-                        comments[artworkId].splice(index, 1);
-                        if (comments[artworkId].length === 0) {
-                            delete comments[artworkId];
-                        }
+                const artworkId = checkbox.dataset.artworkId;
+                if (comments[artworkId]) {
+                    const initialLength = comments[artworkId].length;
+                    comments[artworkId] = comments[artworkId].filter(c => c.id !== commentId);
+                    if (comments[artworkId].length < initialLength) {
                         deletedCount++;
                     }
-                });
+                    if (comments[artworkId].length === 0) {
+                        delete comments[artworkId];
+                    }
+                }
             });
             
-            localStorage.setItem('comments', JSON.stringify(comments));
+            await saveDataToUpstash();
             renderCommentsTable();
             renderArtworks();
             updateAdminStats();
@@ -1594,11 +1640,16 @@
                 headerUploadText.style.display = 'block';
             }
 
-            document.getElementById('gradeTitleAll').value = settings.gradeDescriptions['all'].title;
-            document.getElementById('gradeDescAll').value = settings.gradeDescriptions['all'].description;
             for(let i = 1; i <= 6; i++) {
-                document.getElementById(`gradeTitle${i}`).value = settings.gradeDescriptions[`${i}학년`].title;
-                document.getElementById(`gradeDesc${i}`).value = settings.gradeDescriptions[`${i}학년`].description;
+                const gradeKey = `${i}학년`;
+                if(settings.gradeDescriptions[gradeKey]) {
+                    document.getElementById(`gradeTitle${i}`).value = settings.gradeDescriptions[gradeKey].title;
+                    document.getElementById(`gradeDesc${i}`).value = settings.gradeDescriptions[gradeKey].description;
+                }
+            }
+             if(settings.gradeDescriptions['all']) {
+                document.getElementById('gradeTitleAll').value = settings.gradeDescriptions['all'].title;
+                document.getElementById('gradeDescAll').value = settings.gradeDescriptions['all'].description;
             }
         }
         
@@ -1633,13 +1684,14 @@
                 settings.gradeDescriptions['all'].title = document.getElementById('gradeTitleAll').value;
                 settings.gradeDescriptions['all'].description = document.getElementById('gradeDescAll').value;
                 for(let i = 1; i <= 6; i++) {
-                    settings.gradeDescriptions[`${i}학년`].title = document.getElementById(`gradeTitle${i}`).value;
-                    settings.gradeDescriptions[`${i}학년`].description = document.getElementById(`gradeDesc${i}`).value;
+                    const gradeKey = `${i}학년`;
+                    settings.gradeDescriptions[gradeKey].title = document.getElementById(`gradeTitle${i}`).value;
+                    settings.gradeDescriptions[gradeKey].description = document.getElementById(`gradeDesc${i}`).value;
                 }
                 
-                localStorage.setItem('settings', JSON.stringify(settings));
+                await saveDataToUpstash();
                 
-                applyHeaderSettings();
+                applyHeaderSettings(); 
                 loadSettingsForm(); 
                 
                 showMessage('설정이 저장되었습니다.', 'success');
@@ -1654,12 +1706,17 @@
             }
         }
 
-        function resetAll() {
+        async function resetAllData() {
             if (!confirm('정말로 모든 데이터를 초기화하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) return;
             const confirmText = prompt('확인을 위해 "초기화"를 입력하세요:');
             if (confirmText !== '초기화') return;
-            localStorage.clear();
-            location.reload(); 
+            
+            try {
+                await upstashClient.del('gallery_data');
+                location.reload(); 
+            } catch(error) {
+                showMessage('데이터 초기화에 실패했습니다.', 'error');
+            }
         }
 
         function exportData() {
@@ -1682,21 +1739,6 @@
         }
 
         // 🔧 유틸리티 함수들
-        function deleteArtworkById(artworkId) {
-            artworks = artworks.filter(artwork => artwork.id !== artworkId);
-            delete comments[artworkId];
-            delete likes[artworkId];
-            localStorage.removeItem(`liked_${artworkId}`);
-            
-            localStorage.setItem('artworks', JSON.stringify(artworks));
-            localStorage.setItem('comments', JSON.stringify(comments));
-            localStorage.setItem('likes', JSON.stringify(likes));
-            
-            renderArtworks();
-            renderArtworksTable();
-            updateAdminStats();
-        }
-
         function renderAdminTables() {
             renderArtworksTable();
             renderCommentsTable();
@@ -1780,11 +1822,10 @@
             }
         }
         
-        // 🔽 [수정된 부분] 댓글 추가 함수에 parentId 처리 추가
-        function addComment(artworkId, authorName, commentText, parentId = 'root') {
+        async function addComment(artworkId, authorName, commentText, parentId = 'root') {
             if (!settings.allowComments) {
                 showMessage('댓글 기능이 비활성화되어 있습니다.', 'error');
-                return;
+                return null;
             }
             
             const newComment = {
@@ -1801,7 +1842,7 @@
             }
             
             comments[artworkId].push(newComment);
-            localStorage.setItem('comments', JSON.stringify(comments));
+            await saveDataToUpstash();
             
             return newComment;
         }
@@ -1855,7 +1896,7 @@
         }
 
         // ❤️ 좋아요 토글
-        function toggleLike(artworkId) {
+        async function toggleLike(artworkId) {
             const isCurrentlyLiked = localStorage.getItem(`liked_${artworkId}`) === 'true';
             
             if (isCurrentlyLiked) {
@@ -1866,15 +1907,27 @@
                 likes[artworkId] = (likes[artworkId] || 0) + 1;
             }
             
-            localStorage.setItem('likes', JSON.stringify(likes));
+            await saveDataToUpstash();
             renderArtworks();
             if (isAdminMode) updateAdminStats();
         }
 
         // 🗑️ 작품 삭제
-        function deleteArtwork(artworkId) {
+        async function deleteArtwork(artworkId) {
             if (!confirm('정말로 이 작품을 삭제하시겠습니까?')) return;
-            deleteArtworkById(artworkId);
+            
+            artworks = artworks.filter(artwork => artwork.id !== artworkId);
+            delete comments[artworkId];
+            delete likes[artworkId];
+            localStorage.removeItem(`liked_${artworkId}`);
+
+            await saveDataToUpstash();
+            
+            renderArtworks();
+            if(isAdminMode) {
+              renderArtworksTable();
+              updateAdminStats();
+            }
             showMessage('작품이 삭제되었습니다.', 'success');
         }
         
@@ -1896,7 +1949,7 @@
                 </div>
                 <p style="line-height: 1.8; color: #555; font-size: 1.1rem; text-align: center; margin-bottom: 20px;">${artwork.description}</p>
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <button class="btn btn-primary" onclick="toggleLike('${artwork.id}'); setTimeout(() => updateModalLike('${artwork.id}'), 100)">
+                    <button id="modalLikeBtn" class="btn btn-primary" onclick="toggleLike('${artwork.id}'); setTimeout(() => updateModalLike('${artwork.id}'), 100)">
                         ❤️ ${likes[artwork.id] || 0} 좋아요
                     </button>
                     <button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button>
@@ -1930,20 +1983,21 @@
             document.body.style.overflow = 'hidden';
         }
         
-        // 🔽 [추가된 부분] 계층형 댓글 렌더링 함수들 🔽
+        // 계층형 댓글 렌더링 함수들
         function renderCommentTree(artworkId) {
             const commentsListContainer = document.getElementById('commentsList');
+            if(!commentsListContainer) return;
+
             const allComments = (comments[artworkId] || []).filter(c => c.approved);
             
-            // parentId가 없는 옛날 댓글에 'root' 부여
             allComments.forEach(c => {
                 if(!c.parentId) c.parentId = 'root';
             });
 
-            commentsListContainer.innerHTML = buildCommentHTML(allComments, 'root');
+            commentsListContainer.innerHTML = buildCommentHTML(allComments, 'root', artworkId);
         }
 
-        function buildCommentHTML(allComments, parentId, isReply = false) {
+        function buildCommentHTML(allComments, parentId, artworkId, isReply = false) {
             const children = allComments.filter(comment => comment.parentId === parentId);
             if (children.length === 0) return '';
 
@@ -1952,16 +2006,16 @@
                 html += `
                     <div class="comment ${isReply ? 'comment-reply' : ''}">
                         <div class="comment-controls">
-                            <button class="btn-warning" onclick="editComment('${comment.artworkId}', '${comment.id}')">수정</button>
-                            <button class="btn-danger" onclick="deleteComment('${comment.artworkId}', '${comment.id}')">삭제</button>
+                            <button class="btn btn-warning btn-small" onclick="editComment('${artworkId}', '${comment.id}')">수정</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteComment('${artworkId}', '${comment.id}')">삭제</button>
                         </div>
                         <div class="comment-author">${comment.author}</div>
-                        <div class="comment-text">${comment.text}</div>
-                        <div class="comment-date">${new Date(comment.createdAt).toLocaleString()}</div>
+                        <div class="comment-text">${comment.text.replace(/\n/g, '<br>')}</div>
+                        <div class="comment-date">${new Date(comment.createdAt).toLocaleString()} ${comment.editedAt ? '(수정됨)' : ''}</div>
                         <div class="comment-actions">
                             <span class="reply-btn" onclick="prepareReply('${comment.id}', '${comment.author}')">답글</span>
                         </div>
-                        ${buildCommentHTML(allComments, comment.id, true)}
+                        ${buildCommentHTML(allComments, comment.id, artworkId, true)}
                     </div>
                 `;
             });
@@ -1984,7 +2038,6 @@
             commentForm.dataset.replyTo = 'root';
             document.getElementById('replyingToInfo').style.display = 'none';
         }
-        // 🔼 [추가된 부분] 여기까지 🔼
 
 
         function showFullscreenImage(imageUrl) {
@@ -2004,8 +2057,7 @@
             }
         }
 
-        // 🔽 [수정된 부분] 댓글 제출 함수가 답글 상태를 인식하도록 변경
-        function submitComment(artworkId) {
+        async function submitComment(artworkId) {
             const author = document.getElementById('commentAuthor').value.trim();
             const text = document.getElementById('commentText').value.trim();
             
@@ -2017,7 +2069,7 @@
             const commentForm = document.querySelector('.comment-form');
             const parentId = commentForm.dataset.replyTo || 'root';
             
-            const newComment = addComment(artworkId, author, text, parentId);
+            const newComment = await addComment(artworkId, author, text, parentId);
             
             if (newComment) {
                 document.getElementById('commentAuthor').value = '';
@@ -2032,8 +2084,8 @@
                 }
                 
                 renderArtworks(); // 메인 갤러리 댓글 수 업데이트
-                if (isAdminMode) {
-                    updateAdminStats();
+                updateAdminStats();
+                if(isAdminMode) {
                     renderCommentsTable();
                 }
             }
@@ -2041,8 +2093,8 @@
 
         // 모달 좋아요 업데이트
         function updateModalLike(artworkId) {
-            const likeBtn = document.querySelector('.modal .btn-primary');
-            if (likeBtn && likeBtn.textContent.includes('좋아요')) {
+            const likeBtn = document.getElementById('modalLikeBtn');
+            if (likeBtn) {
                 const likeCount = likes[artworkId] || 0;
                 likeBtn.innerHTML = `❤️ ${likeCount} 좋아요`;
             }
@@ -2111,11 +2163,11 @@
                 
                 artworks.unshift(newArtwork);
                 
-                localStorage.setItem('artworks', JSON.stringify(artworks));
+                await saveDataToUpstash();
                 
                 renderArtworks();
+                updateAdminStats();
                 if (isAdminMode) {
-                    updateAdminStats();
                     renderArtworksTable();
                 }
                 
@@ -2124,6 +2176,7 @@
                 document.getElementById('uploadText').style.display = 'block';
                 
                 showMessage('작품이 성공적으로 등록되었습니다!', 'success');
+                toggleUploadPanel();
                 
             } catch (error) {
                 console.error('작품 등록 오류:', error);
@@ -2182,10 +2235,13 @@
             const gradeInfoTitle = document.getElementById('gradeInfoTitle');
             const gradeInfoDescription = document.getElementById('gradeInfoDescription');
             
-            const info = settings.gradeDescriptions[category] || settings.gradeDescriptions['all'];
+            const gradeKey = category.includes('학년') ? category : 'all';
+            const info = settings.gradeDescriptions[gradeKey];
             
-            gradeInfoTitle.textContent = info.title;
-            gradeInfoDescription.textContent = info.description;
+            if (info) {
+              gradeInfoTitle.textContent = info.title;
+              gradeInfoDescription.textContent = info.description;
+            }
             
             updateGradeStats(category);
             
@@ -2199,7 +2255,7 @@
             if (category === 'all') {
                 const totalArtworks = artworks.length;
                 const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
-                const totalComments = Object.values(comments).reduce((sum, artworkComments) => sum + artworkComments.length, 0);
+                const totalComments = Object.values(comments).flat().length;
                 statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${totalArtworks}</div><div class="grade-stat-label">전체 작품</div></div><div class="grade-stat"><div class="grade-stat-number">${totalLikes}</div><div class="grade-stat-label">총 좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${totalComments}</div><div class="grade-stat-label">총 댓글</div></div></div>`;
             } else {
                 const gradeArtworks = artworks.filter(artwork => artwork.grade === category);
@@ -2240,40 +2296,57 @@
         }
 
         // 🚀 초기화
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('🧱 브릭모델 전시관 로드');
-            
-            const savedArtworks = localStorage.getItem('artworks');
-            const savedComments = localStorage.getItem('comments');
-            const savedLikes = localStorage.getItem('likes');
-            const savedSettings = localStorage.getItem('settings');
-            
-            if (savedArtworks) artworks = JSON.parse(savedArtworks);
-            if (savedComments) comments = JSON.parse(savedComments);
-            if (savedLikes) likes = JSON.parse(savedLikes);
-            
-            if (savedSettings) {
-                const loadedSettings = JSON.parse(savedSettings);
-                settings = {
-                    ...settings,
-                    ...loadedSettings,
-                    gradeDescriptions: {...settings.gradeDescriptions, ...(loadedSettings.gradeDescriptions || {}) }
-                };
+            const statusDiv = document.getElementById('upstashStatus');
+            const gallery = document.getElementById('gallery');
+
+            try {
+                // Upstash에서 데이터 불러오기
+                const data = await upstashClient.get('gallery_data');
+
+                if (data) {
+                    console.log('✅ Upstash에서 데이터를 성공적으로 불러왔습니다.');
+                    const { artworks: savedArtworks, comments: savedComments, likes: savedLikes, settings: savedSettings } = data;
+
+                    if (savedArtworks) artworks = savedArtworks;
+                    if (savedComments) comments = savedComments;
+                    if (savedLikes) likes = savedLikes;
+                    
+                    if (savedSettings) {
+                        settings = {
+                            ...settings, // 기본값 유지
+                            ...savedSettings, // 저장된 값으로 덮어쓰기
+                            gradeDescriptions: { // 객체는 깊은 병합 필요
+                                ...settings.gradeDescriptions, 
+                                ...(savedSettings.gradeDescriptions || {}) 
+                            }
+                        };
+                    }
+                    statusDiv.innerHTML = '<span class="status-indicator status-success">✅ Upstash DB 연결됨</span>';
+                } else {
+                    console.log('ℹ️ Upstash에 데이터가 없습니다. 새 데이터로 시작합니다.');
+                    statusDiv.innerHTML = '<span class="status-indicator status-warning">ℹ️ DB에 데이터 없음</span>';
+                }
+            } catch (error) {
+                console.error('Upstash 연결 실패:', error);
+                statusDiv.innerHTML = '<span class="status-indicator status-error">❌ DB 연결 실패</span>';
+                showMessage('데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.', 'error');
+                gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>데이터베이스 연결에 실패했습니다.</h3><p>인터넷 연결을 확인하거나 관리자에게 문의해주세요.</p></div>`;
+
+            } finally {
+                // 나머지 초기화 로직은 DB연결 성공/실패와 관계없이 실행
+                applyHeaderSettings();
+                renderArtworks();
+                updateGradeInfo('all');
+                updateAdminStats();
+                setupDragAndDrop();
+                document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>';
+                console.log('✅ 초기화 완료');
             }
-            
-            applyHeaderSettings(); 
-            
-            document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-success">✅ 로컬 스토리지 연결됨</span>';
-            document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>';
-            
-            renderArtworks();
-            updateGradeInfo('all');
-            setupDragAndDrop(); 
-            
-            console.log('✅ 초기화 완료');
         });
 
-        // 🔧 키보드 단축키
+        // 🔧 키보드 단축키 및 기타 이벤트
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
@@ -2281,41 +2354,51 @@
             }
             if (e.ctrlKey && e.key === 'k') { e.preventDefault(); document.getElementById('searchInput').focus(); }
             if (e.ctrlKey && e.key === 'u') { e.preventDefault(); toggleUploadPanel(); }
-            if (e.ctrlKey && e.key === 'a' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); toggleAdminPanel(); }
+            if (e.ctrlKey && e.key === 'a' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) { e.preventDefault(); toggleAdminPanel(); }
         });
 
         document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
         window.addEventListener('online', () => showMessage('✅ 인터넷 연결이 복구되었습니다.', 'success'));
-        window.addEventListener('offline', () => showMessage('⚠️ 인터넷 연결이 끊어졌습니다. 로컬 데이터를 사용합니다.', 'error'));
+        window.addEventListener('offline', () => showMessage('⚠️ 인터넷 연결이 끊어졌습니다.', 'error'));
         
         function setupDragAndDrop() {
             const tableBody = document.getElementById('artworksTableBody');
             let draggedItem = null;
 
             tableBody.addEventListener('dragstart', e => {
-                draggedItem = e.target;
-                setTimeout(() => e.target.classList.add('dragging'), 0);
+                if (e.target.tagName === 'TR') {
+                    draggedItem = e.target;
+                    setTimeout(() => e.target.classList.add('dragging'), 0);
+                }
             });
 
             tableBody.addEventListener('dragend', e => {
-                e.target.classList.remove('dragging');
-                draggedItem = null;
+                 if (draggedItem) {
+                    draggedItem.classList.remove('dragging');
+                    draggedItem = null;
+                }
             });
 
             tableBody.addEventListener('dragover', e => {
                 e.preventDefault();
                 const afterElement = getDragAfterElement(tableBody, e.clientY);
                 const currentlyDragged = document.querySelector('.dragging');
-                if (afterElement == null) {
-                    tableBody.appendChild(currentlyDragged);
-                } else {
-                    tableBody.insertBefore(currentlyDragged, afterElement);
+                if (currentlyDragged) {
+                    if (afterElement == null) {
+                        tableBody.appendChild(currentlyDragged);
+                    } else {
+                        tableBody.insertBefore(currentlyDragged, afterElement);
+                    }
                 }
             });
 
-            tableBody.addEventListener('drop', e => {
+            tableBody.addEventListener('drop', async e => {
                 e.preventDefault();
-                updateArtworkOrder();
+                const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
+                artworks = newOrderedIds.map(id => artworks.find(a => a.id === id));
+                await saveDataToUpstash();
+                renderArtworks();
+                showMessage('작품 순서가 저장되었습니다.', 'success');
             });
 
             function getDragAfterElement(container, y) {
@@ -2323,20 +2406,12 @@
                 return draggableElements.reduce((closest, child) => {
                     const box = child.getBoundingClientRect();
                     const offset = y - box.top - box.height / 2;
-                    if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-                    else return closest;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
                 }, { offset: Number.NEGATIVE_INFINITY }).element;
-            }
-
-            function updateArtworkOrder() {
-                const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
-                const newArtworks = newOrderedIds.map(id => artworks.find(a => a.id === id));
-                
-                artworks = newArtworks;
-                localStorage.setItem('artworks', JSON.stringify(artworks));
-                
-                renderArtworks();
-                showMessage('작품 순서가 저장되었습니다.', 'success');
             }
         }
 
