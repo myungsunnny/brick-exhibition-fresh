@@ -31,16 +31,6 @@
             position: relative;
         }
 
-        .header-logo {
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-
-        .header-logo img {
-            max-height: 60px;
-            border-radius: 10px;
-        }
-
         h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
@@ -113,49 +103,6 @@
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 관리자 탭 시스템 */
-        .admin-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-        }
-
-        .admin-tab-btn {
-            padding: 10px 20px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #666;
-            transition: all 0.3s ease;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .admin-tab-btn:hover {
-            background: #f8f9fa;
-        }
-
-        .admin-tab-btn.active {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .admin-tab-content {
-            display: none;
-        }
-
-        .admin-tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .form-group {
@@ -390,11 +337,6 @@
             color: #e74c3c;
         }
 
-        .comment-count {
-            color: #999;
-            font-size: 0.9rem;
-        }
-
         .admin-controls {
             position: absolute;
             top: 10px;
@@ -473,45 +415,6 @@
         .filter-btn:hover, .filter-btn.active {
             background: rgba(255,255,255,0.3);
             transform: translateY(-2px);
-        }
-
-        /* 학년별 소개 박스 */
-        .grade-intro-box {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
-
-        .grade-intro-box.active {
-            display: block;
-        }
-
-        .grade-intro-box h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
-        .grade-intro-box p {
-            color: #555;
-            line-height: 1.8;
-            margin-bottom: 15px;
-        }
-
-        .grade-intro-box .example-works {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .grade-intro-box .example-works h4 {
-            color: #667eea;
-            margin-bottom: 10px;
         }
 
         .search-container {
@@ -622,173 +525,6 @@
             margin-top: 5px;
         }
 
-        /* 드래그 가능한 작품 리스트 */
-        .sortable-artworks {
-            list-style: none;
-            padding: 0;
-        }
-
-        .sortable-item {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: move;
-            transition: all 0.3s ease;
-        }
-
-        .sortable-item:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .sortable-item.dragging {
-            opacity: 0.5;
-        }
-
-        .sortable-item input[type="checkbox"] {
-            width: auto;
-            margin: 0;
-        }
-
-        .sortable-item img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 5px;
-        }
-
-        .sortable-item-info {
-            flex: 1;
-        }
-
-        .sortable-item-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .sortable-item-author {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        /* 설정 섹션 */
-        .settings-section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .settings-section h4 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-            margin-left: 10px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #667eea;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-        /* 댓글 섹션 */
-        .comments-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-
-        .comment {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        .comment-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .comment-author {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .comment-date {
-            color: #999;
-            font-size: 0.9rem;
-        }
-
-        .comment-content {
-            color: #555;
-            line-height: 1.6;
-        }
-
-        .comment-form {
-            margin-top: 20px;
-        }
-
-        .comment-form textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .comment-form input {
-            width: 200px;
-            margin-right: 10px;
-        }
-
         @media (max-width: 768px) {
             .container { padding: 15px; }
             h1 { font-size: 2rem; }
@@ -801,14 +537,6 @@
             .search-container input { width: 100%; max-width: 300px; }
             .admin-table { font-size: 0.9rem; }
             .admin-table th, .admin-table td { padding: 8px; }
-            .admin-tabs { 
-                flex-wrap: wrap; 
-                gap: 5px;
-            }
-            .admin-tab-btn {
-                font-size: 0.9rem;
-                padding: 8px 15px;
-            }
         }
     </style>
 </head>
@@ -819,11 +547,8 @@
                 <button class="header-btn" onclick="toggleUpload()">📸 작품 올리기</button>
                 <button class="header-btn" onclick="toggleAdmin()">🔧 관리자 모드</button>
             </div>
-            <div class="header-logo" id="headerLogo" style="display: none;">
-                <img src="" alt="로고">
-            </div>
-            <h1 id="siteTitle">🧱 대불초등학교 브릭모델 전시관</h1>
-            <p class="subtitle" id="siteSubtitle">창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요</p>
+            <h1>🧱 대불초등학교 브릭모델 전시관</h1>
+            <p class="subtitle">창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요</p>
         </header>
 
         <!-- 시스템 상태 (관리자 모드에서만 표시) -->
@@ -902,193 +627,44 @@
 
         <!-- 관리자 패널 -->
         <div class="admin-panel" id="adminPanel">
-            <h2>🔧 관리자 시스템</h2>
+            <h2>🔧 작품 관리 시스템</h2>
             
-            <!-- 관리자 탭 -->
-            <div class="admin-tabs">
-                <button class="admin-tab-btn active" onclick="switchAdminTab('artworks')">🖼️ 작품 관리</button>
-                <button class="admin-tab-btn" onclick="switchAdminTab('comments')">💬 댓글 관리</button>
-                <button class="admin-tab-btn" onclick="switchAdminTab('users')">👤 사용자 관리</button>
-                <button class="admin-tab-btn" onclick="switchAdminTab('settings')">⚙️ 사이트 설정</button>
-            </div>
-
-            <!-- 작품 관리 탭 -->
-            <div class="admin-tab-content active" id="artworksTab">
-                <h3>작품 관리</h3>
-                <p style="margin-bottom: 20px;">등록된 모든 작품을 체계적으로 관리할 수 있습니다.</p>
-                
-                <div class="admin-stats">
-                    <div class="stat-card">
-                        <div class="stat-number" id="statTotal">0</div>
-                        <div class="stat-label">전체 작품</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="statLikes">0</div>
-                        <div class="stat-label">총 좋아요 수</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="statToday">0</div>
-                        <div class="stat-label">오늘 등록</div>
-                    </div>
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="statTotal">0</div>
+                    <div class="stat-label">전체 작품</div>
                 </div>
-
-                <div style="margin-bottom: 20px;">
-                    <button class="btn btn-secondary" onclick="selectAllArtworks()">전체 선택</button>
-                    <button class="btn btn-danger" onclick="deleteSelectedArtworks()">선택 삭제</button>
-                    <button class="btn btn-primary" onclick="exportData()">📥 데이터 내보내기</button>
+                <div class="stat-card">
+                    <div class="stat-number" id="statLikes">0</div>
+                    <div class="stat-label">총 좋아요 수</div>
                 </div>
-
-                <p style="margin-bottom: 10px; color: #666;">🔄 드래그하여 순서를 변경할 수 있습니다</p>
-                <ul class="sortable-artworks" id="sortableArtworks">
-                    <!-- 동적으로 생성됨 -->
-                </ul>
-            </div>
-
-            <!-- 댓글 관리 탭 -->
-            <div class="admin-tab-content" id="commentsTab">
-                <h3>댓글 관리</h3>
-                <p style="margin-bottom: 20px;">사이트에 달린 모든 댓글을 한 곳에서 확인하고 관리합니다.</p>
-                
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" onchange="selectAllComments(this)"></th>
-                            <th>작품</th>
-                            <th>작성자</th>
-                            <th>내용</th>
-                            <th>작성일</th>
-                            <th>관리</th>
-                        </tr>
-                    </thead>
-                    <tbody id="commentsTableBody">
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px;">
-                                댓글이 없습니다.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <div style="margin-top: 20px;">
-                    <button class="btn btn-danger" onclick="deleteSelectedComments()">선택한 댓글 삭제</button>
+                <div class="stat-card">
+                    <div class="stat-number" id="statToday">0</div>
+                    <div class="stat-label">오늘 등록</div>
                 </div>
             </div>
 
-            <!-- 사용자 관리 탭 -->
-            <div class="admin-tab-content" id="usersTab">
-                <h3>사용자 관리</h3>
-                <p style="margin-bottom: 20px;">전시관에 참여한 사용자(학생)들의 활동 내역을 통계로 확인할 수 있습니다.</p>
-                
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>사용자명</th>
-                            <th>등록 작품</th>
-                            <th>작성 댓글</th>
-                            <th>받은 좋아요</th>
-                            <th>마지막 활동</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 40px;">
-                                사용자 데이터를 불러오는 중...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 사이트 설정 탭 -->
-            <div class="admin-tab-content" id="settingsTab">
-                <h3>사이트 설정</h3>
-                <p style="margin-bottom: 20px;">전시관의 외형부터 작동 방식까지 핵심적인 부분들을 설정합니다.</p>
-                
-                <!-- 기본 정보 설정 -->
-                <div class="settings-section">
-                    <h4>📝 기본 정보 설정</h4>
-                    <div class="form-group">
-                        <label for="siteTitleInput">사이트 제목</label>
-                        <input type="text" id="siteTitleInput" value="🧱 대불초등학교 브릭모델 전시관">
-                    </div>
-                    <div class="form-group">
-                        <label for="siteSubtitleInput">부제(설명)</label>
-                        <input type="text" id="siteSubtitleInput" value="창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요">
-                    </div>
-                    <div class="form-group">
-                        <label>헤더 로고 이미지</label>
-                        <div class="image-upload" onclick="document.getElementById('logoFile').click()">
-                            <input type="file" id="logoFile" accept="image/*" onchange="uploadLogo()">
-                            <div id="logoUploadText">📁 로고 이미지 선택</div>
-                            <img id="logoPreview" class="image-preview" alt="로고 미리보기">
-                        </div>
-                        <button class="btn btn-secondary" onclick="removeLogo()">로고 제거</button>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveBasicSettings()">기본 정보 저장</button>
-                </div>
-
-                <!-- 보안 설정 -->
-                <div class="settings-section">
-                    <h4>🔒 보안 설정</h4>
-                    <div class="form-group">
-                        <label for="adminPassword">관리자 비밀번호</label>
-                        <input type="password" id="adminPassword" placeholder="새 비밀번호 입력">
-                    </div>
-                    <div class="form-group">
-                        <label for="uploadPassword">작품 업로드 비밀번호</label>
-                        <input type="password" id="uploadPassword" placeholder="업로드 비밀번호 설정">
-                        <label class="switch">
-                            <input type="checkbox" id="uploadPasswordEnabled">
-                            <span class="slider"></span>
-                        </label>
-                        <span style="margin-left: 10px;">업로드 비밀번호 사용</span>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveSecuritySettings()">보안 설정 저장</button>
-                </div>
-
-                <!-- 콘텐츠 설정 -->
-                <div class="settings-section">
-                    <h4>📚 콘텐츠 설정</h4>
-                    <p style="margin-bottom: 15px;">학년별 필터 탭을 눌렀을 때 나타나는 소개 문구를 설정합니다.</p>
-                    <div id="gradeDescriptions">
-                        <!-- 동적으로 생성됨 -->
-                    </div>
-                    <button class="btn btn-primary" onclick="saveGradeDescriptions()">학년별 설명 저장</button>
-                </div>
-
-                <!-- 기능 제어 -->
-                <div class="settings-section">
-                    <h4>⚡ 기능 제어</h4>
-                    <div style="margin-bottom: 15px;">
-                        <label>
-                            댓글 기능 허용
-                            <label class="switch">
-                                <input type="checkbox" id="commentsEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </label>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label>
-                            댓글 승인 후 노출
-                            <label class="switch">
-                                <input type="checkbox" id="commentApproval">
-                                <span class="slider"></span>
-                            </label>
-                        </label>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveFeatureSettings()">기능 설정 저장</button>
-                </div>
-
-                <!-- 데이터 초기화 -->
-                <div class="settings-section" style="background: #ffe6e6;">
-                    <h4>⚠️ 데이터 초기화</h4>
-                    <p style="color: #721c24; margin-bottom: 15px;">
-                        모든 작품, 댓글, 설정 등을 초기 상태로 되돌립니다. 이 작업은 되돌릴 수 없습니다!
-                    </p>
-                    <button class="btn btn-danger" onclick="resetAllData()">🗑️ 모든 데이터 초기화</button>
-                </div>
-            </div>
+            <h3>📋 작품 목록</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>작품명</th>
+                        <th>작가</th>
+                        <th>학년</th>
+                        <th>카테고리</th>
+                        <th>좋아요</th>
+                        <th>등록일</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            작품 목록을 불러오는 중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- 검색 -->
@@ -1105,16 +681,6 @@
             <button class="filter-btn" data-category="4학년">4학년</button>
             <button class="filter-btn" data-category="5학년">5학년</button>
             <button class="filter-btn" data-category="6학년">6학년</button>
-        </div>
-
-        <!-- 학년별 소개 박스 -->
-        <div class="grade-intro-box" id="gradeIntroBox">
-            <h3 id="gradeIntroTitle">학년별 작품 소개</h3>
-            <p id="gradeIntroContent">이 학년의 멋진 브릭모델 작품들을 만나보세요!</p>
-            <div class="example-works">
-                <h4>💡 예시 작품들</h4>
-                <p id="gradeIntroExamples">다양한 창의적인 작품들이 전시되어 있습니다.</p>
-            </div>
         </div>
 
         <!-- 작품 갤러리 -->
@@ -1141,68 +707,14 @@
         // 📊 전역 변수
         let artworks = [];
         let likes = {};
-        let comments = {};
         let isUpstashReady = false;
         let currentEditingId = null;
-        let siteSettings = {
-            title: '🧱 대불초등학교 브릭모델 전시관',
-            subtitle: '창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요',
-            logo: '',
-            adminPassword: '1234',
-            uploadPassword: '',
-            uploadPasswordEnabled: false,
-            commentsEnabled: true,
-            commentApproval: false,
-            gradeDescriptions: {
-                '1학년': {
-                    title: '1학년 브릭모델 갤러리',
-                    content: '1학년 친구들이 처음으로 도전한 브릭모델 작품들입니다. 기초적인 형태부터 시작해 창의력을 마음껏 발휘했어요!',
-                    examples: '🏠 우리 집, 🚗 좋아하는 자동차, 🌳 나무와 꽃, 🐶 귀여운 동물 친구들'
-                },
-                '2학년': {
-                    title: '2학년 브릭모델 갤러리',
-                    content: '2학년이 되어 더욱 복잡한 구조물에 도전했습니다. 상상력이 가득한 작품들을 만나보세요!',
-                    examples: '🏰 동화 속 성, 🚀 우주선, 🦖 공룡 세계, 🎠 놀이공원'
-                },
-                '3학년': {
-                    title: '3학년 브릭모델 갤러리',
-                    content: '3학년 학생들의 정교한 브릭 작품들입니다. 세부적인 표현력이 놀라워요!',
-                    examples: '🌉 유명한 다리, ⛵ 범선, 🤖 로봇 친구, 🏛️ 역사적 건축물'
-                },
-                '4학년': {
-                    title: '4학년 브릭모델 갤러리',
-                    content: '4학년의 체계적이고 계획적인 작품들입니다. 실제와 같은 디테일을 표현했어요!',
-                    examples: '🚁 헬리콥터, 🏟️ 경기장, 🚂 기차역, 🌆 도시 풍경'
-                },
-                '5학년': {
-                    title: '5학년 브릭모델 갤러리',
-                    content: '5학년 학생들의 창의적이고 혁신적인 작품들입니다. 복잡한 메커니즘도 구현했어요!',
-                    examples: '🎢 움직이는 놀이기구, 🏭 공장 시스템, 🛸 SF 세계, 🎮 게임 속 장면'
-                },
-                '6학년': {
-                    title: '6학년 브릭모델 갤러리',
-                    content: '6학년의 마스터피스 작품들입니다. 초등학교 생활의 집대성을 브릭으로 표현했어요!',
-                    examples: '🗼 세계의 랜드마크, 🚀 우주 정거장, 🏙️ 미래 도시, 🎭 문화 예술 작품'
-                }
-            }
-        };
 
         // 📸 작품 올리기 토글
         function toggleUpload() {
             const panel = document.getElementById('uploadPanel');
             const adminPanel = document.getElementById('adminPanel');
             const statusSection = document.getElementById('statusSection');
-            
-            // 업로드 비밀번호 확인
-            if (siteSettings.uploadPasswordEnabled && !panel.classList.contains('active')) {
-                const password = prompt('작품 업로드 비밀번호를 입력하세요:');
-                if (password !== siteSettings.uploadPassword) {
-                    if (password !== null) {
-                        showMessage('비밀번호가 틀렸습니다.', 'error');
-                    }
-                    return;
-                }
-            }
             
             // 다른 패널 닫기
             adminPanel.classList.remove('active');
@@ -1224,7 +736,7 @@
             if (!panel.classList.contains('active')) {
                 const password = prompt('관리자 비밀번호를 입력하세요:');
                 
-                if (password === siteSettings.adminPassword) {
+                if (password === '1234') {
                     // 다른 패널 닫기
                     uploadPanel.classList.remove('active');
                     
@@ -1232,8 +744,9 @@
                     panel.classList.add('active');
                     statusSection.classList.add('active');
                     
-                    // 관리자 데이터 업데이트
-                    updateAdminData();
+                    // 관리자 테이블 업데이트
+                    updateAdminTable();
+                    updateAdminStats();
                     
                     showMessage('관리자 모드가 활성화되었습니다!', 'success');
                 } else if (password !== null) {
@@ -1248,28 +761,6 @@
             updateHeaderButtons();
         }
 
-        // 관리자 탭 전환
-        function switchAdminTab(tabName) {
-            // 모든 탭 버튼과 컨텐츠 비활성화
-            document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.admin-tab-content').forEach(content => content.classList.remove('active'));
-            
-            // 선택한 탭 활성화
-            event.target.classList.add('active');
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            
-            // 탭별 데이터 업데이트
-            if (tabName === 'artworks') {
-                updateSortableArtworks();
-            } else if (tabName === 'comments') {
-                updateCommentsTable();
-            } else if (tabName === 'users') {
-                updateUsersTable();
-            } else if (tabName === 'settings') {
-                updateSettingsForm();
-            }
-        }
-
         // 헤더 버튼 활성화 상태 업데이트
         function updateHeaderButtons() {
             const buttons = document.querySelectorAll('.header-btn');
@@ -1280,16 +771,7 @@
             buttons[1].classList.toggle('active', adminPanel.classList.contains('active'));
         }
 
-        // 📊 관리자 데이터 업데이트
-        function updateAdminData() {
-            updateAdminStats();
-            updateSortableArtworks();
-            updateCommentsTable();
-            updateUsersTable();
-            updateSettingsForm();
-        }
-
-        // 통계 업데이트
+        // 📊 관리자 통계 업데이트
         function updateAdminStats() {
             // 전체 작품 수
             document.getElementById('statTotal').textContent = artworks.length;
@@ -1306,310 +788,755 @@
             document.getElementById('statToday').textContent = todayCount;
         }
 
-        // 드래그 가능한 작품 목록 업데이트
-        function updateSortableArtworks() {
-            const container = document.getElementById('sortableArtworks');
+        // 📋 관리자 테이블 업데이트
+        function updateAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
             
-            container.innerHTML = artworks.map((artwork, index) => `
-                <li class="sortable-item" draggable="true" data-id="${artwork.id}">
-                    <input type="checkbox" class="artwork-checkbox" value="${artwork.id}">
-                    ${artwork.image ? `<img src="${artwork.image}" alt="${artwork.title}">` : '<div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 5px; display: flex; align-items: center; justify-content: center;">🧱</div>'}
-                    <div class="sortable-item-info">
-                        <div class="sortable-item-title">${artwork.title}</div>
-                        <div class="sortable-item-author">${artwork.author} (${artwork.grade})</div>
-                    </div>
-                    <div>
-                        <button class="btn-edit" onclick="editArtwork('${artwork.id}')">수정</button>
-                        <button class="btn-danger" onclick="deleteArtwork('${artwork.id}')">삭제</button>
-                    </div>
-                </li>
-            `).join('');
-            
-            // 드래그 앤 드롭 이벤트 설정
-            setupDragAndDrop();
-        }
-
-        // 드래그 앤 드롭 설정
-        function setupDragAndDrop() {
-            const sortableList = document.getElementById('sortableArtworks');
-            let draggedItem = null;
-            
-            sortableList.addEventListener('dragstart', (e) => {
-                if (e.target.classList.contains('sortable-item')) {
-                    draggedItem = e.target;
-                    e.target.classList.add('dragging');
-                }
-            });
-            
-            sortableList.addEventListener('dragend', (e) => {
-                if (e.target.classList.contains('sortable-item')) {
-                    e.target.classList.remove('dragging');
-                }
-            });
-            
-            sortableList.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                const afterElement = getDragAfterElement(sortableList, e.clientY);
-                if (afterElement == null) {
-                    sortableList.appendChild(draggedItem);
-                } else {
-                    sortableList.insertBefore(draggedItem, afterElement);
-                }
-            });
-            
-            sortableList.addEventListener('drop', (e) => {
-                e.preventDefault();
-                // 순서 저장
-                saveArtworkOrder();
-            });
-        }
-
-        // 드래그 위치 계산
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.sortable-item:not(.dragging)')];
-            
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-
-        // 작품 순서 저장
-        async function saveArtworkOrder() {
-            const items = document.querySelectorAll('.sortable-item');
-            const newOrder = Array.from(items).map(item => item.dataset.id);
-            
-            // 새 순서로 artworks 배열 재정렬
-            const orderedArtworks = [];
-            newOrder.forEach(id => {
-                const artwork = artworks.find(a => a.id === id);
-                if (artwork) orderedArtworks.push(artwork);
-            });
-            
-            artworks = orderedArtworks;
-            
-            // 갤러리 다시 렌더링
-            renderArtworks();
-            
-            // Upstash에 순서 저장
-            await saveOrderToUpstash(newOrder);
-            
-            showMessage('작품 순서가 변경되었습니다.', 'success');
-        }
-
-        // 전체 선택
-        function selectAllArtworks() {
-            const checkboxes = document.querySelectorAll('.artwork-checkbox');
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            
-            checkboxes.forEach(cb => {
-                cb.checked = !allChecked;
-            });
-        }
-
-        // 선택된 작품 삭제
-        async function deleteSelectedArtworks() {
-            const checkboxes = document.querySelectorAll('.artwork-checkbox:checked');
-            const selectedIds = Array.from(checkboxes).map(cb => cb.value);
-            
-            if (selectedIds.length === 0) {
-                showMessage('삭제할 작품을 선택해주세요.', 'error');
-                return;
-            }
-            
-            if (!confirm(`선택한 ${selectedIds.length}개의 작품을 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.`)) {
-                return;
-            }
-            
-            // 삭제 진행
-            for (const id of selectedIds) {
-                await deleteArtworkFromUpstash(id);
-                artworks = artworks.filter(a => a.id !== id);
-                delete likes[id];
-                delete comments[id];
-            }
-            
-            renderArtworks();
-            updateAdminData();
-            showMessage(`${selectedIds.length}개의 작품이 삭제되었습니다.`, 'success');
-        }
-
-        // 데이터 내보내기
-        function exportData() {
-            const exportData = {
-                artworks: artworks,
-                likes: likes,
-                comments: comments,
-                settings: siteSettings,
-                exportDate: new Date().toISOString()
-            };
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `brick-gallery-backup-${new Date().toISOString().split('T')[0]}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            showMessage('데이터가 성공적으로 내보내졌습니다.', 'success');
-        }
-
-        // 댓글 테이블 업데이트
-        function updateCommentsTable() {
-            const tbody = document.getElementById('commentsTableBody');
-            let allComments = [];
-            
-            // 모든 작품의 댓글 수집
-            artworks.forEach(artwork => {
-                if (comments[artwork.id]) {
-                    comments[artwork.id].forEach(comment => {
-                        allComments.push({
-                            ...comment,
-                            artworkId: artwork.id,
-                            artworkTitle: artwork.title
-                        });
-                    });
-                }
-            });
-            
-            if (allComments.length === 0) {
+            if (artworks.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 40px;">
-                            댓글이 없습니다.
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            등록된 작품이 없습니다.
                         </td>
                     </tr>
                 `;
                 return;
             }
             
-            tbody.innerHTML = allComments.map(comment => `
-                <tr>
-                    <td><input type="checkbox" class="comment-checkbox" value="${comment.id}"></td>
-                    <td>${comment.artworkTitle}</td>
-                    <td>${comment.author}</td>
-                    <td>${comment.content}</td>
-                    <td>${new Date(comment.createdAt).toLocaleDateString()}</td>
-                    <td>
-                        <button class="btn-edit" onclick="editComment('${comment.id}', '${comment.artworkId}')">수정</button>
-                        <button class="btn-danger" onclick="deleteComment('${comment.id}', '${comment.artworkId}')">삭제</button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = artworks.map(artwork => {
+                const likeCount = likes[artwork.id] || 0;
+                const date = new Date(artwork.createdAt).toLocaleDateString();
+                
+                return `
+                    <tr>
+                        <td>${artwork.title}</td>
+                        <td>${artwork.author}</td>
+                        <td>${artwork.grade}</td>
+                        <td>${getCategoryName(artwork.category)}</td>
+                        <td>❤️ ${likeCount}</td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="btn-edit" onclick="editArtwork('${artwork.id}')">수정</button>
+                            <button class="btn-danger" onclick="deleteArtwork('${artwork.id}')">삭제</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        // 댓글 전체 선택
-        function selectAllComments(checkbox) {
-            const checkboxes = document.querySelectorAll('.comment-checkbox');
-            checkboxes.forEach(cb => {
-                cb.checked = checkbox.checked;
-            });
-        }
-
-        // 선택된 댓글 삭제
-        async function deleteSelectedComments() {
-            const checkboxes = document.querySelectorAll('.comment-checkbox:checked');
-            const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+        // ✏️ 작품 수정
+        function editArtwork(artworkId) {
+            const artwork = artworks.find(a => a.id === artworkId);
+            if (!artwork) return;
             
-            if (selectedIds.length === 0) {
-                showMessage('삭제할 댓글을 선택해주세요.', 'error');
+            // 수정 모드로 전환
+            currentEditingId = artworkId;
+            
+            // 작품 올리기 패널 열기
+            document.getElementById('uploadPanel').classList.add('active');
+            document.getElementById('adminPanel').classList.remove('active');
+            
+            // 폼에 기존 데이터 채우기
+            document.getElementById('title').value = artwork.title;
+            document.getElementById('author').value = artwork.author;
+            document.getElementById('grade').value = artwork.grade.replace('학년', '');
+            document.getElementById('category').value = artwork.category;
+            document.getElementById('description').value = artwork.description;
+            
+            // 버튼 텍스트 변경
+            document.getElementById('submitBtn').textContent = '작품 수정하기';
+            
+            // 이미지 미리보기
+            if (artwork.image) {
+                document.getElementById('imagePreview').src = artwork.image;
+                document.getElementById('imagePreview').style.display = 'block';
+                document.getElementById('uploadText').style.display = 'none';
+            }
+            
+            showMessage('작품을 수정할 수 있습니다.', 'success');
+            
+            // 스크롤을 맨 위로
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 📷 이미지 미리보기
+        function previewImage() {
+            const file = document.getElementById('imageFile').files[0];
+            const preview = document.getElementById('imagePreview');
+            const uploadText = document.getElementById('uploadText');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    uploadText.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 💬 메시지 표시
+        function showMessage(text, type = 'success') {
+            const existing = document.querySelector('.message');
+            if (existing) existing.remove();
+            
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            
+                        const activePanel = document.querySelector('.upload-panel.active, .admin-panel.active');
+            if (activePanel) {
+                activePanel.insertBefore(message, activePanel.firstChild);
+            }
+            
+            setTimeout(() => message.remove(), 5000);
+        }
+
+        // ☁️ Cloudinary에 이미지 업로드
+        async function uploadImageToCloudinary(file) {
+            if (!file) return null;
+
+            if (CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME_HERE') {
+                showMessage('⚠️ Cloudinary 설정이 필요합니다.', 'error');
+                return null;
+            }
+
+            try {
+                const progressBar = document.getElementById('uploadProgress');
+                const progressPercent = document.getElementById('uploadProgressBar');
+                
+                progressBar.style.display = 'block';
+                progressPercent.style.width = '10%';
+                progressPercent.textContent = 'Cloudinary 업로드 중...';
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+                progressPercent.style.width = '50%';
+
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Cloudinary 업로드 실패');
+
+                const result = await response.json();
+                
+                progressPercent.style.width = '100%';
+                progressPercent.textContent = '업로드 완료!';
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    progressPercent.style.width = '0%';
+                }, 2000);
+
+                return result.secure_url;
+
+            } catch (error) {
+                document.getElementById('uploadProgress').style.display = 'none';
+                console.error('이미지 업로드 오류:', error);
+                showMessage('이미지 업로드에 실패했습니다: ' + error.message, 'error');
+                return null;
+            }
+        }
+
+        // 💾 Upstash Redis에 작품 저장
+        async function saveArtworkToUpstash(artwork) {
+            try {
+                const response = await fetch('/api/artworks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artwork })
+                });
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('Upstash 저장 오류:', error);
+                throw error;
+            }
+        }
+
+        // 📖 Upstash Redis에서 모든 작품 불러오기
+        async function loadArtworksFromUpstash() {
+            try {
+                const response = await fetch('/api/artworks');
+                const result = await response.json();
+                
+                if (result.success) {
+                    return result.artworks;
+                }
+                return [];
+            } catch (error) {
+                console.error('Upstash 로드 오류:', error);
+                return [];
+            }
+        }
+
+        // 🗑️ Upstash Redis에서 작품 삭제
+        async function deleteArtworkFromUpstash(artworkId) {
+            try {
+                const response = await fetch(`/api/artworks?artworkId=${artworkId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                return result.success;
+            } catch (error) {
+                console.error('Upstash 삭제 오류:', error);
+                return false;
+            }
+        }
+
+        // ❤️ 좋아요 토글 (Upstash 저장)
+        async function toggleLikeInUpstash(artworkId, action) {
+            try {
+                const response = await fetch('/api/likes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artworkId, action })
+                });
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('좋아요 Upstash 오류:', error);
+                return null;
+            }
+        }
+
+        // 📖 Upstash에서 좋아요 데이터 불러오기
+        async function loadLikesFromUpstash() {
+            try {
+                const response = await fetch('/api/likes');
+                const result = await response.json();
+                
+                if (result.success) {
+                    return result.likes;
+                }
+                return {};
+            } catch (error) {
+                console.error('좋아요 로드 오류:', error);
+                return {};
+            }
+        }
+
+        // 🎨 카테고리 이름 변환
+        function getCategoryName(category) {
+            const names = {
+                building: '건축물',
+                vehicle: '탈것', 
+                character: '캐릭터',
+                nature: '자연',
+                creative: '창작모델'
+            };
+            return names[category] || category;
+        }
+
+        // 🖼️ 작품 렌더링
+        function renderArtworks() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            
+            // 작품 수 업데이트
+            document.getElementById('totalCount').textContent = artworks.length;
+            
+            if (artworks.length === 0) {
+                gallery.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;">
+                        <h3>아직 등록된 작품이 없습니다</h3>
+                        <p>작품 올리기 버튼을 눌러 첫 번째 작품을 등록해보세요! 😊</p>
+                        <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">🚀 Upstash Redis 데이터베이스 연결됨</p>
+                    </div>
+                `;
                 return;
             }
             
-            if (!confirm(`선택한 ${selectedIds.length}개의 댓글을 삭제하시겠습니까?`)) {
-                return;
-            }
-            
-            // 댓글 삭제 로직
-            // 실제 구현 시 Upstash에서 삭제
-            
-            showMessage(`${selectedIds.length}개의 댓글이 삭제되었습니다.`, 'success');
-            updateCommentsTable();
-        }
-
-        // 사용자 테이블 업데이트
-        function updateUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            const userStats = {};
-            
-            // 사용자별 통계 계산
-            artworks.forEach(artwork => {
-                if (!userStats[artwork.author]) {
-                    userStats[artwork.author] = {
-                        artworks: 0,
-                        comments: 0,
-                        likes: 0,
-                        lastActivity: null
-                    };
-                }
+            artworks.forEach((artwork, index) => {
+                const card = document.createElement('div');
+                card.className = 'artwork-card';
+                card.setAttribute('data-category', artwork.grade);
                 
-                userStats[artwork.author].artworks++;
-                userStats[artwork.author].likes += likes[artwork.id] || 0;
+                const isLiked = localStorage.getItem(`liked_${artwork.id}`) === 'true';
+                const likeCount = likes[artwork.id] || 0;
                 
-                const artworkDate = new Date(artwork.createdAt);
-                if (!userStats[artwork.author].lastActivity || artworkDate > userStats[artwork.author].lastActivity) {
-                    userStats[artwork.author].lastActivity = artworkDate;
-                }
-            });
-            
-            // 댓글 수 계산
-            Object.values(comments).forEach(artworkComments => {
-                artworkComments.forEach(comment => {
-                    if (!userStats[comment.author]) {
-                        userStats[comment.author] = {
-                            artworks: 0,
-                            comments: 0,
-                            likes: 0,
-                            lastActivity: null
-                        };
+                card.innerHTML = `
+                    <div class="admin-controls">
+                        <button class="btn-edit" onclick="event.stopPropagation(); editArtwork('${artwork.id}')">수정</button>
+                        <button class="btn-danger" onclick="event.stopPropagation(); deleteArtwork('${artwork.id}')">삭제</button>
+                    </div>
+                    <div class="artwork-image">
+                        ${artwork.image ? `<img src="${artwork.image}" alt="${artwork.title}" loading="lazy">` : '<div class="placeholder">🧱</div>'}
+                    </div>
+                    <div class="artwork-info">
+                        <h3 class="artwork-title">${artwork.title}</h3>
+                        <p class="artwork-author">${artwork.author} (${artwork.grade})</p>
+                        <p class="artwork-description">${artwork.description}</p>
+                        <span class="artwork-category">${getCategoryName(artwork.category)}</span>
+                        <div class="artwork-stats">
+                            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${artwork.id}')">
+                                ❤️ ${likeCount}
+                            </button>
+                            <span>🚀 Upstash</span>
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('.admin-controls') && !e.target.closest('.like-btn')) {
+                        showArtworkModal(artwork);
                     }
-                    userStats[comment.author].comments++;
+                });
+                
+                gallery.appendChild(card);
+                
+                // 애니메이션 효과
+                setTimeout(() => {
+                    card.classList.add('show');
+                }, index * 100);
+            });
+            
+            // 관리자 테이블도 업데이트
+            if (document.getElementById('adminPanel').classList.contains('active')) {
+                updateAdminTable();
+                updateAdminStats();
+            }
+        }
+
+        // ❤️ 좋아요 토글
+        async function toggleLike(artworkId) {
+            const isCurrentlyLiked = localStorage.getItem(`liked_${artworkId}`) === 'true';
+            const action = isCurrentlyLiked ? 'unlike' : 'like';
+            
+            try {
+                const result = await toggleLikeInUpstash(artworkId, action);
+                
+                if (result && result.success) {
+                    // 로컬 상태 업데이트
+                    if (action === 'like') {
+                        localStorage.setItem(`liked_${artworkId}`, 'true');
+                    } else {
+                        localStorage.removeItem(`liked_${artworkId}`);
+                    }
                     
-                    const commentDate = new Date(comment.createdAt);
-                    if (!userStats[comment.author].lastActivity || commentDate > userStats[comment.author].lastActivity) {
-                        userStats[comment.author].lastActivity = commentDate;
+                    // 좋아요 수 업데이트
+                    likes[artworkId] = result.likeCount;
+                    
+                    // 화면 재렌더링
+                    renderArtworks();
+                }
+            } catch (error) {
+                showMessage('좋아요 처리에 실패했습니다.', 'error');
+            }
+        }
+
+        // 🗑️ 작품 삭제
+        async function deleteArtwork(artworkId) {
+            if (!confirm('정말로 이 작품을 삭제하시겠습니까?\n\n⚠️ Upstash Redis에서 영구 삭제됩니다.')) {
+                return;
+            }
+
+            try {
+                const success = await deleteArtworkFromUpstash(artworkId);
+                
+                if (success) {
+                    // 로컬 배열에서도 제거
+                    artworks = artworks.filter(artwork => artwork.id !== artworkId);
+                    
+                    // 좋아요 데이터도 제거
+                    delete likes[artworkId];
+                    localStorage.removeItem(`liked_${artworkId}`);
+                    
+                    renderArtworks();
+                    showMessage('작품이 Upstash에서 성공적으로 삭제되었습니다.', 'success');
+                } else {
+                    showMessage('작품 삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('작품 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 🖼️ 작품 상세 모달
+        function showArtworkModal(artwork) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            
+            const isLiked = localStorage.getItem(`liked_${artwork.id}`) === 'true';
+            const likeCount = likes[artwork.id] || 0;
+            
+            modalContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="margin-bottom: 20px;">
+                        ${artwork.image ? `<img src="${artwork.image}" alt="${artwork.title}" style="max-width: 100%; max-height: 400px; border-radius: 10px;">` : '<div style="font-size: 5rem;">🧱</div>'}
+                    </div>
+                    <h2 style="color: #2c3e50; margin-bottom: 10px;">${artwork.title}</h2>
+                    <p style="color: #7f8c8d; font-size: 1.1rem; margin-bottom: 20px;">${artwork.author} (${artwork.grade})</p>
+                    <span style="display: inline-block; padding: 8px 16px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border-radius: 20px; margin-bottom: 20px;">${getCategoryName(artwork.category)}</span>
+                </div>
+                <p style="line-height: 1.8; color: #555; font-size: 1.1rem; text-align: center; margin-bottom: 20px;">${artwork.description}</p>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="toggleLike('${artwork.id}'); setTimeout(() => updateModalLike('${artwork.id}'), 1000)">
+                        ❤️ ${likeCount} 좋아요
+                    </button>
+                    <button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button>
+                </div>
+                <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                    <small style="color: #666;">🚀 Upstash Redis 데이터베이스에 안전하게 저장됨</small><br>
+                    <small style="color: #666;">등록일: ${new Date(artwork.createdAt).toLocaleDateString()}</small>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 모달 좋아요 업데이트
+        function updateModalLike(artworkId) {
+            const likeBtn = document.querySelector('.modal .btn-primary');
+            if (likeBtn) {
+                const likeCount = likes[artworkId] || 0;
+                likeBtn.innerHTML = `❤️ ${likeCount} 좋아요`;
+            }
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // 📤 공유 기능
+        function shareArtwork(title) {
+            if (navigator.share) {
+                navigator.share({
+                    title: `${title} - 대불초등학교 브릭모델 전시관`,
+                    text: `멋진 브릭모델 작품을 확인해보세요!`,
+                    url: window.location.href
+                });
+            } else {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    showMessage('링크가 클립보드에 복사되었습니다!', 'success');
+                }).catch(() => {
+                    showMessage('링크 복사에 실패했습니다.', 'error');
+                });
+            }
+        }
+
+        // 🔄 Upstash 연결 상태 확인
+        async function checkUpstashConnection() {
+            try {
+                const response = await fetch('/api/artworks');
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('upstashStatus').innerHTML = 
+                        '<span class="status-indicator status-success">✅ Upstash Redis 연결 성공!</span>';
+                    isUpstashReady = true;
+                    return true;
+                } else {
+                    throw new Error('Upstash 응답 오류');
+                }
+            } catch (error) {
+                document.getElementById('upstashStatus').innerHTML = 
+                    '<span class="status-indicator status-error">❌ Upstash Redis 연결 실패</span>';
+                console.error('Upstash 연결 확인 오류:', error);
+                return false;
+            }
+        }
+
+        // 📋 폼 제출 처리
+        document.getElementById('artworkForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!isUpstashReady) {
+                showMessage('⚠️ Upstash Redis 데이터베이스 연결을 확인 중입니다...', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Upstash에 저장 중...';
+                
+                // 폼 데이터 수집
+                const formData = {
+                    title: document.getElementById('title').value,
+                    author: document.getElementById('author').value,
+                    grade: document.getElementById('grade').value + '학년',
+                    category: document.getElementById('category').value,
+                    description: document.getElementById('description').value
+                };
+                
+                // 이미지 업로드
+                const imageFile = document.getElementById('imageFile').files[0];
+                let imageUrl = '';
+                
+                // 수정 모드인 경우 기존 이미지 URL 유지
+                if (currentEditingId && !imageFile) {
+                    const existingArtwork = artworks.find(a => a.id === currentEditingId);
+                    imageUrl = existingArtwork ? existingArtwork.image : '';
+                } else if (imageFile) {
+                    submitBtn.textContent = 'Cloudinary 업로드 중...';
+                    imageUrl = await uploadImageToCloudinary(imageFile);
+                    
+                    if (!imageUrl) {
+                        throw new Error('이미지 업로드에 실패했습니다.');
+                    }
+                }
+                
+                if (currentEditingId) {
+                    // 수정 모드
+                    const updatedArtwork = {
+                        id: currentEditingId,
+                        ...formData,
+                        image: imageUrl,
+                        createdAt: artworks.find(a => a.id === currentEditingId).createdAt
+                    };
+                    
+                    // Upstash Redis에 업데이트
+                    submitBtn.textContent = 'Upstash Redis에 수정 중...';
+                    const result = await saveArtworkToUpstash(updatedArtwork);
+                    
+                    if (result.success) {
+                        // 로컬 배열 업데이트
+                        const index = artworks.findIndex(a => a.id === currentEditingId);
+                        artworks[index] = updatedArtwork;
+                        
+                        renderArtworks();
+                        
+                        // 폼 초기화
+                        this.reset();
+                        document.getElementById('imagePreview').style.display = 'none';
+                        document.getElementById('uploadText').style.display = 'block';
+                        currentEditingId = null;
+                        submitBtn.textContent = '작품 등록하기';
+                        
+                        showMessage('✅ 작품이 성공적으로 수정되었습니다!', 'success');
+                    } else {
+                        throw new Error(result.error || 'Upstash 수정 실패');
+                    }
+                } else {
+                    // 새 작품 등록
+                    const newArtwork = {
+                        id: Date.now().toString(),
+                        ...formData,
+                        image: imageUrl,
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    // Upstash Redis에 저장
+                    submitBtn.textContent = 'Upstash Redis에 저장 중...';
+                    const result = await saveArtworkToUpstash(newArtwork);
+                    
+                    if (result.success) {
+                        // 로컬 배열에 추가
+                        artworks.unshift(newArtwork);
+                        renderArtworks();
+                        
+                        // 폼 초기화
+                        this.reset();
+                        document.getElementById('imagePreview').style.display = 'none';
+                        document.getElementById('uploadText').style.display = 'block';
+                        
+                        showMessage(`✅ 작품이 Upstash Redis에 성공적으로 저장되었습니다! (총 ${result.total}개)`, 'success');
+                    } else {
+                        throw new Error(result.error || 'Upstash 저장 실패');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('작품 처리 오류:', error);
+                showMessage('❌ 작품 처리에 실패했습니다: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+
+        // 🔍 검색 기능
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const artworkCards = document.querySelectorAll('.artwork-card');
+            
+            artworkCards.forEach(card => {
+                const title = card.querySelector('.artwork-title').textContent.toLowerCase();
+                const author = card.querySelector('.artwork-author').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || author.includes(searchTerm)) {
+                    card.style.display = 'block';
+                    card.classList.add('show');
+                } else {
+                    card.classList.remove('show');
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+
+        // 🎛️ 필터 기능
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const category = btn.dataset.category;
+                const artworkCards = document.querySelectorAll('.artwork-card');
+                
+                artworkCards.forEach(card => {
+                    if (category === 'all' || card.dataset.category === category) {
+                        card.style.display = 'block';
+                        setTimeout(() => {
+                            card.classList.add('show');
+                        }, 100);
+                    } else {
+                        card.classList.remove('show');
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                        }, 300);
                     }
                 });
             });
+        });
+
+        // 🚀 초기화
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🧱 대불초등학교 브릭모델 전시관 로드 (Upstash Redis 연동)');
             
-            const users = Object.entries(userStats);
-            
-            if (users.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 40px;">
-                            사용자 데이터가 없습니다.
-                        </td>
-                    </tr>
-                `;
-                return;
+            // Cloudinary 설정 확인
+            if (CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME_HERE') {
+                document.getElementById('cloudinaryStatus').innerHTML = 
+                    '<span class="status-indicator status-error">⚠️ Cloudinary 설정 필요</span>';
+                showMessage('⚠️ 이미지 업로드를 위해 Cloudinary 설정이 필요합니다.', 'error');
+            } else {
+                document.getElementById('cloudinaryStatus').innerHTML = 
+                    '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>';
             }
             
-            tbody.innerHTML = users.map(([username, stats]) => `
-                <tr>
-                    <td>${username}</td>
-                    <td>${stats.artworks}</td>
-                    <td>${stats.comments}</td>
-                    <td>${stats.likes}</td>
-                    <td>${stats.lastActivity ? stats.lastActivity.toLocaleDateString() : '-'}</td>
-                </tr>
-            `).join('');
-        }
-
-        // 설정 폼 업데이트
-        function updateSettingsForm() {
-            // 기본 정보
-            document.getElementById('siteTitleInput').value = siteSettings.title;
-            document.getElementById('siteSubtitleInput').value = siteSettings.subtitle;
+            // Upstash 연결 확인
+            const upstashConnected = await checkUpstashConnection();
             
-            // 보안 설정
-            document.getElementById('uploadPasswordEnabled').checked = siteSettings.uploadPasswordEnabled;
+            if (upstashConnected) {
+                // Upstash에서 작품 불러오기
+                console.log('Upstash에서 작품 데이터 로드 중...');
+                artworks = await loadArtworksFromUpstash();
+                
+                // 좋아요 데이터 불러오기
+                likes = await loadLikesFromUpstash();
+                
+                console.log(`✅ ${artworks.length}개 작품 로드 완료`);
+            } else {
+                // Upstash 연결 실패시 로컬 데이터 사용
+                console.log('Upstash 연결 실패, 로컬 데이터 사용');
+                const savedArtworks = localStorage.getItem('artworks');
+                if (savedArtworks) {
+                    artworks = JSON.parse(savedArtworks);
+                }
+            }
+            
+            // 샘플 데이터 (최초 실행시만)
+            if (artworks.length === 0) {
+                console.log('샘플 데이터 생성 중...');
+                const sampleArtwork = {
+                    id: 'sample-upstash-1',
+                    title: 'Upstash Redis 테스트 작품',
+                    author: '시스템',
+                    grade: '3학년',
+                    category: 'building',
+                    description: 'Upstash Redis 데이터베이스 연동 테스트를 위한 샘플 브릭모델 작품입니다. 실제 서버에 저장되어 모든 기기에서 확인할 수 있습니다.',
+                    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
+                    createdAt: new Date().toISOString()
+                };
+                
+                if (upstashConnected) {
+                    // Upstash에 샘플 데이터 저장
+                    try {
+                        await saveArtworkToUpstash(sampleArtwork);
+                        artworks = [sampleArtwork];
+                        
+                        // 샘플 좋아요 데이터도 저장
+                        likes = { 'sample-upstash-1': 5 };
+                        await toggleLikeInUpstash('sample-upstash-1', 'like');
+                        await toggleLikeInUpstash('sample-upstash-1', 'like');
+                        await toggleLikeInUpstash('sample-upstash-1', 'like');
+                        await toggleLikeInUpstash('sample-upstash-1', 'like');
+                        await toggleLikeInUpstash('sample-upstash-1', 'like');
+                        
+                    } catch (error) {
+                        console.error('샘플 데이터 Upstash 저장 실패:', error);
+                    }
+                }
+                
+                if (artworks.length === 0) {
+                    // Upstash 저장 실패시 로컬에만 저장
+                    artworks = [sampleArtwork];
+                    likes = { 'sample-upstash-1': 5 };
+                    localStorage.setItem('artworks', JSON.stringify(artworks));
+                }
+            }
+            
+            // 화면 렌더링
+            renderArtworks();
+            
+            // 페이지 제목 동적 업데이트
+            if (artworks.length > 0) {
+                document.title = `대불초등학교 브릭모델 전시관 (${artworks.length}개 작품)`;
+            }
+            
+            console.log('✅ 모든 초기화 완료 - Upstash Redis 연동');
+        });
+
+        // 🔧 추가 유틸리티 함수들
+        
+        // 페이지 가시성 변경 시 데이터 새로고침
+        document.addEventListener('visibilitychange', async function() {
+            if (!document.hidden && isUpstashReady) {
+                console.log('페이지 활성화 - 데이터 새로고침');
+                const latestArtworks = await loadArtworksFromUpstash();
+                const latestLikes = await loadLikesFromUpstash();
+                
+                if (latestArtworks.length !== artworks.length) {
+                    artworks = latestArtworks;
+                    likes = latestLikes;
+                    renderArtworks();
+                    showMessage('새로운 작품이 추가되었습니다! 🎉', 'success');
+                }
+            }
+        });
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(e) {
+            // Ctrl + K: 검색창 포커스
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+            
+            // Esc: 모달 닫기
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 온라인/오프라인 상태 감지
+        window.addEventListener('online', () => {
+            showMessage('✅ 인터넷 연결이 복구되었습니다.', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            showMessage('⚠️ 인터넷 연결이 끊어졌습니다. 일부 기능이 제한될 수 있습니다.', 'error');
+        });
+
+        // 추가 디버깅 정보
+        console.log('🚀 Upstash Redis 연동 브릭모델 전시관 준비 완료');
+        console.log('📋 사용 가능한 단축키: Ctrl+K (검색), Esc (모달 닫기)');
+    </script>
+</body>
+</html>
