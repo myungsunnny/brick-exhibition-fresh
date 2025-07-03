@@ -637,11 +637,61 @@
             flex-wrap: wrap;
         }
 
-        .checkbox-group {
+        .project-info {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.4s ease;
+        }
+
+        .project-info h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .project-info p {
+            color: #555;
+            line-height: 1.6;
             margin-bottom: 10px;
+        }
+
+        .project-info .highlight {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .project-info .objectives {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .project-info .objectives h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .project-info .objectives ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #555;
+        }
+
+        .project-info .objectives li {
+            margin-bottom: 5px;
         }
 
         @media (max-width: 768px) {
@@ -901,6 +951,10 @@
             <button class="filter-btn" data-category="6학년">6학년</button>
         </div>
 
+        <!-- 학년별 프로젝트 설명 -->
+        <div class="project-info" id="projectInfo" style="display: none;">
+        </div>
+
         <!-- 작품 갤러리 -->
         <div class="gallery" id="gallery">
             <div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;">
@@ -922,7 +976,108 @@
         const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
         const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
 
-        // 📊 전역 변수
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        // 📚 학년별 프로젝트 정보
+        const projectInfo = {
+            '1학년': {
+                emoji: '🌟',
+                title: '1학년 브릭모델 프로젝트',
+                description: '처음 만나는 브릭의 세계! 1학년 친구들은 기본적인 브릭 조립을 통해 창의성과 집중력을 기르는 활동을 합니다.',
+                objectives: [
+                    '기본적인 브릭 조립 방법 익히기',
+                    '색깔과 모양 인식 능력 향상',
+                    '소근육 발달 및 집중력 향상',
+                    '친구들과 협력하여 작품 완성하기'
+                ]
+            },
+            '2학년': {
+                emoji: '🎨',
+                title: '2학년 브릭모델 프로젝트',
+                description: '상상력이 꽃피는 2학년! 간단한 동물이나 사물을 만들며 관찰력과 표현력을 키우는 시간입니다.',
+                objectives: [
+                    '관찰한 것을 브릭으로 표현하기',
+                    '기본 동물과 사물 만들기',
+                    '색깔 조합과 패턴 이해',
+                    '완성작에 대한 이야기 만들기'
+                ]
+            },
+            '3학년': {
+                emoji: '🏗️',
+                title: '3학년 브릭모델 프로젝트',
+                description: '본격적인 건축의 시작! 3학년은 우리 주변의 건물과 구조물을 관찰하고 브릭으로 재현해보는 활동을 합니다.',
+                objectives: [
+                    '건물의 구조와 특징 이해하기',
+                    '비례와 균형 감각 기르기',
+                    '공간 구성 능력 향상',
+                    '우리 동네 탐구하기'
+                ]
+            },
+            '4학년': {
+                emoji: '🚗',
+                title: '4학년 브릭모델 프로젝트',
+                description: '움직이는 세상 탐험! 4학년은 다양한 교통수단과 기계를 만들며 과학적 원리와 구조를 이해합니다.',
+                objectives: [
+                    '교통수단의 종류와 특징 알기',
+                    '움직임의 원리 이해하기',
+                    '기계 구조의 기본 원리 학습',
+                    '미래 교통수단 상상하기'
+                ]
+            },
+            '5학년': {
+                emoji: '🎭',
+                title: '5학년 브릭모델 프로젝트',
+                description: '상상 속 캐릭터를 현실로! 5학년은 좋아하는 캐릭터나 인물을 만들며 세밀한 표현 기법을 익힙니다.',
+                objectives: [
+                    '캐릭터의 특징 파악하고 표현하기',
+                    '세밀한 디테일 표현 기법 익히기',
+                    '감정과 동작 표현하기',
+                    '나만의 캐릭터 창작하기'
+                ]
+            },
+            '6학년': {
+                emoji: '🌍',
+                title: '6학년 브릭모델 프로젝트',
+                description: '자연과 환경의 소중함을 담아내는 6학년! 자연물을 관찰하고 환경보호 메시지를 담은 창작활동을 합니다.',
+                objectives: [
+                    '자연물의 아름다움 표현하기',
+                    '환경보호 메시지 담기',
+                    '복잡한 구조물 설계하기',
+                    '지속가능한 미래 상상하기'
+                ]
+            }
+        };
+
+        // 📋 프로젝트 정보 표시
+        function showProjectInfo(grade) {
+            const projectInfoDiv = document.getElementById('projectInfo');
+            
+            if (grade === 'all') {
+                projectInfoDiv.style.display = 'none';
+                return;
+            }
+            
+            const info = projectInfo[grade];
+            if (!info) return;
+            
+            projectInfoDiv.innerHTML = `
+                <h3>${info.emoji} ${info.title}</h3>
+                <p>${info.description}</p>
+                <div class="objectives">
+                    <h4>🎯 학습 목표</h4>
+                    <ul>
+                        ${info.objectives.map(objective => `<li>${objective}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            
+            projectInfoDiv.style.display = 'block';
+        }
         let artworks = [];
         let comments = {};
         let likes = {};
@@ -1801,6 +1956,10 @@
                 btn.classList.add('active');
                 
                 const category = btn.dataset.category;
+                
+                // 프로젝트 정보 표시
+                showProjectInfo(category);
+                
                 const artworkCards = document.querySelectorAll('.artwork-card');
                 
                 artworkCards.forEach(card => {
