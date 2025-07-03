@@ -40,13 +40,11 @@
             align-items: center;
         }
 
-        /* 🔽 [추가된 부분] 헤더 로고 이미지 스타일 🔽 */
         .header-logo {
-            max-height: 2.5rem; /* h1 폰트 크기와 유사하게 */
+            max-height: 2.5rem; 
             margin-right: 15px;
             vertical-align: middle;
         }
-        /* 🔼 [추가된 부분] 여기까지 🔼 */
 
         .subtitle {
             font-size: 1.1rem;
@@ -188,6 +186,15 @@
             font-weight: bold;
             color: #2c3e50;
         }
+        
+        /* 🔽 [추가된 부분] 관리자 설정 내 라벨 스타일 🔽 */
+        .form-group .sub-label {
+            font-weight: normal;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        /* 🔼 [추가된 부분] 여기까지 🔼 */
+
 
         input, select, textarea {
             width: 100%;
@@ -715,7 +722,6 @@
             flex-wrap: wrap;
         }
         
-        /* 🔽 [수정된 부분] 댓글 설정 UI 개선을 위한 스타일 🔽 */
         .settings-options-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -748,7 +754,6 @@
             margin-bottom: 0;
             cursor: pointer;
         }
-        /* 🔼 [수정된 부분] 여기까지 🔼 */
 
         hr {
             border: none;
@@ -805,11 +810,9 @@
             .admin-tabs { justify-content: center; }
             .stats-grid { grid-template-columns: 1fr; }
             
-            /* 🔽 [수정된 부분] 모바일에서 댓글 설정 UI가 세로로 쌓이도록 🔽 */
             .settings-options-grid {
                 grid-template-columns: 1fr;
             }
-            /* 🔼 [수정된 부분] 여기까지 🔼 */
 
             .filters-container {
                 padding: 0 15px;
@@ -1015,8 +1018,13 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="siteHeaderImage">헤더 이미지 URL</label>
-                    <input type="text" id="siteHeaderImage" placeholder="예: https://example.com/logo.png">
+                    <label>헤더 이미지</label>
+                    <div class="image-upload" onclick="document.getElementById('headerImageFile').click()">
+                        <input type="file" id="headerImageFile" accept="image/*" onchange="previewHeaderImage()">
+                        <div id="headerUploadText">📁 이미지를 선택하세요</div>
+                        <img id="headerImagePreview" class="image-preview" alt="헤더 이미지 미리보기">
+                    </div>
+                    <button class="btn btn-danger btn-small" onclick="removeHeaderImage()">이미지 제거</button>
                 </div>
                 <div class="form-group">
                     <label for="siteDescription">사이트 설명</label>
@@ -1033,6 +1041,7 @@
                         <label for="moderateComments">댓글 승인 필요</label>
                     </div>
                 </div>
+                
                 <div class="form-group">
                     <label for="adminPassword">관리자 비밀번호 변경</label>
                     <input type="password" id="adminPassword" placeholder="새 비밀번호 (비워두면 변경하지 않음)">
@@ -1042,34 +1051,47 @@
 
                 <h3>학년별 설명 관리</h3>
                 <div class="form-group">
-                    <label for="gradeDescAll">전체 학년 설명</label>
+                    <label for="gradeTitleAll">전체 학년 제목</label>
+                    <input type="text" id="gradeTitleAll">
+                    <label for="gradeDescAll" class="sub-label">전체 학년 설명</label>
                     <textarea id="gradeDescAll"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="gradeDesc1">1학년 설명</label>
+                    <label for="gradeTitle1">1학년 제목</label>
+                    <input type="text" id="gradeTitle1">
+                    <label for="gradeDesc1" class="sub-label">1학년 설명</label>
                     <textarea id="gradeDesc1"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="gradeDesc2">2학년 설명</label>
+                    <label for="gradeTitle2">2학년 제목</label>
+                    <input type="text" id="gradeTitle2">
+                    <label for="gradeDesc2" class="sub-label">2학년 설명</label>
                     <textarea id="gradeDesc2"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="gradeDesc3">3학년 설명</label>
+                    <label for="gradeTitle3">3학년 제목</label>
+                    <input type="text" id="gradeTitle3">
+                    <label for="gradeDesc3" class="sub-label">3학년 설명</label>
                     <textarea id="gradeDesc3"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="gradeDesc4">4학년 설명</label>
+                    <label for="gradeTitle4">4학년 제목</label>
+                    <input type="text" id="gradeTitle4">
+                    <label for="gradeDesc4" class="sub-label">4학년 설명</label>
                     <textarea id="gradeDesc4"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="gradeDesc5">5학년 설명</label>
+                    <label for="gradeTitle5">5학년 제목</label>
+                    <input type="text" id="gradeTitle5">
+                    <label for="gradeDesc5" class="sub-label">5학년 설명</label>
                     <textarea id="gradeDesc5"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="gradeDesc6">6학년 설명</label>
+                    <label for="gradeTitle6">6학년 제목</label>
+                    <input type="text" id="gradeTitle6">
+                    <label for="gradeDesc6" class="sub-label">6학년 설명</label>
                     <textarea id="gradeDesc6"></textarea>
                 </div>
-                
                 <hr>
 
                 <button class="btn btn-primary" onclick="saveSettings()">설정 저장</button>
@@ -1095,8 +1117,8 @@
 
         <div class="grade-info-section" id="gradeInfoSection">
             <div class="grade-info-content">
-                <h3 id="gradeInfoTitle">🧱 모든 학년 브릭모델 작품</h3>
-                <p id="gradeInfoDescription">대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.</p>
+                <h3 id="gradeInfoTitle"></h3>
+                <p id="gradeInfoDescription"></p>
             </div>
         </div>
 
@@ -1130,19 +1152,15 @@
         let comments = {};
         let likes = {};
         
-        // 🔽 [수정된 부분] settings 객체에 headerImage 추가
         let settings = {
             title: '대불초등학교 브릭모델 전시관',
-            headerImage: '', // 헤더 이미지 URL
+            headerImage: '',
             description: '창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요',
             allowComments: true,
             moderateComments: false,
             adminPassword: '1234',
             gradeDescriptions: {
-                'all': {
-                    title: '🧱 모든 학년 브릭모델 작품',
-                    description: '대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.'
-                },
+                'all': { title: '🧱 모든 학년 브릭모델 작품', description: '대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.' },
                 '1학년': { title: '🌟 1학년 브릭모델 작품', description: '1학년 친구들의 첫 번째 브릭모델 작품들입니다. 기본적인 블록 쌓기부터 시작하여 간단한 집, 동물, 자동차 등을 만들며 창의력과 손재주를 기르고 있어요!' },
                 '2학년': { title: '🎨 2학년 브릭모델 작품', description: '2학년 친구들은 더욱 정교한 작품을 만들 수 있게 되었어요. 색깔 조합과 기본 구조를 이해하며 자신만의 개성이 담긴 작품들을 선보입니다.' },
                 '3학년': { title: '🏗️ 3학년 브릭모델 작품', description: '3학년이 되면서 더욱 복잡한 구조물을 만들 수 있게 되었어요. 건축물의 기본 원리를 이해하고 계획적으로 작품을 제작하는 능력이 늘어났습니다.' },
@@ -1497,43 +1515,82 @@
 
         function loadSettingsForm() {
             document.getElementById('siteTitle').value = settings.title;
-            document.getElementById('siteHeaderImage').value = settings.headerImage;
             document.getElementById('siteDescription').value = settings.description;
             document.getElementById('allowComments').checked = settings.allowComments;
             document.getElementById('moderateComments').checked = settings.moderateComments;
             
+            // 헤더 이미지 미리보기 로드
+            const headerPreview = document.getElementById('headerImagePreview');
+            const headerUploadText = document.getElementById('headerUploadText');
+            if(settings.headerImage) {
+                headerPreview.src = settings.headerImage;
+                headerPreview.style.display = 'block';
+                headerUploadText.style.display = 'none';
+            } else {
+                headerPreview.style.display = 'none';
+                headerUploadText.style.display = 'block';
+            }
+
+            // 학년별 제목 및 설명 로드
+            document.getElementById('gradeTitleAll').value = settings.gradeDescriptions['all'].title;
             document.getElementById('gradeDescAll').value = settings.gradeDescriptions['all'].description;
             for(let i = 1; i <= 6; i++) {
+                document.getElementById(`gradeTitle${i}`).value = settings.gradeDescriptions[`${i}학년`].title;
                 document.getElementById(`gradeDesc${i}`).value = settings.gradeDescriptions[`${i}학년`].description;
             }
         }
+        
+        // 🔽 [수정된 부분] 설정 저장 함수를 async로 변경하고 로직 추가
+        async function saveSettings() {
+            const saveBtn = event.target;
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
 
-        // 🔽 [수정된 부분] 설정 저장 함수에 headerImage 저장 로직 추가
-        function saveSettings() {
-            settings.title = document.getElementById('siteTitle').value;
-            settings.headerImage = document.getElementById('siteHeaderImage').value;
-            settings.description = document.getElementById('siteDescription').value;
-            settings.allowComments = document.getElementById('allowComments').checked;
-            settings.moderateComments = document.getElementById('moderateComments').checked;
-            
-            const newPassword = document.getElementById('adminPassword').value;
-            if (newPassword.trim() !== '') {
-                settings.adminPassword = newPassword;
-            }
+            try {
+                // 헤더 이미지 업로드 처리
+                const headerImageFile = document.getElementById('headerImageFile').files[0];
+                if (headerImageFile) {
+                    const imageUrl = await uploadImageToCloudinary(headerImageFile);
+                    if(imageUrl) {
+                        settings.headerImage = imageUrl;
+                    } else {
+                        throw new Error("헤더 이미지 업로드 실패");
+                    }
+                }
 
-            settings.gradeDescriptions['all'].description = document.getElementById('gradeDescAll').value;
-            for(let i = 1; i <= 6; i++) {
-                settings.gradeDescriptions[`${i}학년`].description = document.getElementById(`gradeDesc${i}`).value;
+                settings.title = document.getElementById('siteTitle').value;
+                settings.description = document.getElementById('siteDescription').value;
+                settings.allowComments = document.getElementById('allowComments').checked;
+                settings.moderateComments = document.getElementById('moderateComments').checked;
+                
+                const newPassword = document.getElementById('adminPassword').value;
+                if (newPassword.trim() !== '') {
+                    settings.adminPassword = newPassword;
+                }
+
+                // 학년별 제목 및 설명 저장
+                settings.gradeDescriptions['all'].title = document.getElementById('gradeTitleAll').value;
+                settings.gradeDescriptions['all'].description = document.getElementById('gradeDescAll').value;
+                for(let i = 1; i <= 6; i++) {
+                    settings.gradeDescriptions[`${i}학년`].title = document.getElementById(`gradeTitle${i}`).value;
+                    settings.gradeDescriptions[`${i}학년`].description = document.getElementById(`gradeDesc${i}`).value;
+                }
+                
+                localStorage.setItem('settings', JSON.stringify(settings));
+                
+                applyHeaderSettings();
+                loadSettingsForm(); // 폼에 변경사항(업로드된 이미지 등) 다시 로드
+                
+                showMessage('설정이 저장되었습니다.', 'success');
+                
+                const currentFilter = document.querySelector('.filter-btn.active').dataset.category;
+                updateGradeInfo(currentFilter);
+            } catch(error) {
+                showMessage(error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '설정 저장';
             }
-            
-            localStorage.setItem('settings', JSON.stringify(settings));
-            
-            applyHeaderSettings(); // 헤더 설정을 즉시 적용
-            
-            showMessage('설정이 저장되었습니다.', 'success');
-            
-            const currentFilter = document.querySelector('.filter-btn.active').dataset.category;
-            updateGradeInfo(currentFilter);
         }
 
         // 🔄 모든 데이터 초기화
@@ -1608,6 +1665,32 @@
                 reader.readAsDataURL(file);
             }
         }
+        
+        // 🔽 [추가된 부분] 헤더 이미지 미리보기 함수 🔽
+        function previewHeaderImage() {
+            const file = document.getElementById('headerImageFile').files[0];
+            const preview = document.getElementById('headerImagePreview');
+            const uploadText = document.getElementById('headerUploadText');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    uploadText.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 🔽 [추가된 부분] 헤더 이미지 제거 함수 🔽
+        function removeHeaderImage() {
+            if(confirm("헤더 이미지를 제거하시겠습니까? '설정 저장' 버튼을 눌러야 최종 반영됩니다.")) {
+                settings.headerImage = '';
+                document.getElementById('headerImageFile').value = ''; // 파일 선택 초기화
+                loadSettingsForm(); // UI 업데이트
+            }
+        }
 
         // 💬 메시지 표시
         function showMessage(text, type = 'success') {
@@ -1628,18 +1711,9 @@
             if (!file) return null;
 
             try {
-                const progressBar = document.getElementById('uploadProgress');
-                const progressPercent = document.getElementById('uploadProgressBar');
-                
-                progressBar.style.display = 'block';
-                progressPercent.style.width = '10%';
-                progressPercent.textContent = '업로드 중...';
-
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-                progressPercent.style.width = '50%';
 
                 const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
                     method: 'POST',
@@ -1649,21 +1723,10 @@
                 if (!response.ok) throw new Error('이미지 업로드 실패');
 
                 const result = await response.json();
-                
-                progressPercent.style.width = '100%';
-                progressPercent.textContent = '업로드 완료!';
-                
-                setTimeout(() => {
-                    progressBar.style.display = 'none';
-                    progressPercent.style.width = '0%';
-                }, 2000);
-
                 return result.secure_url;
 
             } catch (error) {
-                document.getElementById('uploadProgress').style.display = 'none';
                 console.error('이미지 업로드 오류:', error);
-                showMessage('이미지 업로드에 실패했습니다: ' + error.message, 'error');
                 return null;
             }
         }
@@ -1791,34 +1854,30 @@
                     <button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button>
                 </div>
                 
-                ${settings.allowComments ? `<div class="comments-section">...</div>` : ''}
+                ${settings.allowComments ? `<div class="comments-section"></div>` : ''}
             `;
-            // 댓글 부분은 복잡하므로 생략 후 필요시 채우기
+            
             if (settings.allowComments) {
                 const commentsSection = modalContent.querySelector('.comments-section');
                 commentsSection.innerHTML = `
                     <h3>댓글 (${approvedComments.length})</h3>
-                    <div id="commentsList">${approvedComments.map(c => `<div class="comment">...</div>`).join('')}</div>
-                    <div class="comment-form">...</div>
-                `;
-                const commentsList = commentsSection.querySelector('#commentsList');
-                commentsList.innerHTML = approvedComments.map(comment => `
-                    <div class="comment">
-                        <div class="comment-controls">
-                            <button class="btn-warning" onclick="editComment('${artwork.id}', '${comment.id}')">수정</button>
-                            <button class="btn-danger" onclick="deleteComment('${artwork.id}', '${comment.id}')">삭제</button>
-                        </div>
-                        <div class="comment-author">${comment.author}</div>
-                        <div class="comment-text">${comment.text}</div>
-                        <div class="comment-date">${new Date(comment.createdAt).toLocaleString()}</div>
-                    </div>`).join('');
-
-                const commentForm = commentsSection.querySelector('.comment-form');
-                commentForm.innerHTML = `
-                    <h4>댓글 작성</h4>
-                    <div class="form-group"><input type="text" id="commentAuthor" placeholder="이름을 입력하세요" style="margin-bottom: 10px;"></div>
-                    <div class="form-group"><textarea id="commentText" placeholder="댓글을 입력하세요..." style="margin-bottom: 10px;"></textarea></div>
-                    <button class="btn btn-primary" onclick="submitComment('${artwork.id}')">댓글 등록</button>
+                    <div id="commentsList">${approvedComments.map(comment => `
+                        <div class="comment">
+                            <div class="comment-controls">
+                                <button class="btn-warning" onclick="editComment('${artwork.id}', '${comment.id}')">수정</button>
+                                <button class="btn-danger" onclick="deleteComment('${artwork.id}', '${comment.id}')">삭제</button>
+                            </div>
+                            <div class="comment-author">${comment.author}</div>
+                            <div class="comment-text">${comment.text}</div>
+                            <div class="comment-date">${new Date(comment.createdAt).toLocaleString()}</div>
+                        </div>`).join('')}
+                    </div>
+                    <div class="comment-form">
+                        <h4>댓글 작성</h4>
+                        <div class="form-group"><input type="text" id="commentAuthor" placeholder="이름을 입력하세요" style="margin-bottom: 10px;"></div>
+                        <div class="form-group"><textarea id="commentText" placeholder="댓글을 입력하세요..." style="margin-bottom: 10px;"></textarea></div>
+                        <button class="btn btn-primary" onclick="submitComment('${artwork.id}')">댓글 등록</button>
+                    </div>
                 `;
             }
             
@@ -2060,7 +2119,6 @@
             document.querySelectorAll('.comment-checkbox').forEach(c => c.checked = this.checked);
         });
 
-        // 🔽 [추가된 부분] 헤더 설정을 실제 UI에 적용하는 함수
         function applyHeaderSettings() {
             const headerImageElem = document.getElementById('headerImage');
             const headerTitleElem = document.getElementById('headerTitleText');
@@ -2069,7 +2127,7 @@
             document.title = settings.title;
             document.querySelector('.subtitle').textContent = settings.description;
 
-            if (settings.headerImage) {
+            if (settings.headerImage && settings.headerImage.trim() !== '') {
                 headerImageElem.src = settings.headerImage;
                 headerImageElem.style.display = 'inline-block';
             } else {
@@ -2099,7 +2157,7 @@
                 };
             }
             
-            applyHeaderSettings(); // 페이지 로드 시 헤더 설정 적용
+            applyHeaderSettings(); 
             
             document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-success">✅ 로컬 스토리지 연결됨</span>';
             document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>';
