@@ -1191,15 +1191,15 @@
     </div>
 
 
-    <script>
+<script>
         // 🔧 설정
         const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
         const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
         
         // 🔽 [중요] Upstash에서 발급받은 본인의 URL과 TOKEN으로 교체해주세요.
-        // 보안을 위해 실제 서비스에서는 환경 변수와 서버리스 함수를 사용하는 것이 좋습니다.
-        const UPSTASH_URL = 'https://unique-koi-29481.upstash.io';
-        const UPSTASH_TOKEN = 'AXMpAAIjcDExNzg5MjViZDE5ZDE0YWIyOTBjMGQxZTNiODA4ZTg4ZXAxMA';
+        // 주소나 토큰에 오타, 공백이 없는지 다시 한번 확인해주세요.
+        const UPSTASH_URL = '여기에_복사한_URL을_붙여넣으세요';
+        const UPSTASH_TOKEN = '여기에_복사한_TOKEN을_붙여넣으세요';
 
         // Upstash 통신 헬퍼 함수
         async function upstash(command, ...args) {
@@ -1239,7 +1239,6 @@
 
         let isAdminMode = false;
 
-        // 🔽 [추가된 부분] 모든 데이터를 Upstash에 저장하는 함수
         async function saveAllDataToUpstash() {
             try {
                 const allData = {
@@ -1256,7 +1255,6 @@
             }
         }
 
-        // 🔐 패널 토글 함수들
         function toggleUploadPanel() {
             const panel = document.getElementById('uploadPanel');
             const adminPanel = document.getElementById('adminPanel');
@@ -1315,7 +1313,6 @@
             }
         }
 
-        // 🎯 관리자 탭 전환
         function switchAdminTab(tab) {
             document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
@@ -1328,7 +1325,6 @@
             else if (tab === 'users') renderUsersTable();
         }
 
-        // 📊 관리자 통계 업데이트
         function updateAdminStats() {
             const totalArtworks = artworks.length;
             const totalComments = Object.values(comments).flat().length;
@@ -1345,7 +1341,6 @@
             document.getElementById('totalComments').textContent = totalComments;
         }
 
-        // 📋 작품 관리 테이블 렌더링
         function renderArtworksTable() {
             const tbody = document.getElementById('artworksTableBody');
             tbody.innerHTML = '';
@@ -1375,7 +1370,6 @@
             });
         }
 
-        // 💬 댓글 관리 테이블 렌더링
         function renderCommentsTable() {
             const tbody = document.getElementById('commentsTableBody');
             tbody.innerHTML = '';
@@ -1400,7 +1394,6 @@
             });
         }
 
-        // 👤 사용자 관리 테이블 렌더링
         function renderUsersTable() {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
@@ -1456,7 +1449,6 @@
             });
         }
 
-        // ✏️ 작품 수정
         function editArtwork(artworkId) {
             const artwork = artworks.find(a => a.id === artworkId);
             if (!artwork) return;
@@ -1501,7 +1493,6 @@
             document.body.style.overflow = 'hidden';
         }
 
-        // 💾 작품 수정 저장
         async function saveArtworkEdit(artworkId) {
             const artwork = artworks.find(a => a.id === artworkId);
             if (!artwork) return;
@@ -1519,7 +1510,6 @@
             showMessage('작품이 수정되었습니다.', 'success');
         }
 
-        // 💬 댓글 수정
         async function editComment(artworkId, commentId) {
             const comment = comments[artworkId]?.find(c => c.id === commentId);
             if (!comment) return;
@@ -1536,7 +1526,6 @@
             }
         }
 
-        // 🗑️ 댓글 삭제
         async function deleteComment(artworkId, commentId) {
             if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
             
@@ -1554,7 +1543,6 @@
             }
         }
 
-        // 📤 일괄 삭제
         async function bulkDelete() {
             const selected = document.querySelectorAll('.artwork-checkbox:checked');
             if (selected.length === 0) {
@@ -1702,7 +1690,6 @@
             showMessage('데이터가 내보내기되었습니다.', 'success');
         }
 
-        // 🔧 유틸리티 함수들
         async function deleteArtworkById(artworkId) {
             artworks = artworks.filter(artwork => artwork.id !== artworkId);
             delete comments[artworkId];
@@ -1813,17 +1800,13 @@
                 parentId: parentId
             };
             
-            if (!comments[artworkId]) {
-                comments[artworkId] = [];
-            }
-            
+            if (!comments[artworkId]) comments[artworkId] = [];
             comments[artworkId].push(newComment);
             await saveAllDataToUpstash();
             
             return newComment;
         }
 
-        // 🖼️ 작품 렌더링
         function renderArtworks() {
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
@@ -1838,7 +1821,7 @@
                 card.className = 'artwork-card';
                 card.setAttribute('data-category', artwork.grade);
                 
-                const isLiked = localStorage.getItem(`liked_${artwork.id}`) === 'true'; // 좋아요는 로컬에 유지
+                const isLiked = localStorage.getItem(`liked_${artwork.id}`) === 'true'; 
                 const likeCount = likes[artwork.id] || 0;
                 const artworkComments = comments[artwork.id] || [];
                 
@@ -1871,7 +1854,6 @@
             });
         }
 
-        // ❤️ 좋아요 토글
         async function toggleLike(artworkId) {
             const isCurrentlyLiked = localStorage.getItem(`liked_${artworkId}`) === 'true';
             
@@ -1883,19 +1865,17 @@
                 likes[artworkId] = (likes[artworkId] || 0) + 1;
             }
             
-            await saveAllDataToUpstash(); // 좋아요 수 변경을 서버에 저장
+            await saveAllDataToUpstash();
             renderArtworks();
             if (isAdminMode) updateAdminStats();
         }
 
-        // 🗑️ 작품 삭제
         async function deleteArtwork(artworkId) {
             if (!confirm('정말로 이 작품을 삭제하시겠습니까?')) return;
             await deleteArtworkById(artworkId);
             showMessage('작품이 삭제되었습니다.', 'success');
         }
         
-        // 🖼️ 작품 상세 모달
         function showArtworkModal(artwork) {
             const modal = document.getElementById('modal');
             const modalContent = document.getElementById('modalContent');
@@ -1944,16 +1924,13 @@
         function renderCommentTree(artworkId) {
             const commentsListContainer = document.getElementById('commentsList');
             const allComments = (comments[artworkId] || []).filter(c => c.approved);
-            
             allComments.forEach(c => { if(!c.parentId) c.parentId = 'root'; });
-
             commentsListContainer.innerHTML = buildCommentHTML(allComments, 'root', artworkId);
         }
 
         function buildCommentHTML(allComments, parentId, artworkId, isReply = false) {
             const children = allComments.filter(comment => comment.parentId === parentId);
             if (children.length === 0) return '';
-
             let html = '';
             children.forEach(comment => {
                 html += `
@@ -1978,11 +1955,9 @@
         function prepareReply(commentId, author) {
             const commentForm = document.querySelector('.comment-form');
             commentForm.dataset.replyTo = commentId;
-
             const replyingToInfo = document.getElementById('replyingToInfo');
             document.getElementById('replyingToUser').textContent = author;
             replyingToInfo.style.display = 'block';
-
             document.getElementById('commentText').focus();
         }
 
@@ -2043,7 +2018,6 @@
             }
         }
 
-        // 모달 좋아요 업데이트
         function updateModalLike(artworkId) {
             const likeBtn = document.querySelector('.modal .btn-primary');
             if (likeBtn && likeBtn.textContent.includes('좋아요')) {
@@ -2052,13 +2026,11 @@
             }
         }
 
-        // 모달 닫기
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
 
-        // 📤 공유 기능
         function shareArtwork(title) {
             if (navigator.share) {
                 navigator.share({
@@ -2076,7 +2048,6 @@
             }
         }
 
-        // 📋 폼 제출 처리
         document.getElementById('artworkForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -2101,9 +2072,7 @@
                     submitBtn.textContent = '이미지 업로드 중...';
                     imageUrl = await uploadImageToCloudinary(imageFile);
                     
-                    if (!imageUrl) {
-                        throw new Error('이미지 업로드에 실패했습니다.');
-                    }
+                    if (!imageUrl) throw new Error('이미지 업로드에 실패했습니다.');
                 }
                 
                 const newArtwork = {
@@ -2138,7 +2107,6 @@
             }
         });
 
-        // 🔍 검색 기능
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const artworkCards = document.querySelectorAll('.artwork-card');
@@ -2152,14 +2120,11 @@
                     card.classList.add('show');
                 } else {
                     card.classList.remove('show');
-                    setTimeout(() => {
-                        card.style.display = 'none';
-                    }, 300);
+                    setTimeout(() => { card.style.display = 'none'; }, 300);
                 }
             });
         });
 
-        // 🎛️ 필터 기능
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -2175,7 +2140,7 @@
                         setTimeout(() => card.classList.add('show'), 100);
                     } else {
                         card.classList.remove('show');
-                        setTimeout(() => card.style.display = 'none', 300);
+                        setTimeout(() => { card.style.display = 'none'; }, 300);
                     }
                 });
             });
@@ -2218,7 +2183,6 @@
             gradeInfoSection.querySelector('.grade-info-content').insertAdjacentHTML('beforeend', statsHtml);
         }
 
-        // 🔧 전체 선택 기능
         document.getElementById('selectAll').addEventListener('change', function() {
             document.querySelectorAll('.artwork-checkbox').forEach(c => c.checked = this.checked);
         });
@@ -2243,7 +2207,6 @@
             }
         }
 
-        // 🚀 초기화
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🧱 브릭모델 전시관 로드');
             
@@ -2254,12 +2217,7 @@
                     artworks = data.artworks || [];
                     comments = data.comments || {};
                     likes = data.likes || {};
-                    // 기본 설정 객체와 불러온 설정을 병합하여, 나중에 새로운 설정이 추가되어도 안전하게 만듦
-                    settings = { 
-                        ...settings, 
-                        ...data.settings,
-                        gradeDescriptions: { ...settings.gradeDescriptions, ...(data.settings?.gradeDescriptions || {}) }
-                    };
+                    settings = { ...settings, ...data.settings, gradeDescriptions: { ...settings.gradeDescriptions, ...(data.settings?.gradeDescriptions || {}) } };
                 }
                  document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-success">✅ 데이터베이스 연결됨</span>';
             } catch (error) {
@@ -2279,7 +2237,6 @@
             console.log('✅ 초기화 완료');
         });
 
-        // 🔧 키보드 단축키
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
