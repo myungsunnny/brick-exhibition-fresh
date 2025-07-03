@@ -593,24 +593,6 @@
             opacity: 0.8;
         }
 
-        .filter-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .filter-btn:hover, .filter-btn.active {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.3);
-        }
-
         .search-container {
             margin-bottom: 30px;
             text-align: center;
@@ -630,6 +612,39 @@
 
         .search-container input::placeholder {
             color: rgba(255,255,255,0.7);
+        }
+        
+        /* --- 🔽 [수정된 부분] 필터 중앙 정렬을 위한 코드 🔽 --- */
+        .filters-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px; /* 버튼 사이 간격 */
+            flex-wrap: wrap; /* 화면이 작아지면 줄바꿈 */
+            justify-content: center; /* 중앙 정렬의 핵심 */
+        }
+        /* --- 🔼 [수정된 부분] 여기까지 🔼 --- */
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
         }
 
         .modal {
@@ -738,7 +753,6 @@
             <p class="subtitle">창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요</p>
         </header>
 
-        <!-- 시스템 상태 (관리자 모드에서만 표시) -->
         <div class="panel status-section" id="statusSection">
             <h3>🚀 시스템 상태</h3>
             <div id="upstashStatus">
@@ -755,7 +769,6 @@
             </div>
         </div>
 
-        <!-- 작품 올리기 패널 -->
         <div class="panel upload-panel" id="uploadPanel">
             <h2>✏️ 새로운 작품 등록</h2>
             <form id="artworkForm">
@@ -815,11 +828,9 @@
             </form>
         </div>
 
-        <!-- 관리자 패널 -->
         <div class="panel admin-panel" id="adminPanel">
             <h2>⚙️ 관리자 모드</h2>
             
-            <!-- 통계 대시보드 -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number" id="statArtworks">0</div>
@@ -839,7 +850,6 @@
                 </div>
             </div>
 
-            <!-- 관리자 탭 -->
             <div class="admin-tabs">
                 <button class="admin-tab active" onclick="switchAdminTab('artworks')">작품 관리</button>
                 <button class="admin-tab" onclick="switchAdminTab('comments')">댓글 관리</button>
@@ -847,7 +857,6 @@
                 <button class="admin-tab" onclick="switchAdminTab('settings')">사이트 설정</button>
             </div>
 
-            <!-- 작품 관리 -->
             <div class="admin-content active" id="artworksContent">
                 <div class="bulk-actions">
                     <label><input type="checkbox" id="selectAll"> 전체 선택</label>
@@ -876,7 +885,6 @@
                 </div>
             </div>
 
-            <!-- 댓글 관리 -->
             <div class="admin-content" id="commentsContent">
                 <div class="bulk-actions">
                     <label><input type="checkbox" id="selectAllComments"> 전체 선택</label>
@@ -901,7 +909,6 @@
                 </div>
             </div>
 
-            <!-- 사용자 관리 -->
             <div class="admin-content" id="usersContent">
                 <div class="table-container">
                     <table>
@@ -921,7 +928,6 @@
                 </div>
             </div>
 
-            <!-- 사이트 설정 -->
             <div class="admin-content" id="settingsContent">
                 <div class="form-group">
                     <label for="siteTitle">사이트 제목</label>
@@ -953,12 +959,10 @@
             </div>
         </div>
 
-        <!-- 검색 -->
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="브릭모델 작품명이나 학생 이름으로 검색...">
         </div>
 
-        <!-- 필터 -->
         <div class="filters-container">
             <div class="filters">
                 <button class="filter-btn active" data-category="all">전체</button>
@@ -971,7 +975,6 @@
             </div>
         </div>
 
-        <!-- 학년별 설명 섹션 -->
         <div class="grade-info-section" id="gradeInfoSection">
             <div class="grade-info-content">
                 <h3 id="gradeInfoTitle">🧱 모든 학년 브릭모델 작품</h3>
@@ -979,7 +982,6 @@
             </div>
         </div>
 
-        <!-- 작품 갤러리 -->
         <div class="gallery" id="gallery">
             <div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;">
                 <h3>🚀 작품을 불러오는 중...</h3>
@@ -987,7 +989,6 @@
         </div>
     </div>
 
-    <!-- 모달 -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
