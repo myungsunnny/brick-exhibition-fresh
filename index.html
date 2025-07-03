@@ -1,383 +1,411 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>대불초등학교 브릭모델 전시관</title>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>대불초 브릭모델 전시관</title>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box;}
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #333;
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 40px;
-      color: white;
-      position: relative;
-    }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-    .subtitle {
-      font-size: 1.1rem;
-      opacity: 0.9;
-      margin-bottom: 20px;
-    }
-    .header-buttons {
-      position: absolute;
-      top: 0;
-      right: 0;
-      display: flex;
-      gap: 10px;
-    }
-    .header-btn {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 25px;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-    }
-    .header-btn:hover {
-      background: rgba(255,255,255,0.3);
-      transform: translateY(-2px);
-    }
-    .header-btn.active {
-      background: rgba(255,255,255,0.4);
-    }
-    .filters {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-    }
-    .filter-btn {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 25px;
-      background: rgba(255,255,255,0.2);
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-    .filter-btn:hover, .filter-btn.active {
-      background: rgba(255,255,255,0.3);
-      transform: translateY(-2px);
-    }
-    .search-container {
-      margin-bottom: 30px;
-      text-align: center;
-    }
-    .search-container input {
-      padding: 12px 20px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 25px;
-      background: rgba(255,255,255,0.1);
-      color: white;
-      backdrop-filter: blur(10px);
-      font-size: 1rem;
-      width: 300px;
-      text-align: center;
-    }
-    .search-container input::placeholder {
-      color: rgba(255,255,255,0.7);
-    }
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 30px;
-      margin-bottom: 40px;
-    }
-    .artwork-card {
-      background: white;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      position: relative;
-    }
-    .artwork-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    }
-    .artwork-image {
-      width: 100%;
-      height: 200px;
-      background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .artwork-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .artwork-info {
-      padding: 20px;
-    }
-    .artwork-title {
-      font-size: 1.3rem;
-      font-weight: bold;
-      margin-bottom: 8px;
-      color: #2c3e50;
-    }
-    .artwork-author {
-      color: #7f8c8d;
-      margin-bottom: 10px;
-    }
-    .artwork-description {
-      line-height: 1.6;
-      color: #555;
-      margin-bottom: 15px;
-    }
-    /* 관리자 탭 스타일 */
-    .admin-panel {
-      margin-top: 30px;
-      margin-bottom: 30px;
-    }
-    .admin-tabs {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-      justify-content: flex-start;
-    }
-    .admin-tab-btn {
-      padding: 12px 24px;
-      border-radius: 30px;
-      border: none;
-      background: #f4f6fb;
-      color: #555;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .admin-tab-btn.active {
-      background: linear-gradient(45deg,#667eea,#764ba2);
-      color: white;
-    }
-    .admin-tab-panel {
-      background: #fff;
-      border-radius: 16px;
-      padding: 25px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 10px #ccd2ee3a;
-    }
-    .tab-desc {
-      color: #7d88a6;
-      font-size: 0.97rem;
-      margin-bottom: 10px;
-    }
-    /* 학년 안내 박스 */
-    .grade-info-box {
-      background: #fffbe8;
-      border: 1px solid #ffe082;
-      border-radius: 10px;
-      padding: 18px;
-      margin-bottom: 25px;
-      color: #6e5a04;
-      font-size: 1.05rem;
-      text-align: center;
-    }
-    .grade-info-box strong { font-size: 1.2rem; display:block; margin-bottom:6px; }
-    @media (max-width: 768px) {
-      .container { padding: 10px;}
-      h1 { font-size: 1.5rem;}
-      .admin-tabs { flex-direction: column; gap: 7px;}
-      .gallery { grid-template-columns: 1fr;}
-    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:Arial,sans-serif;min-height:100vh;
+      background:linear-gradient(135deg,#667eea,#764ba2);color:#333;}
+    .container{max-width:1200px;margin:0 auto;padding:20px;}
+    header{text-align:center;position:relative;color:white;margin-bottom:40px;}
+    .header-buttons{position:absolute;top:0;right:0;display:flex;gap:10px;}
+    .header-btn{padding:10px 20px;border:none;border-radius:25px;
+      background:rgba(255,255,255,0.2);color:white;cursor:pointer;
+      backdrop-filter:blur(10px);transition:0.3s;font-size:0.9rem;}
+    .header-btn:hover{background:rgba(255,255,255,0.3);transform:translateY(-2px);}
+    .header-btn.active{background:rgba(255,255,255,0.4);}
+    h1{font-size:2.5rem;text-shadow:2px 2px 4px rgba(0,0,0,0.3);margin-bottom:10px;}
+    .subtitle{font-size:1.1rem;opacity:0.9;margin-bottom:20px;}
+    .search-container{margin-bottom:30px;text-align:center;}
+    .search-container input{padding:12px 20px;border:2px solid rgba(255,255,255,0.3);
+      border-radius:25px;background:rgba(255,255,255,0.1);color:white;backdrop-filter:blur(10px);
+      font-size:1rem;width:300px;text-align:center;}
+    .search-container input::placeholder{color:rgba(255,255,255,0.7);}
+    .filters{display:flex;justify-content:center;gap:15px;margin-bottom:10px;flex-wrap:wrap;}
+    .filter-btn{padding:10px 20px;border:none;border-radius:25px;
+      background:rgba(255,255,255,0.2);color:white;cursor:pointer;
+      backdrop-filter:blur(10px);transition:0.3s;}
+    .filter-btn:hover,.filter-btn.active{background:rgba(255,255,255,0.3);transform:translateY(-2px);}
+    .grade-info-box{display:none;background:#fffbe8;border:1px solid #ffe082;border-radius:10px;
+      padding:18px;margin-bottom:25px;color:#6e5a04;font-size:1.05rem;text-align:center;}
+    .grade-info-box strong{font-size:1.2rem;display:block;margin-bottom:6px;}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:30px;margin-bottom:40px;}
+    .artwork-card{background:white;border-radius:15px;overflow:hidden;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);transition:0.3s;position:relative;}
+    .artwork-image{width:100%;height:200px;background:linear-gradient(45deg,#f0f0f0,#e0e0e0);
+      display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .artwork-image img{width:100%;height:100%;object-fit:cover;}
+    .artwork-info{padding:20px;}
+    .artwork-title{font-size:1.3rem;font-weight:bold;color:#2c3e50;margin-bottom:8px;}
+    .artwork-author{color:#7f8c8d;margin-bottom:10px;}
+    .artwork-description{color:#555;line-height:1.6;}
+    /* 관리자 */
+    .upload-panel,.admin-panel{display:none;background:white;
+      border-radius:15px;padding:20px;margin-bottom:30px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);}
+    .admin-tabs{display:flex;gap:15px;margin-bottom:20px;}
+    .admin-tab-btn{padding:12px 24px;border:none;border-radius:30px;
+      background:#f4f6fb;color:#555;font-size:1rem;cursor:pointer;transition:0.2s;}
+    .admin-tab-btn.active{background:linear-gradient(45deg,#667eea,#764ba2);color:white;}
+    .admin-tab-panel{display:none;background:white;border-radius:16px;
+      padding:25px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-bottom:20px;}
+    .admin-tab-panel.active{display:block;}
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    th,td{padding:8px;border:1px solid #ddd;text-align:left;}
+    th{background:#f4f4f4;}
+    tr.draggable{cursor:move;}
+    .btn{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;}
+    .btn-danger{background:#e74c3c;color:white;}
+    .btn-primary{background:linear-gradient(45deg,#667eea,#764ba2);color:white;}
+    @media(max-width:768px){.gallery{grid-template-columns:1fr;}.admin-tabs{flex-wrap:wrap;}}
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <div class="header-buttons">
-        <button class="header-btn" onclick="toggleUpload()">📸 작품 올리기</button>
-        <button class="header-btn" onclick="toggleAdmin()">🔧 관리자 모드</button>
+        <button class="header-btn" id="btnUploadToggle">📸 작품 올리기</button>
+        <button class="header-btn" id="btnAdminToggle">🔧 관리자 모드</button>
       </div>
       <h1>🧱 대불초등학교 브릭모델 전시관</h1>
       <p class="subtitle">창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요</p>
     </header>
 
-    <!-- 학년 안내 박스 -->
-    <div id="gradeInfoBox" class="grade-info-box" style="display:none;">
-      <strong id="gradeInfoTitle"></strong>
-      <p id="gradeInfoDesc"></p>
-    </div>
-
-    <!-- 검색 -->
     <div class="search-container">
-      <input type="text" id="searchInput" placeholder="브릭모델 작품명이나 학생 이름으로 검색...">
-    </div>
-    <!-- 필터 -->
-    <div class="filters">
-      <button class="filter-btn active" data-category="all">전체</button>
-      <button class="filter-btn" data-category="1학년">1학년</button>
-      <button class="filter-btn" data-category="2학년">2학년</button>
-      <button class="filter-btn" data-category="3학년">3학년</button>
-      <button class="filter-btn" data-category="4학년">4학년</button>
-      <button class="filter-btn" data-category="5학년">5학년</button>
-      <button class="filter-btn" data-category="6학년">6학년</button>
-    </div>
-    <!-- 갤러리 -->
-    <div class="gallery" id="gallery">
-      <!-- 예시: 실제로는 JS에서 카드 렌더링 -->
-      <div class="artwork-card" data-category="1학년">
-        <div class="artwork-image">
-          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop" alt="예시작품">
-        </div>
-        <div class="artwork-info">
-          <div class="artwork-title">우리 집 만들기</div>
-          <div class="artwork-author">홍길동 (1학년)</div>
-          <div class="artwork-description">처음으로 만든 브릭 집이에요!</div>
-        </div>
-      </div>
+      <input type="text" id="searchInput" placeholder="작품명 or 학생 이름 검색..."/>
     </div>
 
-    <!-- 작품 올리기/관리자 패널(샘플, 실제 구현시 별도 확장) -->
-    <div class="upload-panel" id="uploadPanel" style="display:none;">
-      <p style="padding:24px 0;text-align:center;">작품 등록 폼(구현 필요)</p>
+    <div class="filters">
+      <button class="filter-btn active" data-cat="all">전체</button>
+      <button class="filter-btn" data-cat="1학년">1학년</button>
+      <button class="filter-btn" data-cat="2학년">2학년</button>
+      <button class="filter-btn" data-cat="3학년">3학년</button>
+      <button class="filter-btn" data-cat="4학년">4학년</button>
+      <button class="filter-btn" data-cat="5학년">5학년</button>
+      <button class="filter-btn" data-cat="6학년">6학년</button>
     </div>
-    <div class="admin-panel" id="adminPanel" style="display:none;">
+
+    <div class="grade-info-box" id="gradeInfo">
+      <strong id="gradeTitle"></strong>
+      <p id="gradeDesc"></p>
+    </div>
+
+    <div class="gallery" id="gallery">
+      <!-- 카드 예시/JS로 렌더링 -->
+    </div>
+
+    <!-- 1) 작품 업로드 폼 -->
+    <div class="upload-panel" id="uploadPanel">
+      <h2>📸 새 작품 등록/수정</h2>
+      <!-- 폼 구현 자리 -->
+      <p>작품 등록/수정 폼 위치 (필요 시 JS/백엔드 연동)</p>
+    </div>
+
+    <!-- 2) 관리자 패널 -->
+    <div class="admin-panel" id="adminPanel">
       <div class="admin-tabs">
         <button class="admin-tab-btn active" data-tab="artworks">🖼️ 작품 관리</button>
         <button class="admin-tab-btn" data-tab="comments">💬 댓글 관리</button>
         <button class="admin-tab-btn" data-tab="users">👤 사용자 관리</button>
         <button class="admin-tab-btn" data-tab="settings">⚙️ 사이트 설정</button>
       </div>
-      <!-- 작품 관리 탭 -->
-      <div class="admin-tab-panel" id="adminTab_artworks" style="display:block;">
+
+      <!-- 작품 관리 -->
+      <div class="admin-tab-panel active" id="tab_artworks">
         <h3>🖼️ 작품 관리</h3>
-        <p class="tab-desc">이 탭에서는 등록된 모든 작품을 체계적으로 관리할 수 있습니다.
-          <ul>
-            <li>드래그 앤 드롭 순서 변경</li>
-            <li>작품 수정 및 삭제</li>
-            <li>일괄 삭제</li>
-            <li>데이터 내보내기(JSON)</li>
-          </ul>
-        </p>
-        <p style="background:#f8f9fa;padding:15px;border-radius:8px;">* 작품 테이블/드래그 앤 드롭 영역(실제 동작은 JS 필요)</p>
+        <button class="btn btn-danger" onclick="deleteSelected()">선택 작품 일괄 삭제</button>
+        <button class="btn btn-primary" onclick="exportData()">데이터 JSON 내보내기</button>
+        <table>
+          <thead><tr>
+            <th><input type="checkbox" id="chkAllArt"/></th>
+            <th>#</th><th>제목</th><th>작가</th><th>학년</th><th>관리</th>
+          </tr></thead>
+          <tbody id="tblArtworks"></tbody>
+        </table>
       </div>
-      <!-- 댓글 관리 탭 -->
-      <div class="admin-tab-panel" id="adminTab_comments" style="display:none;">
+
+      <!-- 댓글 관리 -->
+      <div class="admin-tab-panel" id="tab_comments">
         <h3>💬 댓글 관리</h3>
-        <p class="tab-desc">사이트에 달린 모든 댓글을 한 곳에서 확인하고 관리합니다.
-          <ul>
-            <li>전체 댓글 보기</li>
-            <li>개별/일괄 삭제</li>
-            <li>댓글 수정</li>
-          </ul>
-        </p>
-        <p style="background:#f8f9fa;padding:15px;border-radius:8px;">* 댓글 목록/삭제/수정 예시 구현 영역</p>
+        <button class="btn btn-danger" onclick="deleteSelectedComments()">선택 댓글 삭제</button>
+        <table>
+          <thead><tr>
+            <th><input type="checkbox" id="chkAllComm"/></th>
+            <th>작품제목</th><th>작성자</th><th>내용</th><th>작성일</th><th>관리</th>
+          </tr></thead>
+          <tbody id="tblComments"></tbody>
+        </table>
       </div>
-      <!-- 사용자 관리 탭 -->
-      <div class="admin-tab-panel" id="adminTab_users" style="display:none;">
+
+      <!-- 사용자 관리 -->
+      <div class="admin-tab-panel" id="tab_users">
         <h3>👤 사용자 관리</h3>
-        <p class="tab-desc">참여 학생들의 활동 내역을 통계로 확인할 수 있습니다.
-          <ul>
-            <li>활동 요약(작품, 댓글, 좋아요, 마지막 활동일)</li>
-          </ul>
-        </p>
-        <p style="background:#f8f9fa;padding:15px;border-radius:8px;">* 사용자 활동 테이블 예시 구현 영역</p>
+        <table>
+          <thead><tr>
+            <th>이름</th><th>가입일</th><th>작품 수</th><th>댓글 수</th><th>받은 좋아요</th><th>마지막 활동</th>
+          </tr></thead>
+          <tbody id="tblUsers"></tbody>
+        </table>
       </div>
-      <!-- 사이트 설정 탭 -->
-      <div class="admin-tab-panel" id="adminTab_settings" style="display:none;">
+
+      <!-- 사이트 설정 -->
+      <div class="admin-tab-panel" id="tab_settings">
         <h3>⚙️ 사이트 설정</h3>
-        <p class="tab-desc">전시관의 외형과 작동 방식을 설정할 수 있습니다.
-          <ul>
-            <li>기본 정보 설정(제목, 부제, 로고)</li>
-            <li>보안 설정(비밀번호, 업로드용 비밀번호)</li>
-            <li>콘텐츠 설정(학년별 안내문구 등)</li>
-            <li>기능 제어(댓글 허용/차단 등)</li>
-            <li>데이터 초기화</li>
-          </ul>
-        </p>
-        <p style="background:#f8f9fa;padding:15px;border-radius:8px;">* 사이트 설정 UI 예시 구현 영역</p>
+        <div>
+          <h4>기본 정보</h4>
+          <label>사이트 제목: <input type="text" id="siteTitle"/></label><br/>
+          <label>부제: <input type="text" id="siteSubtitle"/></label><br/>
+          <label>로고: <input type="file" id="siteLogo"/></label>
+        </div>
+        <div>
+          <h4>보안 설정</h4>
+          <label>관리자 비밀번호: <input type="password" id="adminPwd"/></label><br/>
+          <label>업로드 비밀번호: <input type="password" id="uploadPwd"/></label><br/>
+          <label><input type="checkbox" id="reqUploadPwd"/> 업로드 시 비밀번호 필요</label>
+        </div>
+        <div>
+          <h4>학년별 안내문구</h4>
+          <div id="gradeSettingList">
+            <!-- JS 기반 반복 생성 -->
+          </div>
+        </div>
+        <div>
+          <h4>댓글 기능 제어</h4>
+          <label><input type="checkbox" id="enableComments"/> 댓글 허용</label><br/>
+          <label><input type="checkbox" id="reqApproval"/> 관리자 승인 후 노출</label>
+        </div>
+        <div>
+          <h4>데이터 초기화</h4>
+          <button class="btn btn-danger" onclick="resetAll()">모든 데이터 초기화</button>
+        </div>
       </div>
     </div>
   </div>
+
   <script>
-    // 관리자 탭 전환
-    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.admin-tab-panel').forEach(panel => panel.style.display = 'none');
-        document.getElementById('adminTab_' + btn.dataset.tab).style.display = 'block';
-      });
-    });
+    // 초기 데이터 배열 선언
+    let artworks=[],comments=[],users=[],settings={gradeInfo:{}};
+    let editingArtId=null;
 
-    // 학년별 안내문구(설정에서 변경 가능, 예시)
-    const gradeDescriptions = {
-      '1학년': {
-        title: "1학년 브릭모델 갤러리",
-        desc: "처음 만지는 브릭! 상상력과 손끝의 기초가 자랍니다.<br><em>예시: 우리 집 만들기, 동물 모형 만들기 등</em>"
-      },
-      '2학년': {
-        title: "2학년 브릭모델 갤러리",
-        desc: "더 다양한 모양과 조립법으로 도전!<br><em>예시: 학교 버스, 놀이공원 등</em>"
-      },
-      '3학년': {
-        title: "3학년 브릭모델 갤러리",
-        desc: "기초를 넘어 창의적 조립 설계에 도전합니다.<br><em>예시: 다리, 탑, 건축물</em>"
-      },
-      '4학년': {
-        title: "4학년 브릭모델 갤러리",
-        desc: "더 복잡한 모델과 구조물 만들기에 도전!<br><em>예시: 공원, 대형 교통수단</em>"
-      },
-      '5학년': {
-        title: "5학년 브릭모델 갤러리",
-        desc: "다양한 소재를 응용한 브릭 프로젝트!<br><em>예시: 미래 도시, 탈것, 캐릭터</em>"
-      },
-      '6학년': {
-        title: "6학년 브릭모델 갤러리",
-        desc: "팀 프로젝트와 프로그래밍 조립도 경험합니다!<br><em>예시: 움직이는 로봇, 복합 건축물</em>"
-      }
+    // 탭/토글 이벤트
+    document.getElementById('btnUploadToggle').onclick=()=>{
+      toggleAdmin(false); toggleUpload(!isVisible('uploadPanel'));
     };
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        // 안내 박스
-        const cat = btn.dataset.category;
-        if (gradeDescriptions[cat]) {
-          document.getElementById('gradeInfoBox').style.display = 'block';
-          document.getElementById('gradeInfoTitle').textContent = gradeDescriptions[cat].title;
-          document.getElementById('gradeInfoDesc').innerHTML = gradeDescriptions[cat].desc;
-        } else {
-          document.getElementById('gradeInfoBox').style.display = 'none';
-        }
-        // 실제 작품카드 필터링은 별도 구현 필요
-      });
+    document.getElementById('btnAdminToggle').onclick=()=>{
+      toggleUpload(false); toggleAdmin(!isVisible('adminPanel'));
+    };
+    document.querySelectorAll('.admin-tab-btn').forEach(btn=>{
+      btn.onclick=()=>{switchTab(btn.dataset.tab);};
     });
 
-    // 관리자/업로드 패널 토글
-    function toggleAdmin() {
-      document.getElementById('adminPanel').style.display =
-        document.getElementById('adminPanel').style.display === 'block' ? 'none' : 'block';
-      document.getElementById('uploadPanel').style.display = 'none';
+    function toggleUpload(show){ document.getElementById('uploadPanel').style.display= show?'block':'none'; }
+    function toggleAdmin(show){
+      document.getElementById('adminPanel').style.display= show?'block':'none';
+      if(show){ refreshAdminTables(); }
     }
-    function toggleUpload() {
-      document.getElementById('uploadPanel').style.display =
-        document.getElementById('uploadPanel').style.display === 'block' ? 'none' : 'block';
-      document.getElementById('adminPanel').style.display = 'none';
+    function isVisible(id){ return document.getElementById(id).style.display==='block'; }
+    function switchTab(tab){
+      document.querySelectorAll('.admin-tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
+      document.querySelector(`.admin-tab-btn[data-tab="${tab}"]`).classList.add('active');
+      document.getElementById(`tab_${tab}`).classList.add('active');
+      if(tab==='comments') loadComments();
+      if(tab==='users') loadUsers();
+      if(tab==='settings') loadSettings();
     }
+
+    // 학년 안내박스
+    const gradeDefs={'1학년':'처음...',/*...*/,'6학년':'팀프로젝트...'};
+    const gradeData={
+      '1학년':{title:'1학년',desc:'예시1'},
+      '2학년':{title:'2학년',desc:'예시2'},
+      /*...*/,'6학년':{title:'6학년',desc:'예시6'}
+    };
+    document.querySelectorAll('.filter-btn').forEach(btn=>{
+      btn.onclick=()=>{
+        document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const cat=btn.dataset.cat;
+        const gi=document.getElementById('gradeInfo');
+        if(gradeData[cat]){
+          gi.style.display='block';
+          document.getElementById('gradeTitle').textContent=gradeData[cat].title;
+          document.getElementById('gradeDesc').innerHTML=gradeData[cat].desc;
+        } else gi.style.display='none';
+        renderGallery(cat);
+      };
+    });
+
+    function renderGallery(cat){
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML='';
+      const list = artworks.filter(a=>cat==='all'||a.grade===cat);
+      list.forEach(a=>{
+        const div = document.createElement('div');
+        div.className='artwork-card'; // + 클릭/좋아요 등 구현 추가
+        div.innerHTML=`
+          <div class="artwork-image"><img src="${a.image}" alt="${a.title}"/></div>
+          <div class="artwork-info">
+            <div class="artwork-title">${a.title}</div>
+            <div class="artwork-author">${a.author} (${a.grade})</div>
+            <div class="artwork-description">${a.description}</div>
+          </div>`;
+        gallery.appendChild(div);
+      });
+    }
+
+    // 관리자 테이블
+    function refreshAdminTables(){
+      loadArtworksTable();
+      loadComments();
+      loadUsers();
+      loadSettings();
+    }
+    function loadArtworksTable(){
+      const tb=document.getElementById('tblArtworks');
+      tb.innerHTML='';
+      artworks.forEach((a,i)=>{
+        const tr=document.createElement('tr');
+        tr.className='draggable';
+        tr.draggable=true;
+        tr.ondragstart=e=>e.dataTransfer.setData('text/plain',i);
+        tr.ondragover=e=>e.preventDefault();
+        tr.ondrop=e=>{
+          const from=+e.dataTransfer.getData('text');
+          const to=i;
+          const [m]=artworks.splice(from,1);
+          artworks.splice(to,0,m);
+          refreshAdminTables();
+        };
+        tr.innerHTML=`
+          <td><input type="checkbox" class="chkArt" value="${a.id}"/></td>
+          <td>${i+1}</td><td>${a.title}</td><td>${a.author}</td><td>${a.grade}</td>
+          <td>
+            <button class="btn" onclick="editArt('${a.id}')">수정</button>
+            <button class="btn btn-danger" onclick="delArt('${a.id}')">삭제</button>
+          </td>`;
+        tb.appendChild(tr);
+      });
+      document.getElementById('chkAllArt').onclick=e=>{
+        document.querySelectorAll('.chkArt').forEach(cb=>cb.checked=e.target.checked);
+      };
+    }
+    function deleteSelected(){
+      const sel=Array.from(document.querySelectorAll('.chkArt:checked')).map(cb=>cb.value);
+      if(!sel.length)return alert('선택된 작품 없음');
+      if(!confirm(`선택된 ${sel.length}개 작품 삭제?`))return;
+      artworks=artworks.filter(a=>!sel.includes(a.id));
+      refreshAdminTables();
+      renderGallery('all');
+    }
+    function delArt(id){
+      if(!confirm('작품 삭제?'))return;
+      artworks=artworks.filter(a=>a.id!==id);
+      refreshAdminTables();renderGallery('all');
+    }
+    function editArt(id){
+      const a = artworks.find(x=>x.id===id);
+      alert(`${a.title} 수정 기능 구현 필요`);
+      // 업로드폼 띄우고 내용 채우기, 이후 저장
+    }
+
+    // 댓글
+    function loadComments(){
+      const tb=document.getElementById('tblComments');
+      tb.innerHTML='';
+      comments.forEach(c=>{
+        const art = artworks.find(a=>a.id===c.artworkId);
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td><input type="checkbox" class="chkComm" value="${c.id}"/></td>
+          <td>${art?art.title:'-'}</td><td>${c.author}</td>
+          <td contenteditable>${c.content}</td>
+          <td>${new Date(c.createdAt).toLocaleDateString()}</td>
+          <td>
+            <button class="btn btn-danger" onclick="delComm('${c.id}')">삭제</button>
+          </td>`;
+        tb.appendChild(tr);
+      });
+    }
+    function deleteSelectedComments(){
+      const sel=Array.from(document.querySelectorAll('.chkComm:checked')).map(cb=>cb.value);
+      comments = comments.filter(c=>!sel.includes(c.id));
+      loadComments();
+    }
+    function delComm(id){
+      if(!confirm('댓글 삭제?'))return;
+      comments=comments.filter(c=>c.id!==id);
+      loadComments();
+    }
+
+    // 사용자
+    function loadUsers(){
+      const tb=document.getElementById('tblUsers');
+      tb.innerHTML='';
+      users.forEach(u=>{
+        const arts = artworks.filter(a=>a.authorId===u.id).length;
+        const comms = comments.filter(c=>c.authorId===u.id).length;
+        const likes = u.likesReceived||0;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${u.name}</td><td>${new Date(u.joined).toLocaleDateString()}</td>
+          <td>${arts}</td><td>${comms}</td><td>${likes}</td>
+          <td>${new Date(u.lastActive).toLocaleDateString()}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+
+    // 설정
+    function loadSettings(){
+      document.getElementById('siteTitle').value=settings.siteTitle||'';
+      document.getElementById('siteSubtitle').value=settings.siteSubtitle||'';
+      document.getElementById('adminPwd').value=settings.adminPwd||'';
+      document.getElementById('uploadPwd').value=settings.uploadPwd||'';
+      document.getElementById('reqUploadPwd').checked=settings.reqUploadPwd||false;
+      document.getElementById('enableComments').checked=settings.enableComments!==false;
+      document.getElementById('reqApproval').checked=settings.reqApproval||false;
+      const container=document.getElementById('gradeSettingList');
+      container.innerHTML='';
+      ['1학년','2학년','3학년','4학년','5학년','6학년'].forEach(g=>{
+        const div=document.createElement('div');
+        div.innerHTML=`
+          <label>${g} 안내:<br/>
+          <textarea data-grade="${g}" rows="2">${settings.gradeInfo[g]||''}</textarea></label>`;
+        container.appendChild(div);
+      });
+    }
+
+    // JSON 내보내기
+    function exportData(){
+      const data=JSON.stringify({artworks,comments,users,settings},null,2);
+      const blob=new Blob([data],{type:'application/json'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='gallery_backup.json';
+      a.click();
+    }
+
+    // 초기화
+    function resetAll(){
+      if(!confirm('모든 데이터 정말 초기화할까요?'))return;
+      artworks=[];comments=[];users=[];settings.gradeInfo={};
+      refreshAdminTables();renderGallery('all');
+      alert('초기화되었습니다.');
+    }
+
+    // 최초 호출: 초기 데이터 샘플
+    (()=>{
+      artworks=[{id:'a1',title:'샘플작품',author:'홍길동',authorId:'u1',grade:'1학년',
+        description:'샘플 작품입니다.',image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300',createdAt:new Date().toISOString()}];
+      comments=[{id:'c1',artworkId:'a1',author:'김철수',authorId:'u2',content:'멋져요!',createdAt:new Date().toISOString()}];
+      users=[{id:'u1',name:'홍길동',joined:new Date().toISOString(),lastActive:new Date().toISOString(),likesReceived:0},
+             {id:'u2',name:'김철수',joined:new Date().toISOString(),lastActive:new Date().toISOString(),likesReceived:0}];
+      settings.siteTitle='대불초 브릭모델';
+      settings.siteSubtitle='창의 브릭 전시관';
+      settings.gradeInfo={'1학년':'처음 만나는...', '2학년':'조립...', '3학년':'설계...'};
+
+      renderGallery('all');
+    })();
   </script>
 </body>
 </html>
