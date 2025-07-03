@@ -441,11 +441,10 @@
             position: relative;
         }
         
-        /* 🔽 [추가된 부분] 답글 들여쓰기를 위한 스타일 🔽 */
         .comment-reply {
             margin-left: 40px;
+            border-left: 3px solid #dee2e6;
         }
-        /* 🔼 [추가된 부분] 여기까지 🔼 */
 
 
         .comment-author {
@@ -499,7 +498,6 @@
             margin-top: 20px;
         }
         
-        /* 🔽 [추가된 부분] 답글 작성 시 안내 메시지 스타일 🔽 */
         #replyingToInfo {
             font-size: 0.9rem;
             color: #555;
@@ -516,7 +514,6 @@
             cursor: pointer;
             font-weight: bold;
         }
-        /* 🔼 [추가된 부분] 여기까지 🔼 */
 
         .table-container {
             overflow-x: auto;
@@ -1082,7 +1079,7 @@
                         <label for="moderateComments">댓글 승인 필요</label>
                     </div>
                 </div>
-
+                
                 <div class="settings-options-grid">
                     <div class="checkbox-group">
                         <input type="checkbox" id="useUploadPassword">
@@ -1092,6 +1089,7 @@
                          <input type="text" id="uploadPassword" placeholder="업로드용 비밀번호 입력">
                     </div>
                 </div>
+                
                 <div class="form-group">
                     <label for="adminPassword">관리자 비밀번호 변경</label>
                     <input type="password" id="adminPassword" placeholder="새 비밀번호 (비워두면 변경하지 않음)">
@@ -1197,7 +1195,23 @@
         // 🔧 설정
         const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
         const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
+        
+        // 🔽 [중요] Upstash에서 발급받은 본인의 URL과 TOKEN으로 교체해주세요.
+        // 보안을 위해 실제 서비스에서는 환경 변수와 서버리스 함수를 사용하는 것이 좋습니다.
+        const UPSTASH_URL = 'https://unique-koi-29481.upstash.io';
+        const UPSTASH_TOKEN = 'AXMpAAIjcDExNzg5MjViZDE5ZDE0YWIyOTBjMGQxZTNiODA4ZTg4ZXAxMA';
 
+        // Upstash 통신 헬퍼 함수
+        async function upstash(command, ...args) {
+            const commandParts = [command, ...args];
+            const response = await fetch(`${UPSTASH_URL}/${commandParts.join('/')}`, {
+                headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+            });
+            if (!response.ok) throw new Error(`Upstash command failed: ${response.statusText}`);
+            const data = await response.json();
+            return data.result;
+        }
+        
         // 📊 전역 변수
         let artworks = [];
         let comments = {};
@@ -1205,13 +1219,13 @@
         
         let settings = {
             title: '대불초등학교 브릭모델 전시관',
-            headerImage: '',
+            headerImage: '', 
             description: '창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요',
             allowComments: true,
             moderateComments: false,
             adminPassword: '1234',
-            useUploadPassword: false, // 업로드 비밀번호 사용 여부
-            uploadPassword: '',      // 업로드 비밀번호
+            useUploadPassword: false, 
+            uploadPassword: '',      
             gradeDescriptions: {
                 'all': { title: '🧱 모든 학년 브릭모델 작품', description: '대불초등학교 학생들의 창의적인 브릭모델 작품들을 만나보세요. 각 학년별로 다양한 주제와 스타일의 작품들이 전시되어 있습니다.' },
                 '1학년': { title: '🌟 1학년 브릭모델 작품', description: '1학년 친구들의 첫 번째 브릭모델 작품들입니다. 기본적인 블록 쌓기부터 시작하여 간단한 집, 동물, 자동차 등을 만들며 창의력과 손재주를 기르고 있어요!' },
@@ -1225,13 +1239,29 @@
 
         let isAdminMode = false;
 
+        // 🔽 [추가된 부분] 모든 데이터를 Upstash에 저장하는 함수
+        async function saveAllDataToUpstash() {
+            try {
+                const allData = {
+                    artworks: artworks,
+                    comments: comments,
+                    likes: likes,
+                    settings: settings
+                };
+                await upstash('SET', 'database', JSON.stringify(allData));
+                console.log('☁️ 모든 데이터가 Upstash에 저장되었습니다.');
+            } catch (error) {
+                console.error('Upstash에 데이터를 저장하는 데 실패했습니다:', error);
+                showMessage('데이터 저장에 실패했습니다. 변경사항이 유실될 수 있습니다.', 'error');
+            }
+        }
+
         // 🔐 패널 토글 함수들
         function toggleUploadPanel() {
             const panel = document.getElementById('uploadPanel');
             const adminPanel = document.getElementById('adminPanel');
             const statusSection = document.getElementById('statusSection');
 
-            // 🔽 [수정된 부분] 업로드 비밀번호 확인 로직
             if (settings.useUploadPassword && !panel.classList.contains('active')) {
                 const password = prompt('작품을 올리려면 비밀번호를 입력하세요:');
                 if (password !== settings.uploadPassword) {
@@ -1301,7 +1331,7 @@
         // 📊 관리자 통계 업데이트
         function updateAdminStats() {
             const totalArtworks = artworks.length;
-            const totalComments = Object.values(comments).reduce((sum, artworkComments) => sum + artworkComments.length, 0);
+            const totalComments = Object.values(comments).flat().length;
             const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
             const today = new Date().toDateString();
             const todayArtworks = artworks.filter(artwork => new Date(artwork.createdAt).toDateString() === today).length;
@@ -1395,23 +1425,21 @@
                 }
             });
             
-            Object.values(comments).forEach(artworkComments => {
-                artworkComments.forEach(comment => {
-                    if (!users[comment.author]) {
-                        users[comment.author] = {
-                            name: comment.author,
-                            grade: '미확인',
-                            artworks: 0,
-                            comments: 0,
-                            likes: 0,
-                            lastActivity: comment.createdAt
-                        };
-                    }
-                    users[comment.author].comments++;
-                    if (new Date(comment.createdAt) > new Date(users[comment.author].lastActivity)) {
-                        users[comment.author].lastActivity = comment.createdAt;
-                    }
-                });
+            Object.values(comments).flat().forEach(comment => {
+                if (!users[comment.author]) {
+                    users[comment.author] = {
+                        name: comment.author,
+                        grade: '미확인',
+                        artworks: 0,
+                        comments: 0,
+                        likes: 0,
+                        lastActivity: comment.createdAt
+                    };
+                }
+                users[comment.author].comments++;
+                if (new Date(comment.createdAt) > new Date(users[comment.author].lastActivity)) {
+                    users[comment.author].lastActivity = comment.createdAt;
+                }
             });
             
             Object.values(users).forEach(user => {
@@ -1474,7 +1502,7 @@
         }
 
         // 💾 작품 수정 저장
-        function saveArtworkEdit(artworkId) {
+        async function saveArtworkEdit(artworkId) {
             const artwork = artworks.find(a => a.id === artworkId);
             if (!artwork) return;
             
@@ -1483,7 +1511,7 @@
             artwork.grade = document.getElementById('editGrade').value;
             artwork.description = document.getElementById('editDescription').value;
             
-            localStorage.setItem('artworks', JSON.stringify(artworks));
+            await saveAllDataToUpstash();
             
             closeModal();
             renderArtworks();
@@ -1492,7 +1520,7 @@
         }
 
         // 💬 댓글 수정
-        function editComment(artworkId, commentId) {
+        async function editComment(artworkId, commentId) {
             const comment = comments[artworkId]?.find(c => c.id === commentId);
             if (!comment) return;
             
@@ -1501,7 +1529,7 @@
                 comment.text = newText.trim();
                 comment.editedAt = new Date().toISOString();
                 
-                localStorage.setItem('comments', JSON.stringify(comments));
+                await saveAllDataToUpstash();
                 renderCommentsTable();
                 renderArtworks();
                 showMessage('댓글이 수정되었습니다.', 'success');
@@ -1509,7 +1537,7 @@
         }
 
         // 🗑️ 댓글 삭제
-        function deleteComment(artworkId, commentId) {
+        async function deleteComment(artworkId, commentId) {
             if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
             
             if (comments[artworkId]) {
@@ -1518,7 +1546,7 @@
                     delete comments[artworkId];
                 }
                 
-                localStorage.setItem('comments', JSON.stringify(comments));
+                await saveAllDataToUpstash();
                 renderCommentsTable();
                 renderArtworks();
                 updateAdminStats();
@@ -1527,7 +1555,7 @@
         }
 
         // 📤 일괄 삭제
-        function bulkDelete() {
+        async function bulkDelete() {
             const selected = document.querySelectorAll('.artwork-checkbox:checked');
             if (selected.length === 0) {
                 showMessage('삭제할 작품을 선택하세요.', 'error');
@@ -1536,15 +1564,21 @@
             
             if (!confirm(`선택한 ${selected.length}개의 작품을 삭제하시겠습니까?`)) return;
             
-            selected.forEach(checkbox => {
-                const artworkId = checkbox.dataset.id;
-                deleteArtworkById(artworkId);
+            const idsToDelete = Array.from(selected).map(cb => cb.dataset.id);
+            artworks = artworks.filter(a => !idsToDelete.includes(a.id));
+            idsToDelete.forEach(id => {
+                delete comments[id];
+                delete likes[id];
             });
-            
+
+            await saveAllDataToUpstash();
+            renderArtworks();
+            renderArtworksTable();
+            updateAdminStats();
             showMessage(`${selected.length}개의 작품이 삭제되었습니다.`, 'success');
         }
 
-        function bulkDeleteComments() {
+        async function bulkDeleteComments() {
             const selected = document.querySelectorAll('.comment-checkbox:checked');
             if (selected.length === 0) {
                 showMessage('삭제할 댓글을 선택하세요.', 'error');
@@ -1553,26 +1587,20 @@
             
             if (!confirm(`선택한 ${selected.length}개의 댓글을 삭제하시겠습니까?`)) return;
             
-            let deletedCount = 0;
-            selected.forEach(checkbox => {
-                const commentId = checkbox.dataset.id;
-                Object.keys(comments).forEach(artworkId => {
-                    const index = comments[artworkId].findIndex(c => c.id === commentId);
-                    if (index !== -1) {
-                        comments[artworkId].splice(index, 1);
-                        if (comments[artworkId].length === 0) {
-                            delete comments[artworkId];
-                        }
-                        deletedCount++;
-                    }
-                });
+            const idsToDelete = Array.from(selected).map(cb => cb.dataset.id);
+            
+            Object.keys(comments).forEach(artworkId => {
+                comments[artworkId] = comments[artworkId].filter(c => !idsToDelete.includes(c.id));
+                 if (comments[artworkId].length === 0) {
+                    delete comments[artworkId];
+                }
             });
             
-            localStorage.setItem('comments', JSON.stringify(comments));
+            await saveAllDataToUpstash();
             renderCommentsTable();
             renderArtworks();
             updateAdminStats();
-            showMessage(`${deletedCount}개의 댓글이 삭제되었습니다.`, 'success');
+            showMessage(`${selected.length}개의 댓글이 삭제되었습니다.`, 'success');
         }
 
         function loadSettingsForm() {
@@ -1637,7 +1665,7 @@
                     settings.gradeDescriptions[`${i}학년`].description = document.getElementById(`gradeDesc${i}`).value;
                 }
                 
-                localStorage.setItem('settings', JSON.stringify(settings));
+                await saveAllDataToUpstash();
                 
                 applyHeaderSettings();
                 loadSettingsForm(); 
@@ -1654,23 +1682,16 @@
             }
         }
 
-        function resetAll() {
+        async function resetAll() {
             if (!confirm('정말로 모든 데이터를 초기화하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) return;
             const confirmText = prompt('확인을 위해 "초기화"를 입력하세요:');
             if (confirmText !== '초기화') return;
-            localStorage.clear();
+            await upstash('DEL', 'database');
             location.reload(); 
         }
 
-        function exportData() {
-            const data = {
-                artworks: artworks,
-                comments: comments,
-                likes: likes,
-                settings: settings,
-                exportDate: new Date().toISOString()
-            };
-            const dataStr = JSON.stringify(data, null, 2);
+        async function exportData() {
+            const dataStr = await upstash('GET', 'database');
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
@@ -1682,15 +1703,12 @@
         }
 
         // 🔧 유틸리티 함수들
-        function deleteArtworkById(artworkId) {
+        async function deleteArtworkById(artworkId) {
             artworks = artworks.filter(artwork => artwork.id !== artworkId);
             delete comments[artworkId];
             delete likes[artworkId];
-            localStorage.removeItem(`liked_${artworkId}`);
             
-            localStorage.setItem('artworks', JSON.stringify(artworks));
-            localStorage.setItem('comments', JSON.stringify(comments));
-            localStorage.setItem('likes', JSON.stringify(likes));
+            await saveAllDataToUpstash();
             
             renderArtworks();
             renderArtworksTable();
@@ -1780,8 +1798,7 @@
             }
         }
         
-        // 🔽 [수정된 부분] 댓글 추가 함수에 parentId 처리 추가
-        function addComment(artworkId, authorName, commentText, parentId = 'root') {
+        async function addComment(artworkId, authorName, commentText, parentId = 'root') {
             if (!settings.allowComments) {
                 showMessage('댓글 기능이 비활성화되어 있습니다.', 'error');
                 return;
@@ -1793,7 +1810,7 @@
                 text: commentText,
                 createdAt: new Date().toISOString(),
                 approved: !settings.moderateComments,
-                parentId: parentId // 부모 댓글 ID 저장
+                parentId: parentId
             };
             
             if (!comments[artworkId]) {
@@ -1801,7 +1818,7 @@
             }
             
             comments[artworkId].push(newComment);
-            localStorage.setItem('comments', JSON.stringify(comments));
+            await saveAllDataToUpstash();
             
             return newComment;
         }
@@ -1821,7 +1838,7 @@
                 card.className = 'artwork-card';
                 card.setAttribute('data-category', artwork.grade);
                 
-                const isLiked = localStorage.getItem(`liked_${artwork.id}`) === 'true';
+                const isLiked = localStorage.getItem(`liked_${artwork.id}`) === 'true'; // 좋아요는 로컬에 유지
                 const likeCount = likes[artwork.id] || 0;
                 const artworkComments = comments[artwork.id] || [];
                 
@@ -1855,7 +1872,7 @@
         }
 
         // ❤️ 좋아요 토글
-        function toggleLike(artworkId) {
+        async function toggleLike(artworkId) {
             const isCurrentlyLiked = localStorage.getItem(`liked_${artworkId}`) === 'true';
             
             if (isCurrentlyLiked) {
@@ -1866,15 +1883,15 @@
                 likes[artworkId] = (likes[artworkId] || 0) + 1;
             }
             
-            localStorage.setItem('likes', JSON.stringify(likes));
+            await saveAllDataToUpstash(); // 좋아요 수 변경을 서버에 저장
             renderArtworks();
             if (isAdminMode) updateAdminStats();
         }
 
         // 🗑️ 작품 삭제
-        function deleteArtwork(artworkId) {
+        async function deleteArtwork(artworkId) {
             if (!confirm('정말로 이 작품을 삭제하시겠습니까?')) return;
-            deleteArtworkById(artworkId);
+            await deleteArtworkById(artworkId);
             showMessage('작품이 삭제되었습니다.', 'success');
         }
         
@@ -1916,34 +1933,24 @@
                         <button class="btn btn-primary" onclick="submitComment('${artwork.id}')">댓글 등록</button>
                     </div>
                 </div>` : ''}
-                
-                <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
-                    <small style="color: #666;">등록일: ${new Date(artwork.createdAt).toLocaleDateString()}</small>
-                </div>
             `;
             
-            if (settings.allowComments) {
-                renderCommentTree(artwork.id);
-            }
+            if (settings.allowComments) renderCommentTree(artwork.id);
             
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
         
-        // 🔽 [추가된 부분] 계층형 댓글 렌더링 함수들 🔽
         function renderCommentTree(artworkId) {
             const commentsListContainer = document.getElementById('commentsList');
             const allComments = (comments[artworkId] || []).filter(c => c.approved);
             
-            // parentId가 없는 옛날 댓글에 'root' 부여
-            allComments.forEach(c => {
-                if(!c.parentId) c.parentId = 'root';
-            });
+            allComments.forEach(c => { if(!c.parentId) c.parentId = 'root'; });
 
-            commentsListContainer.innerHTML = buildCommentHTML(allComments, 'root');
+            commentsListContainer.innerHTML = buildCommentHTML(allComments, 'root', artworkId);
         }
 
-        function buildCommentHTML(allComments, parentId, isReply = false) {
+        function buildCommentHTML(allComments, parentId, artworkId, isReply = false) {
             const children = allComments.filter(comment => comment.parentId === parentId);
             if (children.length === 0) return '';
 
@@ -1952,8 +1959,8 @@
                 html += `
                     <div class="comment ${isReply ? 'comment-reply' : ''}">
                         <div class="comment-controls">
-                            <button class="btn-warning" onclick="editComment('${comment.artworkId}', '${comment.id}')">수정</button>
-                            <button class="btn-danger" onclick="deleteComment('${comment.artworkId}', '${comment.id}')">삭제</button>
+                            <button class="btn-warning btn-small" onclick="editComment('${artworkId}', '${comment.id}')">수정</button>
+                            <button class="btn-danger btn-small" onclick="deleteComment('${artworkId}', '${comment.id}')">삭제</button>
                         </div>
                         <div class="comment-author">${comment.author}</div>
                         <div class="comment-text">${comment.text}</div>
@@ -1961,7 +1968,7 @@
                         <div class="comment-actions">
                             <span class="reply-btn" onclick="prepareReply('${comment.id}', '${comment.author}')">답글</span>
                         </div>
-                        ${buildCommentHTML(allComments, comment.id, true)}
+                        ${buildCommentHTML(allComments, comment.id, artworkId, true)}
                     </div>
                 `;
             });
@@ -1984,8 +1991,6 @@
             commentForm.dataset.replyTo = 'root';
             document.getElementById('replyingToInfo').style.display = 'none';
         }
-        // 🔼 [추가된 부분] 여기까지 🔼
-
 
         function showFullscreenImage(imageUrl) {
             if (!imageUrl) return;
@@ -2004,8 +2009,7 @@
             }
         }
 
-        // 🔽 [수정된 부분] 댓글 제출 함수가 답글 상태를 인식하도록 변경
-        function submitComment(artworkId) {
+        async function submitComment(artworkId) {
             const author = document.getElementById('commentAuthor').value.trim();
             const text = document.getElementById('commentText').value.trim();
             
@@ -2017,12 +2021,12 @@
             const commentForm = document.querySelector('.comment-form');
             const parentId = commentForm.dataset.replyTo || 'root';
             
-            const newComment = addComment(artworkId, author, text, parentId);
+            const newComment = await addComment(artworkId, author, text, parentId);
             
             if (newComment) {
                 document.getElementById('commentAuthor').value = '';
                 document.getElementById('commentText').value = '';
-                cancelReply(); // 답글 상태 초기화
+                cancelReply();
                 
                 if (settings.moderateComments) {
                     showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success');
@@ -2031,7 +2035,7 @@
                     renderCommentTree(artworkId);
                 }
                 
-                renderArtworks(); // 메인 갤러리 댓글 수 업데이트
+                renderArtworks();
                 if (isAdminMode) {
                     updateAdminStats();
                     renderCommentsTable();
@@ -2111,7 +2115,7 @@
                 
                 artworks.unshift(newArtwork);
                 
-                localStorage.setItem('artworks', JSON.stringify(artworks));
+                await saveAllDataToUpstash();
                 
                 renderArtworks();
                 if (isAdminMode) {
@@ -2199,7 +2203,7 @@
             if (category === 'all') {
                 const totalArtworks = artworks.length;
                 const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0);
-                const totalComments = Object.values(comments).reduce((sum, artworkComments) => sum + artworkComments.length, 0);
+                const totalComments = Object.values(comments).flat().length;
                 statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${totalArtworks}</div><div class="grade-stat-label">전체 작품</div></div><div class="grade-stat"><div class="grade-stat-number">${totalLikes}</div><div class="grade-stat-label">총 좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${totalComments}</div><div class="grade-stat-label">총 댓글</div></div></div>`;
             } else {
                 const gradeArtworks = artworks.filter(artwork => artwork.grade === category);
@@ -2240,30 +2244,32 @@
         }
 
         // 🚀 초기화
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('🧱 브릭모델 전시관 로드');
             
-            const savedArtworks = localStorage.getItem('artworks');
-            const savedComments = localStorage.getItem('comments');
-            const savedLikes = localStorage.getItem('likes');
-            const savedSettings = localStorage.getItem('settings');
-            
-            if (savedArtworks) artworks = JSON.parse(savedArtworks);
-            if (savedComments) comments = JSON.parse(savedComments);
-            if (savedLikes) likes = JSON.parse(savedLikes);
-            
-            if (savedSettings) {
-                const loadedSettings = JSON.parse(savedSettings);
-                settings = {
-                    ...settings,
-                    ...loadedSettings,
-                    gradeDescriptions: {...settings.gradeDescriptions, ...(loadedSettings.gradeDescriptions || {}) }
-                };
+            try {
+                const savedData = await upstash('GET', 'database');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    artworks = data.artworks || [];
+                    comments = data.comments || {};
+                    likes = data.likes || {};
+                    // 기본 설정 객체와 불러온 설정을 병합하여, 나중에 새로운 설정이 추가되어도 안전하게 만듦
+                    settings = { 
+                        ...settings, 
+                        ...data.settings,
+                        gradeDescriptions: { ...settings.gradeDescriptions, ...(data.settings?.gradeDescriptions || {}) }
+                    };
+                }
+                 document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-success">✅ 데이터베이스 연결됨</span>';
+            } catch (error) {
+                 console.error('Upstash에서 데이터를 불러오는 데 실패했습니다:', error);
+                 document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-error">❌ 데이터베이스 연결 실패</span>';
+                 showMessage('데이터베이스 연결에 실패했습니다. 사이트가 정상적으로 동작하지 않을 수 있습니다.', 'error');
             }
-            
+
             applyHeaderSettings(); 
             
-            document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-success">✅ 로컬 스토리지 연결됨</span>';
             document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>';
             
             renderArtworks();
@@ -2328,12 +2334,12 @@
                 }, { offset: Number.NEGATIVE_INFINITY }).element;
             }
 
-            function updateArtworkOrder() {
+            async function updateArtworkOrder() {
                 const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
                 const newArtworks = newOrderedIds.map(id => artworks.find(a => a.id === id));
                 
                 artworks = newArtworks;
-                localStorage.setItem('artworks', JSON.stringify(artworks));
+                await saveAllDataToUpstash();
                 
                 renderArtworks();
                 showMessage('작품 순서가 저장되었습니다.', 'success');
