@@ -1,200 +1,146 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대불초등학교 브릭모델 전시관</title>
-    <style>
-        /* --- 스타일 전부 포함 시작 --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; min-height: 100vh; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; margin-bottom: 40px; color: white; position: relative; }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; }
-        .header-logo { max-height: 2.5rem; margin-right: 15px; vertical-align: middle; }
-        .subtitle { font-size: 1.1rem; opacity: 0.9; margin-bottom: 20px; }
-        .header-buttons { position: absolute; top: 0; right: 0; display: flex; gap: 10px; flex-wrap: wrap; }
-        .header-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.3s ease; font-size: 0.9rem; }
-        .header-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
-        .header-btn.active { background: rgba(255,255,255,0.4); font-weight: bold; }
-        .panel { background: white; border-radius: 15px; padding: 20px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none; }
-        .panel.active { display: block; animation: slideDown 0.3s ease; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        .upload-panel, .admin-panel, .status-section { padding: 30px; }
-        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; flex-wrap: wrap; }
-        .admin-tab { padding: 10px 20px; background: #f8f9fa; border: none; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; }
-        .admin-tab:hover { background: #e9ecef; }
-        .admin-tab.active { background: linear-gradient(45deg, #667eea, #764ba2); color: white; }
-        .admin-content { display: none; }
-        .admin-content.active { display: block; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 15px; text-align: center; }
-        .stat-number { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
-        .stat-label { font-size: 0.9rem; opacity: 0.9; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #2c3e50; }
-        .sub-label { font-weight: normal; color: #7f8c8d; font-size: 0.9rem; margin-top: 10px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; }
-        textarea { height: 100px; resize: vertical; }
-        .image-upload { border: 2px dashed #e0e0e0; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 10px; }
-        .image-upload:hover { border-color: #667eea; background: #f8f9fa; }
-        .image-upload input { display: none; }
-        .image-preview { max-width: 200px; max-height: 200px; margin: 10px auto; border-radius: 8px; display: none; }
-        .upload-progress { margin-top: 10px; background: #e0e0e0; border-radius: 10px; overflow: hidden; display: none; }
-        .upload-progress-bar { height: 20px; background: linear-gradient(45deg, #667eea, #764ba2); width: 0%; transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; }
-        .btn, .btn-primary, .btn-danger, .btn-warning, .btn-secondary, .btn-small { cursor: pointer; border-radius: 25px; transition: all 0.3s ease; }
-        .btn { padding: 12px 30px; border: none; font-size: 1rem; display: inline-block; text-decoration: none; text-align: center; }
-        .btn-primary { background: linear-gradient(45deg, #667eea, #764ba2); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        .btn-danger { background: #e74c3c; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; }
-        .btn-warning { background: #f39c12; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; }
-        .btn-secondary { background: #f8f9fa; color: #333; border: 1px solid #dee2e6; }
-        .btn-secondary:hover { background: #e9ecef; }
-        .btn-small { padding: 5px 15px; font-size: 0.8rem; }
-        .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 40px; }
-        .artwork-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; position: relative; opacity: 0; transform: translateY(20px); }
-        .artwork-card.show { opacity: 1; transform: translateY(0); transition: opacity 0.5s ease, transform 0.5s ease; }
-        .artwork-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        .artwork-image { width: 100%; height: 250px; background: linear-gradient(45deg, #f0f0f0, #e0e0e0); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: zoom-in; }
-        .artwork-image img { width: 100%; height: 100%; object-fit: cover; }
-        .placeholder { font-size: 3rem; color: #999; }
-        .artwork-info { padding: 20px; }
-        .artwork-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 8px; color: #2c3e50; }
-        .artwork-author { color: #7f8c8d; margin-bottom: 10px; }
-        .artwork-description { line-height: 1.6; color: #555; margin-bottom: 15px; }
-        .artwork-stats { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
-        .like-btn { background: none; border: none; cursor: pointer; color: #999; transition: color 0.3s; }
-        .like-btn:hover, .like-btn.liked { color: #e74c3c; }
-        .admin-controls { position: absolute; top: 10px; right: 10px; display: none; gap: 5px; }
-        .admin-mode .admin-controls { display: flex; }
-        .comments-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
-        .comment { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
-        .comment-reply { margin-left: 40px; }
-        .comment-author { font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
-        .comment-text { line-height: 1.6; color: #555; margin-bottom: 10px; }
-        .comment-date { font-size: 0.8rem; color: #999; }
-        .comment-actions { font-size: 0.8rem; }
-        .reply-btn { color: #667eea; cursor: pointer; font-weight: bold; }
-        .reply-btn:hover { text-decoration: underline; }
-        .comment-controls { position: absolute; top: 10px; right: 10px; display: none; gap: 5px; }
-        .admin-mode .comment-controls { display: flex; }
-        .comment-form { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; }
-        #replyingToInfo { font-size: 0.9rem; color: #555; background: #e9ecef; padding: 8px 12px; border-radius: 8px; margin-bottom: 15px; display: none; }
-        #cancelReplyBtn { margin-left: 10px; color: #e74c3c; cursor: pointer; font-weight: bold; }
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f8f9fa; font-weight: bold; }
-        tr:hover { background: #f8f9fa; }
-        #artworksTableBody tr { cursor: grab; }
-        #artworksTableBody tr.dragging { opacity: 0.5; background: #e9ecef; }
-        .message { padding: 15px; border-radius: 8px; margin: 10px 0; text-align: center; }
-        .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .status-indicator { display: inline-block; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; margin: 5px; }
-        .status-success { background: #d4edda; color: #155724; }
-        .status-error { background: #f8d7da; color: #721c24; }
-        .status-warning { background: #fff3cd; color: #856404; }
-        .grade-info-section { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 15px; padding: 30px; margin-bottom: 30px; text-align: center; color: white; transition: all 0.3s ease; display: none; }
-        .grade-info-section.active { display: block; animation: slideDown 0.3s ease; }
-        .grade-info-content h3 { font-size: 1.8rem; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        .grade-info-content p { font-size: 1.1rem; line-height: 1.6; opacity: 0.9; max-width: 800px; margin: 0 auto; }
-        .grade-stats { display: flex; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
-        .grade-stat { background: rgba(255,255,255,0.1); padding: 15px 20px; border-radius: 10px; text-align: center; min-width: 120px; }
-        .grade-stat-number { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; }
-        .grade-stat-label { font-size: 0.9rem; opacity: 0.8; }
-/* --- 스타일 전부 포함 끝 --- */
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>대불초 브릭모델 전시관</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3f3f3;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+    }
+    form {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .gallery {
+      max-width: 800px;
+      margin: 2rem auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .card img {
+      width: 100%;
+      border-radius: 4px;
+    }
+    .card h3 {
+      margin: 0.5rem 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- (이전 메시지와 동일한 HTML 바디 구조: header, panels, gallery, modal, fullscreen overlay) -->
-    </div>
-    <script>
-        // 🔧 Upstash Redis 설정
-        const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
-        const UPSTASH_AUTH = process.env.UPSTASH_REDIS_REST_TOKEN;
+  <h1>대불초등학교 브릭모델 전시관</h1>
 
-        async function redisFetch(cmd, ...args) {
-            const res = await fetch(UPSTASH_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${UPSTASH_AUTH}`
-                },
-                body: JSON.stringify({ command: [cmd, ...args] })
-            });
-            if (!res.ok) throw new Error('Redis Error: ' + res.statusText);
-            return (await res.json()).result;
-        }
+  <form id="uploadForm">
+    <input type="text" id="title" placeholder="작품 제목" required />
+    <input type="text" id="author" placeholder="학생 이름" required />
+    <input type="url" id="image" placeholder="이미지 URL" required />
+    <textarea id="description" placeholder="작품 설명" required></textarea>
+    <button type="submit">작품 등록</button>
+  </form>
 
-        let artworks = [], comments = {}, likes = {}, settings = {
-            title: '대불초등학교 브릭모델 전시관',
-            headerImage: '', description: '창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요',
-            allowComments: true, moderateComments: false,
-            adminPassword: '1234', useUploadPassword: false, uploadPassword: '',
-            gradeDescriptions: { /*…기본 학년별 설명…*/ }
-        };
-        let isAdminMode = false;
+  <div class="gallery" id="gallery">
+    <!-- 작품 카드들이 여기에 표시됩니다 -->
+  </div>
 
-        async function loadAllData() {
-            try {
-                const [a, c, l, s] = await Promise.all([
-                    redisFetch('GET', 'artworks'),
-                    redisFetch('GET', 'comments'),
-                    redisFetch('GET', 'likes'),
-                    redisFetch('GET', 'settings')
-                ]);
-                artworks = a ? JSON.parse(a) : [];
-                comments = c ? JSON.parse(c) : {};
-                likes = l ? JSON.parse(l) : {};
-                if (s) {
-                    const loaded = JSON.parse(s);
-                    settings = { ...settings, ...loaded, gradeDescriptions: { ...settings.gradeDescriptions, ...(loaded.gradeDescriptions||{}) } };
-                }
-            } catch (e) {
-                console.error(e);
-                alert('데이터 로드 실패: ' + e.message);
-            }
-        }
+  <script>
+    const gallery = document.getElementById("gallery");
+    const form = document.getElementById("uploadForm");
 
-        async function saveAllData() {
-            try {
-                await Promise.all([
-                    redisFetch('SET', 'artworks', JSON.stringify(artworks)),
-                    redisFetch('SET', 'comments', JSON.stringify(comments)),
-                    redisFetch('SET', 'likes', JSON.stringify(likes)),
-                    redisFetch('SET', 'settings', JSON.stringify(settings))
-                ]);
-            } catch (e) {
-                console.error(e);
-                alert('데이터 저장 실패: ' + e.message);
-            }
-        }
+    const redisURL = import.meta.env.VITE_UPSTASH_REDIS_REST_URL;
+    const redisToken = import.meta.env.VITE_UPSTASH_REDIS_REST_TOKEN;
 
-        function localSaveWrapper() {
-            renderArtworks(); if (isAdminMode) updateAdminStats(), renderArtworksTable(), renderCommentsTable();
-            saveAllData();
-        }
+    async function fetchArtworks() {
+      const res = await fetch(`${redisURL}/get/artworks`, {
+        headers: {
+          Authorization: `Bearer ${redisToken}`,
+        },
+      });
+      const result = await res.json();
+      const artworks = JSON.parse(result.result || "[]");
+      displayArtworks(artworks);
+    }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadAllData();
-            applyHeaderSettings();
-            renderArtworks(); updateAdminStats(); renderArtworksTable();
-            updateGradeInfo('all'); setupDragAndDrop();
-            document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-success">✅ Upstash 연결됨</span>';
-        });
+    function displayArtworks(artworks) {
+      gallery.innerHTML = "";
+      artworks.reverse().forEach((art) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <img src="${art.image}" alt="${art.title}" />
+          <h3>${art.title}</h3>
+          <p><strong>${art.author}</strong></p>
+          <p>${art.description}</p>
+        `;
+        gallery.appendChild(div);
+      });
+    }
 
-        // 이후 작품 추가, 수정, 삭제, 댓글, 좋아요, 설정 저장, 순서 저장 등 기존에 localStorage 갱신하던 모든 함수 내부에
-        // “localSaveWrapper();”  한 줄만 추가하시면 자동으로 Upstash 저장됩니다.
-        // 예시: deleteArtworkById() -> delete data, then localSaveWrapper()
-        // 예시는 너무 길어서 생략했지만, 함수 맨 끝에 호출만 넣으시면 됩니다.
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const author = document.getElementById("author").value;
+      const image = document.getElementById("image").value;
+      const description = document.getElementById("description").value;
 
-        // 🔧 나머지 UI 핸들러 등 기존 코드 전부 그대로 유지하고,
-        // localStorage 관련 reduce, setItem 등 부분만 localSaveWrapper() 호출로 교체해주세요.
+      const res = await fetch(`${redisURL}/get/artworks`, {
+        headers: {
+          Authorization: `Bearer ${redisToken}`,
+        },
+      });
+      const result = await res.json();
+      const current = JSON.parse(result.result || "[]");
 
-    </script>
+      const newArtwork = { title, author, image, description, createdAt: new Date().toISOString() };
+      const updated = [...current, newArtwork];
+
+      await fetch(`${redisURL}/set/artworks`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${redisToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ value: JSON.stringify(updated) }),
+      });
+
+      form.reset();
+      fetchArtworks();
+    });
+
+    fetchArtworks();
+  </script>
 </body>
 </html>
