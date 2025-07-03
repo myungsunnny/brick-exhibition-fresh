@@ -1,12 +1,16 @@
 {
-  "name": "brick-exhibition-fresh",
+  "name": "brick-gallery",
   "version": "1.0.0",
-  "description": "대불초등학교 브릭모델 전시관 - Upstash Redis 연동",
-  "dependencies": {
-    "cloudinary": "^1.40.0",
-    "@upstash/redis": "^1.25.1"
+  "description": "Daebul Elementary School Brick Model Gallery",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve",
+    "build": "echo 'No build step required for static files'"
   },
-  "engines": {
-    "node": "18.x"
+  "dependencies": {
+    "@upstash/redis": "^1.31.5"
+  },
+  "devDependencies": {
+    "serve": "^14.2.3"
   }
 }
