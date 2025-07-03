@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대불초등학교 브릭모델 전시관</title>
+    <!-- CSS 파일 연결 -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,16 +22,19 @@
         </header>
 
         <div class="panel status-section" id="statusSection">
-            </div>
+            <!-- 내용은 scripts.js가 채웁니다. -->
+        </div>
 
         <div class="panel upload-panel" id="uploadPanel">
-            </div>
+            <!-- 내용은 scripts.js가 채웁니다. -->
+        </div>
 
         <div class="panel admin-panel" id="adminPanel">
-            </div>
+            <!-- 내용은 scripts.js가 채웁니다. -->
+        </div>
 
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="브릭모델 작품명이나 학생 이름으로 검색...">
+            <input type="text" id="searchInput" placeholder="작품명 또는 작가로 검색...">
         </div>
 
         <div class="filters-container">
@@ -46,15 +50,17 @@
         </div>
 
         <div class="grade-info-section" id="gradeInfoSection">
-            </div>
+            <!-- 내용은 scripts.js가 채웁니다. -->
+        </div>
 
         <div class="gallery" id="gallery">
-            <div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;">
+            <div class="loading-message" style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;">
                 <h3>🚀 작품을 불러오는 중...</h3>
             </div>
         </div>
     </div>
 
+    <!-- 모달 창 -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <span class="close-btn" id="modal-close-btn">&times;</span>
@@ -62,12 +68,13 @@
         </div>
     </div>
 
+    <!-- 전체 화면 이미지 -->
     <div class="fullscreen-overlay" id="fullscreenOverlay">
         <span class="fullscreen-close-btn">&times;</span>
         <img src="" alt="Fullscreen Image" class="fullscreen-image" id="fullscreenImage">
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@upstash/redis/dist/index.umd.js" defer></script>
-    <script src="script.js" defer></script>
+    <!-- JavaScript 파일 연결 (defer 속성으로 HTML 파싱 후 실행) -->
+    <script src="scripts.js" defer></script>
 </body>
 </html>
