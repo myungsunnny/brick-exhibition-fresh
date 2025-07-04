@@ -770,7 +770,7 @@
                     <input type="text" id="title" required>
                 </div>
                 <div class="form-group">
-                    <label for="author">작가명</label>
+                    <label for="author">이름(모둠)</label>
                     <input type="text" id="author" required>
                 </div>
                 <div class="form-group">
@@ -845,7 +845,7 @@
                             <tr>
                                 <th>선택</th>
                                 <th>제목</th>
-                                <th>작가</th>
+                                <th>이름(모둠)</th>
                                 <th>학년</th>
                                 <th>좋아요</th>
                                 <th>댓글</th>
@@ -885,7 +885,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>사용자명</th>
+                                <th>이름(모둠)</th>
                                 <th>학년</th>
                                 <th>작품 수</th>
                                 <th>댓글 수</th>
@@ -998,7 +998,7 @@
         </div>
 
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="브릭모델 작품명이나 학생 이름으로 검색...">
+            <input type="text" id="searchInput" placeholder="작품명 또는 이름(모둠)으로 검색...">
         </div>
 
         <div class="filters-container">
@@ -1101,7 +1101,7 @@
         async function submitComment(artworkId) { const author = document.getElementById('commentAuthor').value.trim(); const text = document.getElementById('commentText').value.trim(); if (!author || !text) { showMessage('이름과 댓글을 모두 입력해주세요.', 'error'); return; } const newComment = await addComment(artworkId, author, text); if (newComment) { document.getElementById('commentAuthor').value = ''; document.getElementById('commentText').value = ''; if (settings.moderateComments) { showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success'); } else { showMessage('댓글이 등록되었습니다.', 'success'); showArtworkModal(artworks.find(a => a.id === artworkId)); } renderArtworks(); if (isAdminMode) { updateAdminStats(); renderCommentsTable(); } } }
         function showMessage(text, type = 'success') { const existing = document.querySelector('.message'); if (existing) existing.remove(); const message = document.createElement('div'); message.className = `message ${type}`; message.textContent = text; document.querySelector('header').appendChild(message); setTimeout(() => message.remove(), 5000); }
         async function uploadImageToCloudinary(file) { if (!file) return null; try { const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData }); if (!response.ok) throw new Error('Cloudinary 이미지 업로드 실패'); const result = await response.json(); return result.secure_url; } catch (error) { console.error('이미지 업로드 오류:', error); return null; } }
-        function editArtwork(artworkId) { const artwork = artworks.find(a => a.id === artworkId); if (!artwork) return; const modal = document.getElementById('modal'); const modalContent = document.getElementById('modalContent'); modalContent.innerHTML = `<h2>작품 수정</h2><div class="edit-form"><div class="form-group"><label>제목</label><input type="text" id="editTitle" value="${artwork.title}"></div><div class="form-group"><label>작가</label><input type="text" id="editAuthor" value="${artwork.author}"></div><div class="form-group"><label>학년</label><select id="editGrade"><option value="1학년" ${artwork.grade === '1학년' ? 'selected' : ''}>1학년</option><option value="2학년" ${artwork.grade === '2학년' ? 'selected' : ''}>2학년</option><option value="3학년" ${artwork.grade === '3학년' ? 'selected' : ''}>3학년</option><option value="4학년" ${artwork.grade === '4학년' ? 'selected' : ''}>4학년</option><option value="5학년" ${artwork.grade === '5학년' ? 'selected' : ''}>5학년</option><option value="6학년" ${artwork.grade === '6학년' ? 'selected' : ''}>6학년</option></select></div><div class="form-group"><label>설명</label><textarea id="editDescription">${artwork.description}</textarea></div><div style="text-align: center; margin-top: 20px;"><button class="btn btn-primary" onclick="saveArtworkEdit('${artwork.id}')">저장</button><button class="btn btn-secondary" onclick="closeModal()">취소</button></div></div>`; modal.style.display = 'block'; document.body.style.overflow = 'hidden'; }
+        function editArtwork(artworkId) { const artwork = artworks.find(a => a.id === artworkId); if (!artwork) return; const modal = document.getElementById('modal'); const modalContent = document.getElementById('modalContent'); modalContent.innerHTML = `<h2>작품 수정</h2><div class="edit-form"><div class="form-group"><label>제목</label><input type="text" id="editTitle" value="${artwork.title}"></div><div class="form-group"><label>이름(모둠)</label><input type="text" id="editAuthor" value="${artwork.author}"></div><div class="form-group"><label>학년</label><select id="editGrade"><option value="1학년" ${artwork.grade === '1학년' ? 'selected' : ''}>1학년</option><option value="2학년" ${artwork.grade === '2학년' ? 'selected' : ''}>2학년</option><option value="3학년" ${artwork.grade === '3학년' ? 'selected' : ''}>3학년</option><option value="4학년" ${artwork.grade === '4학년' ? 'selected' : ''}>4학년</option><option value="5학년" ${artwork.grade === '5학년' ? 'selected' : ''}>5학년</option><option value="6학년" ${artwork.grade === '6학년' ? 'selected' : ''}>6학년</option></select></div><div class="form-group"><label>설명</label><textarea id="editDescription">${artwork.description}</textarea></div><div style="text-align: center; margin-top: 20px;"><button class="btn btn-primary" onclick="saveArtworkEdit('${artwork.id}')">저장</button><button class="btn btn-secondary" onclick="closeModal()">취소</button></div></div>`; modal.style.display = 'block'; document.body.style.overflow = 'hidden'; }
         async function bulkDelete() { const selected = document.querySelectorAll('.artwork-checkbox:checked'); if (selected.length === 0) return showMessage('삭제할 작품을 선택하세요.', 'error'); if (!confirm(`선택한 ${selected.length}개의 작품을 삭제하시겠습니까?`)) return; const idsToDelete = [...selected].map(cb => cb.dataset.id); artworks = artworks.filter(artwork => !idsToDelete.includes(artwork.id)); idsToDelete.forEach(id => { delete comments[id]; delete likes[id]; }); if (await saveDataToDB()) { showMessage(`${selected.length}개의 작품이 삭제되었습니다.`, 'success'); renderArtworks(); renderArtworksTable(); updateAdminStats(); } else { loadDataFromDB().then(() => { renderArtworks(); renderArtworksTable(); }); } }
         async function bulkDeleteComments() { const selected = document.querySelectorAll('.comment-checkbox:checked'); if (selected.length === 0) return showMessage('삭제할 댓글을 선택하세요.', 'error'); if (!confirm(`선택한 ${selected.length}개의 댓글을 삭제하시겠습니까?`)) return; const idsToDelete = new Set([...selected].map(cb => cb.dataset.id)); Object.keys(comments).forEach(artId => { comments[artId] = comments[artId].filter(c => !idsToDelete.has(c.id)); if (comments[artId].length === 0) delete comments[artId]; }); if (await saveDataToDB()) { showMessage(`${idsToDelete.size}개의 댓글이 삭제되었습니다.`, 'success'); renderCommentsTable(); renderArtworks(); updateAdminStats(); } else { loadDataFromDB().then(() => { renderCommentsTable(); renderArtworks(); }); } }
         function removeHeaderImage() { if (confirm("헤더 이미지를 제거하시겠습니까? '설정 저장' 버튼을 눌러야 최종 반영됩니다.")) { settings.headerImage = ''; document.getElementById('headerImageFile').value = ''; loadSettingsForm(); } }
