@@ -10,15 +10,16 @@ export default async function handler(request, response) {
   // GET 요청: 모든 데이터를 DB에서 가져옴
   if (request.method === 'GET') {
     try {
-      // mget을 사용해 여러 키를 한번에 효율적으로 조회
-      const data = await redis.mget('artworks', 'comments', 'likes', 'settings');
+      // [수정] 'qna' 키를 추가하여 Q&A 데이터도 함께 조회
+      const data = await redis.mget('artworks', 'comments', 'likes', 'settings', 'qna');
       
       const artworks = data[0] || [];
       const comments = data[1] || {};
       const likes = data[2] || {};
-      const settings = data[3] || null; // 설정은 없을 수 있으므로 null 처리
+      const settings = data[3] || null;
+      const qna = data[4] || []; // [추가] Q&A 데이터 처리
 
-      return response.status(200).json({ artworks, comments, likes, settings });
+      return response.status(200).json({ artworks, comments, likes, settings, qna });
     } catch (error) {
       console.error('Data fetching error:', error);
       return response.status(500).json({ error: '데이터를 불러오는 데 실패했습니다.' });
@@ -28,14 +29,15 @@ export default async function handler(request, response) {
   // POST 요청: 모든 데이터를 DB에 저장함
   if (request.method === 'POST') {
     try {
-      const { artworks, comments, likes, settings } = request.body;
+      const { artworks, comments, likes, settings, qna } = request.body;
 
-      // mset을 사용해 여러 키를 한번에 저장
+      // [수정] 'qna' 키를 추가하여 Q&A 데이터도 함께 저장
       await redis.mset({
         artworks: JSON.stringify(artworks),
         comments: JSON.stringify(comments),
         likes: JSON.stringify(likes),
-        settings: JSON.stringify(settings)
+        settings: JSON.stringify(settings),
+        qna: JSON.stringify(qna) // [추가] Q&A 데이터 저장
       });
       
       return response.status(200).json({ message: '데이터가 성공적으로 저장되었습니다.' });
