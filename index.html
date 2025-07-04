@@ -287,7 +287,7 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
             cursor: pointer;
             position: relative;
             opacity: 0;
@@ -1147,94 +1147,140 @@
         function loadLikedFromLocal() { const liked = localStorage.getItem('likedArtworks'); likedArtworks = liked ? new Set(JSON.parse(liked)) : new Set(); }
         function saveLikedToLocal() { localStorage.setItem('likedArtworks', JSON.stringify([...likedArtworks])); }
         
-        function showArtworkModal(artwork) {
-            const modal = document.getElementById('modal');
-            const modalContent = document.getElementById('modalContent');
-            const isLiked = likedArtworks.has(artwork.id);
-            const likeCount = likes[artwork.id] || 0;
-            const artworkComments = comments[artwork.id] || [];
-            
-            let imageGalleryHtml = '';
-            if (artwork.images && artwork.images.length > 0) {
-                const mainImage = artwork.images[0];
-                const thumbnailsHtml = artwork.images.map((imgUrl, index) => `<img src="${imgUrl}" class="modal-thumbnail-img ${index === 0 ? 'active' : ''}" onclick="changeModalImage('${imgUrl}', this)">`).join('');
-                imageGalleryHtml = `<div class="modal-image-gallery"><img src="${mainImage}" id="modalMainImage" class="modal-main-image" onclick="showFullscreenImage(this.src)">${artwork.images.length > 1 ? `<div class="modal-thumbnails">${thumbnailsHtml}</div>` : ''}</div>`;
-            } else {
-                imageGalleryHtml = '<div style="font-size: 5rem; text-align:center; margin: 20px 0;">🧱</div>';
-            }
+        document.addEventListener('DOMContentLoaded', async function() { console.log('🧱 브릭모델 전시관 로드'); loadLikedFromLocal(); if (await loadDataFromDB()) { applyHeaderSettings(); renderArtworks(); updateGradeInfo('all'); setupDragAndDrop(); } else { const gallery = document.getElementById('gallery'); gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>데이터 로딩 실패</h3><p>페이지를 새로고침하거나 관리자에게 문의하세요. 😥</p></div>`; } document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>'; console.log('✅ 초기화 완료'); });
+        
+        function applyFilters() {
+            const activeType = document.querySelector('.type-filter-btn.active').dataset.type;
+            const activeGrade = document.querySelector('.filter-btn.active').dataset.category;
 
-            let commentsHtml = '';
-            if (settings.allowComments) {
-                const approvedComments = artworkComments.filter(c => c.approved);
+            document.querySelectorAll('.artwork-card').forEach(card => {
+                const cardType = card.dataset.type;
+                const cardGrade = card.dataset.grade;
                 
-                const renderReplies = (commentId) => {
-                    const parentComment = approvedComments.find(c => c.id === commentId);
-                    if (!parentComment || !parentComment.replies || parentComment.replies.length === 0) return '';
-                    
-                    return parentComment.replies.map(reply => `
-                        <div class="reply">
-                            <div class="comment-author">${reply.author}</div>
-                            <div class="comment-text">${reply.text}</div>
-                            <div class="comment-date">${new Date(reply.createdAt).toLocaleString()}</div>
-                        </div>
-                    `).join('');
+                const typeMatch = (activeType === 'all' || cardType === activeType);
+                const gradeMatch = (activeGrade === 'all' || cardGrade === activeGrade);
+
+                if (typeMatch && gradeMatch) {
+                    card.style.display = 'block';
+                    setTimeout(() => card.classList.add('show'), 10);
+                } else {
+                    card.classList.remove('show');
+                    setTimeout(() => card.style.display = 'none', 300);
+                }
+            });
+        }
+
+        document.querySelectorAll('.type-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyFilters();
+            });
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const category = btn.dataset.category;
+                updateGradeInfo(category);
+                applyFilters();
+            });
+        });
+
+        document.getElementById('artworkForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '등록 중...';
+            try {
+                const formData = {
+                    artworkType: document.getElementById('artworkType').value,
+                    title: document.getElementById('title').value,
+                    author: document.getElementById('author').value,
+                    grade: document.getElementById('grade').value + '학년',
+                    description: document.getElementById('description').value
                 };
-
-                const commentsListHtml = approvedComments.map(comment => `
-                    <div class="comment">
-                        <div class="comment-controls">
-                            <button class="btn-warning" onclick="editComment('${artwork.id}', '${comment.id}')">수정</button>
-                            <button class="btn-danger" onclick="deleteComment('${artwork.id}', '${comment.id}')">삭제</button>
-                        </div>
-                        <div class="comment-author">${comment.author} <button class="btn btn-secondary btn-reply" onclick="toggleReplyForm('${comment.id}')">답글</button></div>
-                        <div class="comment-text">${comment.text}</div>
-                        <div class="comment-date">${new Date(comment.createdAt).toLocaleString()}</div>
-                        <div class="replies-container">${renderReplies(comment.id)}</div>
-                        <div class="reply-form" id="reply-form-for-${comment.id}">
-                             <div class="form-group"><input type="text" id="replyAuthor-${comment.id}" placeholder="이름"></div>
-                             <div class="form-group"><textarea id="replyText-${comment.id}" placeholder="답글 내용..."></textarea></div>
-                             <button class="btn btn-primary btn-small" onclick="addReply('${artwork.id}', '${comment.id}')">답글 등록</button>
-                        </div>
+                const imageFiles = document.getElementById('imageFile').files;
+                let imageUrls = [];
+                if (imageFiles.length > 0) {
+                    const uploadPromises = Array.from(imageFiles).map(file => uploadImageToCloudinary(file));
+                    imageUrls = await Promise.all(uploadPromises);
+                    if (imageUrls.some(url => !url)) throw new Error('일부 이미지 업로드에 실패했습니다.');
+                }
+                const newArtwork = { id: Date.now().toString(), ...formData, images: imageUrls, createdAt: new Date().toISOString() };
+                artworks.unshift(newArtwork);
+                if (!(await saveDataToDB())) {
+                    artworks.shift();
+                    throw new Error("DB 저장 실패");
+                }
+                renderArtworks();
+                if (isAdminMode) {
+                    updateAdminStats();
+                    renderArtworksTable();
+                }
+                this.reset();
+                document.getElementById('imagePreviewContainer').innerHTML = '';
+                document.getElementById('uploadText').style.display = 'block';
+                showMessage('작품이 성공적으로 등록되었습니다!', 'success');
+            } catch (error) {
+                console.error('작품 등록 오류:', error);
+                showMessage(`작품 등록에 실패했습니다: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+        
+        function renderArtworks() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            if (artworks.length === 0) {
+                gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>아직 등록된 작품이 없습니다</h3><p>첫 번째 작품을 등록해보세요! 😊</p></div>`;
+                return;
+            }
+            artworks.forEach((artwork, index) => {
+                const card = document.createElement('div');
+                card.className = 'artwork-card';
+                card.setAttribute('data-grade', artwork.grade);
+                card.setAttribute('data-type', artwork.artworkType || '사진');
+                
+                const isLiked = likedArtworks.has(artwork.id);
+                const likeCount = likes[artwork.id] || 0;
+                const artworkComments = comments[artwork.id] || [];
+                const mainImage = (artwork.images && artwork.images.length > 0) ? artwork.images[0] : '';
+                
+                card.innerHTML = `
+                    <div class="artwork-type">${artwork.artworkType || '사진'}</div>
+                    <div class="admin-controls">
+                        <button class="btn-warning" onclick="event.stopPropagation(); editArtwork('${artwork.id}')">수정</button>
+                        <button class="btn-danger" onclick="event.stopPropagation(); deleteArtwork('${artwork.id}')">삭제</button>
                     </div>
-                `).join('');
-
-                commentsHtml = `
-                    <div class="comments-section">
-                        <h3>댓글 (${approvedComments.length})</h3>
-                        <div id="commentsList">${commentsListHtml}</div>
-                        <div class="comment-form">
-                            <h4>댓글 작성</h4>
-                            <div class="form-group"><input type="text" id="commentAuthor" placeholder="이름을 입력하세요"></div>
-                            <div class="form-group"><textarea id="commentText" placeholder="댓글을 입력하세요..."></textarea></div>
-                            <button class="btn btn-primary" onclick="submitComment('${artwork.id}')">댓글 등록</button>
+                    <div class="artwork-image" onclick="event.stopPropagation(); showFullscreenImage('${mainImage}')">
+                        ${mainImage ? `<img src="${mainImage}" alt="${artwork.title}" loading="lazy">` : '<div class="placeholder">🧱</div>'}
+                    </div>
+                    <div class="artwork-info">
+                        <h3 class="artwork-title">${artwork.title}</h3>
+                        <p class="artwork-author">${artwork.author} (${artwork.grade})</p>
+                        <p class="artwork-description">${artwork.description}</p>
+                        <div class="artwork-stats">
+                            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${artwork.id}')">❤️ ${likeCount}</button>
+                            <span>💬 ${artworkComments.length}</span>
                         </div>
                     </div>
                 `;
-            }
-
-            modalContent.innerHTML = `
-                ${imageGalleryHtml}
-                <div style="text-align: center;">
-                    <h2 style="color: #2c3e50; margin-bottom: 10px;">${artwork.title}</h2>
-                    <p style="color: #7f8c8d; font-size: 1.1rem; margin-bottom: 20px;">${artwork.author} (${artwork.grade})</p>
-                </div>
-                <p style="line-height: 1.8; color: #555; font-size: 1.1rem; text-align: center; margin-bottom: 20px;">${artwork.description}</p>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <button class="btn btn-primary like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${artwork.id}'); this.classList.toggle('liked'); this.innerHTML='❤️ ' + (likes[artwork.id] || 0);">
-                        ❤️ ${likeCount} 좋아요
-                    </button>
-                    <button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button>
-                </div>
-                ${commentsHtml}
-            `;
-            
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
+                card.addEventListener('click', () => showArtworkModal(artwork));
+                gallery.appendChild(card);
+                // setTimeout(() => card.classList.add('show'), index * 50); // applyFilters가 처리하므로 주석 처리
+            });
+            applyFilters();
         }
+
+        // 이하 나머지 모든 JavaScript 코드는 이전 답변과 동일합니다.
+        function showArtworkModal(artwork) { const modal = document.getElementById('modal'); const modalContent = document.getElementById('modalContent'); const isLiked = likedArtworks.has(artwork.id); const likeCount = likes[artwork.id] || 0; const artworkComments = comments[artwork.id] || []; let imageGalleryHtml = ''; if (artwork.images && artwork.images.length > 0) { const mainImage = artwork.images[0]; const thumbnailsHtml = artwork.images.map((imgUrl, index) => `<img src="${imgUrl}" class="modal-thumbnail-img ${index === 0 ? 'active' : ''}" onclick="changeModalImage('${imgUrl}', this)">`).join(''); imageGalleryHtml = `<div class="modal-image-gallery"><img src="${mainImage}" id="modalMainImage" class="modal-main-image" onclick="showFullscreenImage(this.src)">${artwork.images.length > 1 ? `<div class="modal-thumbnails">${thumbnailsHtml}</div>` : ''}</div>`; } else { imageGalleryHtml = '<div style="font-size: 5rem; text-align:center; margin: 20px 0;">🧱</div>'; } let commentsHtml = ''; if (settings.allowComments) { const approvedComments = artworkComments.filter(c => c.approved); const renderReplies = (commentId) => { const parentComment = approvedComments.find(c => c.id === commentId); if (!parentComment || !parentComment.replies || parentComment.replies.length === 0) return ''; return parentComment.replies.map(reply => `<div class="reply"><div class="comment-author">${reply.author}</div><div class="comment-text">${reply.text}</div><div class="comment-date">${new Date(reply.createdAt).toLocaleString()}</div></div>`).join(''); }; const commentsListHtml = approvedComments.map(comment => `<div class="comment"><div class="comment-controls"><button class="btn-warning" onclick="editComment('${artwork.id}', '${comment.id}')">수정</button><button class="btn-danger" onclick="deleteComment('${artwork.id}', '${comment.id}')">삭제</button></div><div class="comment-author">${comment.author} <button class="btn btn-secondary btn-reply" onclick="toggleReplyForm('${comment.id}')">답글</button></div><div class="comment-text">${comment.text}</div><div class="comment-date">${new Date(comment.createdAt).toLocaleString()}</div><div class="replies-container">${renderReplies(comment.id)}</div><div class="reply-form" id="reply-form-for-${comment.id}"><div class="form-group"><input type="text" id="replyAuthor-${comment.id}" placeholder="이름"></div><div class="form-group"><textarea id="replyText-${comment.id}" placeholder="답글 내용..."></textarea></div><button class="btn btn-primary btn-small" onclick="addReply('${artwork.id}', '${comment.id}')">답글 등록</button></div></div>`).join(''); commentsHtml = `<div class="comments-section"><h3>댓글 (${approvedComments.length})</h3><div id="commentsList">${commentsListHtml}</div><div class="comment-form"><h4>댓글 작성</h4><div class="form-group"><input type="text" id="commentAuthor" placeholder="이름을 입력하세요"></div><div class="form-group"><textarea id="commentText" placeholder="댓글을 입력하세요..."></textarea></div><button class="btn btn-primary" onclick="submitComment('${artwork.id}')">댓글 등록</button></div></div>`; } modalContent.innerHTML = `${imageGalleryHtml}<div style="text-align: center;"><h2 style="color: #2c3e50; margin-bottom: 10px;">${artwork.title}</h2><p style="color: #7f8c8d; font-size: 1.1rem; margin-bottom: 20px;">${artwork.author} (${artwork.grade})</p></div><p style="line-height: 1.8; color: #555; font-size: 1.1rem; text-align: center; margin-bottom: 20px;">${artwork.description}</p><div style="text-align: center; margin-bottom: 20px;"><button class="btn btn-primary like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${artwork.id}'); this.classList.toggle('liked'); this.innerHTML='❤️ ' + (likes[artwork.id] || 0);">❤️ ${likeCount} 좋아요</button><button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button></div>${commentsHtml}`; modal.style.display = 'block'; document.body.style.overflow = 'hidden'; }
         function changeModalImage(imageUrl, clickedThumbnail) { document.getElementById('modalMainImage').src = imageUrl; document.querySelectorAll('.modal-thumbnail-img').forEach(thumb => thumb.classList.remove('active')); clickedThumbnail.classList.add('active'); }
-        function renderArtworks() { const gallery = document.getElementById('gallery'); gallery.innerHTML = ''; if (artworks.length === 0) { gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>아직 등록된 작품이 없습니다</h3><p>첫 번째 작품을 등록해보세요! 😊</p></div>`; return; } artworks.forEach((artwork, index) => { const card = document.createElement('div'); card.className = 'artwork-card'; card.setAttribute('data-grade', artwork.grade); card.setAttribute('data-type', artwork.artworkType || '사진'); const isLiked = likedArtworks.has(artwork.id); const likeCount = likes[artwork.id] || 0; const artworkComments = comments[artwork.id] || []; const mainImage = (artwork.images && artwork.images.length > 0) ? artwork.images[0] : ''; card.innerHTML = `<div class="artwork-type">${artwork.artworkType || '사진'}</div><div class="admin-controls"><button class="btn-warning" onclick="event.stopPropagation(); editArtwork('${artwork.id}')">수정</button><button class="btn-danger" onclick="event.stopPropagation(); deleteArtwork('${artwork.id}')">삭제</button></div><div class="artwork-image" onclick="event.stopPropagation(); showFullscreenImage('${mainImage}')">${mainImage ? `<img src="${mainImage}" alt="${artwork.title}" loading="lazy">` : '<div class="placeholder">🧱</div>'}</div><div class="artwork-info"><h3 class="artwork-title">${artwork.title}</h3><p class="artwork-author">${artwork.author} (${artwork.grade})</p><p class="artwork-description">${artwork.description}</p><div class="artwork-stats"><button class="like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${artwork.id}')">❤️ ${likeCount}</button><span>💬 ${artworkComments.length}</span></div></div>`; card.addEventListener('click', () => showArtworkModal(artwork)); gallery.appendChild(card); setTimeout(() => card.classList.add('show'), index * 50); }); applyFilters(); }
         function previewImages() { const files = document.getElementById('imageFile').files; const previewContainer = document.getElementById('imagePreviewContainer'); const uploadText = document.getElementById('uploadText'); previewContainer.innerHTML = ''; if (files.length > 0) { uploadText.style.display = 'none'; Array.from(files).forEach(file => { const reader = new FileReader(); reader.onload = e => { const img = document.createElement('img'); img.src = e.target.result; img.className = 'image-preview'; previewContainer.appendChild(img); }; reader.readAsDataURL(file); }); } else { uploadText.style.display = 'block'; } }
-        document.getElementById('artworkForm').addEventListener('submit', async function(e) { e.preventDefault(); const submitBtn = document.getElementById('submitBtn'); const originalText = submitBtn.textContent; submitBtn.disabled = true; submitBtn.textContent = '등록 중...'; try { const formData = { artworkType: document.getElementById('artworkType').value, title: document.getElementById('title').value, author: document.getElementById('author').value, grade: document.getElementById('grade').value + '학년', description: document.getElementById('description').value }; const imageFiles = document.getElementById('imageFile').files; let imageUrls = []; if (imageFiles.length > 0) { submitBtn.textContent = `이미지 업로드 중 (0/${imageFiles.length})`; const uploadPromises = Array.from(imageFiles).map(file => uploadImageToCloudinary(file)); imageUrls = await Promise.all(uploadPromises); if (imageUrls.some(url => !url)) { throw new Error('일부 이미지 업로드에 실패했습니다.'); } } const newArtwork = { id: Date.now().toString(), ...formData, images: imageUrls, createdAt: new Date().toISOString() }; artworks.unshift(newArtwork); if (!(await saveDataToDB())) { artworks.shift(); throw new Error("DB 저장 실패"); } renderArtworks(); if (isAdminMode) { updateAdminStats(); renderArtworksTable(); } this.reset(); document.getElementById('imagePreviewContainer').innerHTML = ''; document.getElementById('uploadText').style.display = 'block'; showMessage('작품이 성공적으로 등록되었습니다!', 'success'); } catch (error) { console.error('작품 등록 오류:', error); showMessage(`작품 등록에 실패했습니다: ${error.message}`, 'error'); } finally { submitBtn.disabled = false; submitBtn.textContent = originalText; } });
         async function toggleLike(artworkId) { if (likedArtworks.has(artworkId)) { likedArtworks.delete(artworkId); likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1); } else { likedArtworks.add(artworkId); likes[artworkId] = (likes[artworkId] || 0) + 1; } saveLikedToLocal(); renderArtworks(); await saveDataToDB(); if (isAdminMode) updateAdminStats(); }
         async function addComment(artworkId, authorName, commentText) { if (!settings.allowComments) { showMessage('댓글 기능이 비활성화되어 있습니다.', 'error'); return null; } const newComment = { id: Date.now().toString(), author: authorName, text: commentText, createdAt: new Date().toISOString(), approved: !settings.moderateComments, replies: [] }; if (!comments[artworkId]) { comments[artworkId] = []; } comments[artworkId].push(newComment); if (!(await saveDataToDB())) { comments[artworkId].pop(); return null; } return newComment; }
         function toggleReplyForm(commentId) { const form = document.getElementById(`reply-form-for-${commentId}`); if(form) form.style.display = form.style.display === 'none' ? 'block' : 'none'; }
@@ -1248,7 +1294,6 @@
         function toggleUploadPanel() { const panel = document.getElementById('uploadPanel'); const adminPanel = document.getElementById('adminPanel'); const statusSection = document.getElementById('statusSection'); if (panel.classList.contains('active')) { panel.classList.remove('active'); document.querySelector('.header-btn').classList.remove('active'); return; } const openPanel = () => { panel.classList.add('active'); adminPanel.classList.remove('active'); statusSection.classList.remove('active'); document.querySelector('.header-btn').classList.add('active'); document.querySelectorAll('.header-btn')[1].classList.remove('active'); }; if (settings.requireUploadPassword) { const password = prompt('작품을 등록하려면 비밀번호를 입력하세요:'); if (password === settings.uploadPassword) { openPanel(); } else if (password !== null) { showMessage('비밀번호가 틀렸습니다.', 'error'); } } else { openPanel(); } }
         async function saveSettings() { const saveBtn = event.target; saveBtn.disabled = true; saveBtn.textContent = '저장 중...'; const originalSettings = JSON.parse(JSON.stringify(settings)); try { const headerImageFile = document.getElementById('headerImageFile').files[0]; if (headerImageFile) { const imageUrl = await uploadImageToCloudinary(headerImageFile); if (imageUrl) settings.headerImage = imageUrl; else throw new Error("헤더 이미지 업로드 실패"); } settings.title = document.getElementById('siteTitle').value; settings.description = document.getElementById('siteDescription').value; settings.allowComments = document.getElementById('allowComments').checked; settings.moderateComments = document.getElementById('moderateComments').checked; const newPassword = document.getElementById('adminPassword').value; if (newPassword.trim() !== '') settings.adminPassword = newPassword; settings.requireUploadPassword = document.getElementById('requireUploadPassword').checked; const newUploadPassword = document.getElementById('uploadPassword').value; if (newUploadPassword.trim() !== '') { settings.uploadPassword = newUploadPassword; } settings.gradeDescriptions['all'].title = document.getElementById('gradeTitleAll').value; settings.gradeDescriptions['all'].description = document.getElementById('gradeDescAll').value; for(let i = 1; i <= 6; i++) { settings.gradeDescriptions[`${i}학년`].title = document.getElementById(`gradeTitle${i}`).value; settings.gradeDescriptions[`${i}학년`].description = document.getElementById(`gradeDesc${i}`).value; } if (!(await saveDataToDB())) throw new Error("DB 저장 실패"); applyHeaderSettings(); loadSettingsForm(); showMessage('설정이 저장되었습니다.', 'success'); updateGradeInfo(document.querySelector('.filter-btn.active').dataset.category); } catch(error) { settings = originalSettings; showMessage(error.message, 'error'); } finally { saveBtn.disabled = false; saveBtn.textContent = '설정 저장'; } }
         function loadSettingsForm() { document.getElementById('siteTitle').value = settings.title; document.getElementById('siteDescription').value = settings.description; document.getElementById('allowComments').checked = settings.allowComments; document.getElementById('moderateComments').checked = settings.moderateComments; const headerPreview = document.getElementById('headerImagePreview'); const headerUploadText = document.getElementById('headerUploadText'); if (settings.headerImage) { headerPreview.src = settings.headerImage; headerPreview.style.display = 'block'; headerUploadText.style.display = 'none'; } else { headerPreview.style.display = 'none'; headerUploadText.style.display = 'block'; } document.getElementById('requireUploadPassword').checked = settings.requireUploadPassword; document.getElementById('uploadPassword').value = ''; for(let i = 1; i <= 6; i++) { const gradeKey = `${i}학년`; if (settings.gradeDescriptions[gradeKey]) { document.getElementById(`gradeTitle${i}`).value = settings.gradeDescriptions[gradeKey].title; document.getElementById(`gradeDesc${i}`).value = settings.gradeDescriptions[gradeKey].description; } } if (settings.gradeDescriptions['all']) { document.getElementById('gradeTitleAll').value = settings.gradeDescriptions['all'].title; document.getElementById('gradeDescAll').value = settings.gradeDescriptions['all'].description; } }
-        document.addEventListener('DOMContentLoaded', async function() { console.log('🧱 브릭모델 전시관 로드'); loadLikedFromLocal(); if (await loadDataFromDB()) { applyHeaderSettings(); renderArtworks(); updateGradeInfo('all'); setupDragAndDrop(); } else { const gallery = document.getElementById('gallery'); gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>데이터 로딩 실패</h3><p>페이지를 새로고침하거나 관리자에게 문의하세요. 😥</p></div>`; } document.getElementById('cloudinaryStatus').innerHTML = '<span class="status-indicator status-success">✅ Cloudinary 연결됨</span>'; console.log('✅ 초기화 완료'); });
         function toggleAdminPanel() { const panel = document.getElementById('adminPanel'); const uploadPanel = document.getElementById('uploadPanel'); const statusSection = document.getElementById('statusSection'); if (!panel.classList.contains('active')) { const password = prompt('관리자 비밀번호를 입력하세요:'); if (password === settings.adminPassword) { panel.classList.add('active'); statusSection.classList.add('active'); uploadPanel.classList.remove('active'); document.querySelectorAll('.header-btn')[1].classList.add('active'); document.querySelector('.header-btn').classList.remove('active'); isAdminMode = true; document.body.classList.add('admin-mode'); updateAdminStats(); renderAdminTables(); loadSettingsForm(); showMessage('관리자 모드가 활성화되었습니다!', 'success'); } else if (password !== null) { showMessage('비밀번호가 틀렸습니다.', 'error'); } } else { panel.classList.remove('active'); statusSection.classList.remove('active'); document.querySelectorAll('.header-btn')[1].classList.remove('active'); isAdminMode = false; document.body.classList.remove('admin-mode'); showMessage('관리자 모드가 비활성화되었습니다.', 'success'); } }
         function switchAdminTab(tab) { document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active')); event.target.classList.add('active'); document.getElementById(tab + 'Content').classList.add('active'); if (tab === 'artworks') renderArtworksTable(); else if (tab === 'comments') renderCommentsTable(); else if (tab === 'users') renderUsersTable(); }
         function updateAdminStats() { const totalArtworks = artworks.length; const totalComments = Object.values(comments).reduce((sum, artworkComments) => sum + artworkComments.length, 0); const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0); const today = new Date().toDateString(); const todayArtworks = artworks.filter(artwork => new Date(artwork.createdAt).toDateString() === today).length; document.getElementById('statArtworks').textContent = totalArtworks; document.getElementById('statComments').textContent = totalComments; document.getElementById('statLikes').textContent = totalLikes; document.getElementById('statToday').textContent = todayArtworks; document.getElementById('totalCount').textContent = totalArtworks; document.getElementById('totalComments').textContent = totalComments; }
@@ -1268,9 +1313,6 @@
         function showFullscreenImage(imageUrl) { if (!imageUrl) return; const overlay = document.getElementById('fullscreenOverlay'); const image = document.getElementById('fullscreenImage'); image.src = imageUrl; overlay.classList.add('show'); document.body.style.overflow = 'hidden'; }
         function closeFullscreenImage() { const overlay = document.getElementById('fullscreenOverlay'); overlay.classList.remove('show'); if (document.getElementById('modal').style.display === 'none') { document.body.style.overflow = 'auto'; } }
         function shareArtwork(title) { if (navigator.share) { navigator.share({ title: `${title} - ${settings.title}`, text: `멋진 브릭모델 작품을 확인해보세요!`, url: window.location.href }); } else { navigator.clipboard.writeText(window.location.href).then(() => showMessage('링크가 클립보드에 복사되었습니다!', 'success')).catch(() => showMessage('링크 복사에 실패했습니다.', 'error')); } }
-        function applyFilters() { const activeType = document.querySelector('.type-filter-btn.active').dataset.type; const activeGrade = document.querySelector('.filter-btn.active').dataset.category; document.querySelectorAll('.artwork-card').forEach(card => { const cardType = card.dataset.type; const cardGrade = card.dataset.grade; const typeMatch = (activeType === 'all' || cardType === activeType); const gradeMatch = (activeGrade === 'all' || cardGrade === activeGrade); if (typeMatch && gradeMatch) { card.style.display = 'block'; setTimeout(() => card.classList.add('show'), 10); } else { card.classList.remove('show'); setTimeout(() => card.style.display = 'none', 300); } }); }
-        document.querySelectorAll('.type-filter-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); applyFilters(); }); });
-        document.querySelectorAll('.filter-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); const category = btn.dataset.category; updateGradeInfo(category); applyFilters(); }); });
         function updateGradeInfo(category) { const gradeInfoSection = document.getElementById('gradeInfoSection'); const gradeInfoTitle = document.getElementById('gradeInfoTitle'); const gradeInfoDescription = document.getElementById('gradeInfoDescription'); const info = settings.gradeDescriptions[category] || settings.gradeDescriptions['all']; gradeInfoTitle.textContent = info.title; gradeInfoDescription.textContent = info.description; updateGradeStats(category); gradeInfoSection.classList.add('active'); }
         function updateGradeStats(category) { const gradeInfoSection = document.getElementById('gradeInfoSection'); let statsHtml = ''; if (category === 'all') { const totalArtworks = artworks.length; const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0); const totalComments = Object.values(comments).reduce((sum, arr) => sum + arr.length, 0); statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${totalArtworks}</div><div class="grade-stat-label">전체 작품</div></div><div class="grade-stat"><div class="grade-stat-number">${totalLikes}</div><div class="grade-stat-label">총 좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${totalComments}</div><div class="grade-stat-label">총 댓글</div></div></div>`; } else { const gradeArtworks = artworks.filter(artwork => artwork.grade === category); const gradeLikes = gradeArtworks.reduce((sum, artwork) => sum + (likes[artwork.id] || 0), 0); const gradeComments = gradeArtworks.reduce((sum, artwork) => sum + (comments[artwork.id] || []).length, 0); statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${gradeArtworks.length}</div><div class="grade-stat-label">작품 수</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeLikes}</div><div class="grade-stat-label">좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeComments}</div><div class="grade-stat-label">댓글</div></div></div>`; } const existingStats = gradeInfoSection.querySelector('.grade-stats'); if (existingStats) existingStats.remove(); gradeInfoSection.querySelector('.grade-info-content').insertAdjacentHTML('beforeend', statsHtml); }
         document.getElementById('searchInput').addEventListener('input', e => { const searchTerm = e.target.value.toLowerCase(); document.querySelectorAll('.artwork-card').forEach(card => { const title = card.querySelector('.artwork-title').textContent.toLowerCase(); const author = card.querySelector('.artwork-author').textContent.toLowerCase(); if (title.includes(searchTerm) || author.includes(searchTerm)) { card.style.display = 'block'; card.classList.add('show'); } else { card.classList.remove('show'); setTimeout(() => { card.style.display = 'none'; }, 300); } }); });
