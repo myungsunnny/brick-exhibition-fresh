@@ -1,287 +1,4 @@
-<div class="qna-answer" id="answer-${qna.id}">
-                        ${qna.answered ? `
-                            <div class="qna-answer-header">
-                                <span class="qna-answer-author">${qna.answer.author}</span>
-                                <span class="qna-answer-date">${new Date(qna.answer.createdAt).toLocaleDateString()}</span>
-                            </div>
-                            <div class="qna-answer-content">${qna.answer.content}</div>
-                            <button class="btn btn-secondary btn-small" onclick="showAnswerForm('${qna.id}')">답변 수정</button>
-                        ` : `
-                            <p style="color: #6c757d; margin-bottom: 15px;">아직 답변이 없습니다.</p>
-                            <button class="btn btn-primary btn-small" onclick="showAnswerForm('${qna.id}')">답변 작성</button>
-                        `}
-                        <div class="qna-answer-form" id="answer-form-${qna.id}">
-                            <div class="form-group">
-                                <label>답변자 이름</label>
-                                <input type="text" id="answerAuthor-${qna.id}" placeholder="이름을 입력하세요" value="${qna.answered ? qna.answer.author : ''}">
-                            </div>
-                            <div class="form-group">
-                                <label>답변 내용</label>
-                                <textarea id="answerContent-${qna.id}" placeholder="답변을 입력하세요...">${qna.answered ? qna.answer.content : ''}</textarea>
-                            </div>
-                            <div style="text-align: right; margin-top: 15px;">
-                                <button class="btn btn-secondary btn-small" onclick="hideAnswerForm('${qna.id}')">취소</button>
-                                <button class="btn btn-primary btn-small" onclick="submitAnswer('${qna.id}')">${qna.answered ? '답변 수정' : '답변 등록'}</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                qnaListContainer.appendChild(qnaItem);
-                
-                // 애니메이션 효과
-                setTimeout(() => {
-                    qnaItem.style.opacity = '0';
-                    qnaItem.style.transform = 'translateY(20px)';
-                    qnaItem.style.transition = 'all 0.5s ease';
-                    qnaItem.offsetHeight; // reflow
-                    qnaItem.style.opacity = '1';
-                    qnaItem.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
-        }
-
-        function toggleQnaAnswer(qnaId) {
-            const answerDiv = document.getElementById(`answer-${qnaId}`);
-            const isVisible = answerDiv.classList.contains('show');
-            
-            // 모든 답변 숨기기
-            document.querySelectorAll('.qna-answer').forEach(div => {
-                div.classList.remove('show');
-            });
-            
-            // 클릭한 답변만 토글
-            if (!isVisible) {
-                answerDiv.classList.add('show');
-            }
-        }
-
-        function showAnswerForm(qnaId) {
-            const form = document.getElementById(`answer-form-${qnaId}`);
-            form.classList.add('show');
-        }
-
-        function hideAnswerForm(qnaId) {
-            const form = document.getElementById(`answer-form-${qnaId}`);
-            form.classList.remove('show');
-        }
-
-        async function submitAnswer(qnaId) {
-            const author = document.getElementById(`answerAuthor-${qnaId}`).value.trim();
-            const content = document.getElementById(`answerContent-${qnaId}`).value.trim();
-            
-            if (!author || !content) {
-                showMessage('답변자 이름과 내용을 모두 입력해주세요.', 'error');
-                return;
-            }
-            
-            const qnaIndex = qnaList.findIndex(q => q.id === qnaId);
-            if (qnaIndex === -1) return;
-            
-            const originalQna = JSON.parse(JSON.stringify(qnaList[qnaIndex]));
-            
-            qnaList[qnaIndex].answer = {
-                author: author,
-                content: content,
-                createdAt: new Date().toISOString()
-            };
-            qnaList[qnaIndex].answered = true;
-            
-            if (await saveDataToDB()) {
-                hideAnswerForm(qnaId);
-                renderQnaList();
-                showMessage('답변이 등록되었습니다.', 'success');
-            } else {
-                qnaList[qnaIndex] = originalQna;
-                showMessage('답변 등록에 실패했습니다.', 'error');
-            }
-        }
-
-        async function deleteQna(qnaId) {
-            if (!confirm('정말로 이 질문을 삭제하시겠습니까?')) return;
-            
-            const originalQnaList = [...qnaList];
-            qnaList = qnaList.filter(q => q.id !== qnaId);
-            
-            if (await saveDataToDB()) {
-                renderQnaList();
-                showMessage('질문이 삭제되었습니다.', 'success');
-            } else {
-                qnaList = originalQnaList;
-                showMessage('질문 삭제에 실패했습니다.', 'error');
-            }
-        }
-
-        function editQna(qnaId) {
-            const qna = qnaList.find(q => q.id === qnaId);
-            if (!qna) return;
-            
-            const modal = document.getElementById('modal');
-            const modalContent = document.getElementById('modalContent');
-            
-            modalContent.innerHTML = `
-                <h2>질문 수정</h2>
-                <div class="edit-form">
-                    <div class="form-group">
-                        <label>이름</label>
-                        <input type="text" id="editQnaAuthor" value="${qna.author}">
-                    </div>
-                    <div class="form-group">
-                        <label>학년</label>
-                        <select id="editQnaGrade">
-                            <option value="1학년" ${qna.grade === '1학년' ? 'selected' : ''}>1학년</option>
-                            <option value="2학년" ${qna.grade === '2학년' ? 'selected' : ''}>2학년</option>
-                            <option value="3학년" ${qna.grade === '3학년' ? 'selected' : ''}>3학년</option>
-                            <option value="4학년" ${qna.grade === '4학년' ? 'selected' : ''}>4학년</option>
-                            <option value="5학년" ${qna.grade === '5학년' ? 'selected' : ''}>5학년</option>
-                            <option value="6학년" ${qna.grade === '6학년' ? 'selected' : ''}>6학년</option>
-                            <option value="선생님" ${qna.grade === '선생님' ? 'selected' : ''}>선생님</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>카테고리</label>
-                        <select id="editQnaCategory">
-                            <option value="브릭모델 만들기" ${qna.category === '브릭모델 만들기' ? 'selected' : ''}>브릭모델 만들기</option>
-                            <option value="작품 등록" ${qna.category === '작품 등록' ? 'selected' : ''}>작품 등록</option>
-                            <option value="사이트 이용" ${qna.category === '사이트 이용' ? 'selected' : ''}>사이트 이용</option>
-                            <option value="기타" ${qna.category === '기타' ? 'selected' : ''}>기타</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>제목</label>
-                        <input type="text" id="editQnaTitle" value="${qna.title}">
-                    </div>
-                    <div class="form-group">
-                        <label>내용</label>
-                        <textarea id="editQnaContent">${qna.content}</textarea>
-                    </div>
-                    <div style="text-align: center; margin-top: 20px;">
-                        <button class="btn btn-primary" onclick="saveQnaEdit('${qna.id}')">저장</button>
-                        <button class="btn btn-secondary" onclick="closeModal()">취소</button>
-                    </div>
-                </div>
-            `;
-            
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        async function saveQnaEdit(qnaId) {
-            const qnaIndex = qnaList.findIndex(q => q.id === qnaId);
-            if (qnaIndex === -1) return;
-            
-            const originalQna = { ...qnaList[qnaIndex] };
-            
-            qnaList[qnaIndex].author = document.getElementById('editQnaAuthor').value;
-            qnaList[qnaIndex].grade = document.getElementById('editQnaGrade').value;
-            qnaList[qnaIndex].category = document.getElementById('editQnaCategory').value;
-            qnaList[qnaIndex].title = document.getElementById('editQnaTitle').value;
-            qnaList[qnaIndex].content = document.getElementById('editQnaContent').value;
-            qnaList[qnaIndex].editedAt = new Date().toISOString();
-            
-            if (await saveDataToDB()) {
-                closeModal();
-                renderQnaList();
-                showMessage('질문이 수정되었습니다.', 'success');
-            } else {
-                qnaList[qnaIndex] = originalQna;
-                showMessage('질문 수정에 실패했습니다.', 'error');
-            }
-        }
-
-        // Q&A 관련 함수들
-        function setupQnaForm() {
-            const qnaForm = document.getElementById('qnaForm');
-            qnaForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const submitBtn = document.getElementById('qnaSubmitBtn');
-                const originalText = submitBtn.textContent;
-                submitBtn.disabled = true;
-                submitBtn.textContent = '등록 중...';
-                
-                try {
-                    const newQna = {
-                        id: Date.now().toString(),
-                        author: document.getElementById('qnaAuthor').value,
-                        grade: document.getElementById('qnaGrade').value + (document.getElementById('qnaGrade').value === '선생님' ? '' : '학년'),
-                        category: document.getElementById('qnaCategory').value,
-                        title: document.getElementById('qnaTitle').value,
-                        content: document.getElementById('qnaContent').value,
-                        createdAt: new Date().toISOString(),
-                        answer: null,
-                        answered: false
-                    };
-                    
-                    qnaList.unshift(newQna);
-                    
-                    if (await saveDataToDB()) {
-                        this.reset();
-                        renderQnaList();
-                        showMessage('질문이 성공적으로 등록되었습니다!', 'success');
-                    } else {
-                        qnaList.shift();
-                        throw new Error('DB 저장 실패');
-                    }
-                } catch (error) {
-                    console.error('Q&A 등록 오류:', error);
-                    showMessage(`질문 등록에 실패했습니다: ${error.message}`, 'error');
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
-            });
-        }
-
-        function renderQnaList() {
-            const qnaListContainer = document.getElementById('qnaList');
-            const qnaCount = document.getElementById('qnaCount');
-            
-            qnaCount.textContent = `${qnaList.length}개 질문`;
-            
-            if (qnaList.length === 0) {
-                qnaListContainer.innerHTML = `
-                    <div class="empty-type-section">
-                        <h3>아직 등록된 질문이 없습니다</h3>
-                        <p>첫 번째 질문을 등록해보세요! 😊</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            qnaListContainer.innerHTML = '';
-            
-            qnaList.forEach((qna, index) => {
-                const qnaItem = document.createElement('div');
-                qnaItem.className = 'qna-item';
-                
-                const answerStatusClass = qna.answered ? 'answered' : 'pending';
-                const answerStatusText = qna.answered ? '✅ 답변완료' : '⏳ 답변대기';
-                
-                qnaItem.innerHTML = `
-                    <div class="qna-question" onclick="toggleQnaAnswer('${qna.id}')">
-                        <div class="qna-controls">
-                            <button class="btn-warning" onclick="event.stopPropagation(); editQna('${qna.id}')">수정</button>
-                            <button class="btn-danger" onclick="event.stopPropagation(); deleteQna('${qna.id}')">삭제</button>
-                        </div>
-                        <div class="qna-meta">
-                            <div class="qna-author-info">
-                                <span class="qna-author">${qna.author}</span>
-                                <span class="qna-grade">${qna.grade}</span>
-                                <span class="qna-category">${qna.category}</span>
-                            </div>
-                            <span class="qna-date">${new Date(qna.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <h4 class="qna-title">${qna.title}</h4>
-                        <p class="qna-content">${qna.content}</p>
-                        <div class="qna-status">
-                            <span class="qna-answer-status ${answerStatusClass}">${answerStatusText}</span>
-                            <span class="qna-toggle">답변 ${qna.answered ? '보기' : '작성'} ▼</span>
-                        </div>
-                    </div>
-                    <div class="qna-answer" id="answer-${qna.id}">
-                        ${qna.answered ? `
-                            <div class="qna-answer-header">
-                                <span class="qna-answer-<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -1115,177 +832,6 @@
             opacity: 0.9;
         }
         
-        /* Q&A 스타일 */
-        .qna-form-container {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-        .qna-form {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-        }
-        .qna-form h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .qna-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .qna-item {
-            background: rgba(255,255,255,0.95);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        .qna-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        .qna-question {
-            padding: 20px;
-            cursor: pointer;
-            position: relative;
-        }
-        .qna-question:hover {
-            background: rgba(102, 126, 234, 0.05);
-        }
-        .qna-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .qna-author-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .qna-author {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .qna-grade {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-        }
-        .qna-category {
-            background: #f8f9fa;
-            color: #495057;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            border: 1px solid #dee2e6;
-        }
-        .qna-date {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-        .qna-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 8px;
-        }
-        .qna-content {
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-        .qna-status {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .qna-answer-status {
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .qna-answer-status.answered {
-            background: #d4edda;
-            color: #155724;
-        }
-        .qna-answer-status.pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .qna-toggle {
-            color: #667eea;
-            font-size: 0.9rem;
-            margin-left: auto;
-        }
-        .qna-answer {
-            background: #f8f9fa;
-            border-top: 1px solid #dee2e6;
-            padding: 20px;
-            display: none;
-        }
-        .qna-answer.show {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-        .qna-answer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .qna-answer-author {
-            font-weight: bold;
-            color: #667eea;
-        }
-        .qna-answer-date {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-        .qna-answer-content {
-            color: #2c3e50;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-        .qna-answer-form {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-            display: none;
-        }
-        .qna-answer-form.show {
-            display: block;
-        }
-        .qna-controls {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            display: none;
-            gap: 5px;
-        }
-        .admin-mode .qna-controls {
-            display: flex;
-        }
-        .qna-stats {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        
         /* 반응형 디자인 */
         @media (max-width: 768px) {
             h1 { font-size: 2rem; flex-wrap: wrap; }
@@ -1306,9 +852,6 @@
             .filter-btn { padding: 6px 12px; font-size: 0.8rem; min-width: 55px; border-radius: 15px; }
             .type-tabs { gap: 8px; }
             .type-tab { padding: 10px 15px; font-size: 0.9rem; }
-            .qna-meta { flex-direction: column; align-items: flex-start; }
-            .qna-form-container { padding: 15px; }
-            .qna-form { padding: 20px; }
         }
     </style>
 </head>
@@ -1611,7 +1154,6 @@
             <button class="type-tab" data-type="사진" onclick="switchTypeTab('사진')">📸 사진</button>
             <button class="type-tab" data-type="결과물" onclick="switchTypeTab('결과물')">🎨 결과물</button>
             <button class="type-tab" data-type="학습지(활동지)" onclick="switchTypeTab('학습지(활동지)')">📝 학습지</button>
-            <button class="type-tab" data-type="qna" onclick="switchTypeTab('qna')">❓ Q&A</button>
         </div>
 
         <!-- 수정된 갤러리 컨테이너 -->
@@ -1651,62 +1193,6 @@
                 </div>
                 <div class="type-gallery" id="worksheetGallery"></div>
             </div>
-
-            <!-- Q&A 섹션 -->
-            <div class="type-section" id="qnaSection">
-                <div class="type-header">
-                    <div class="type-title">❓ Q&A</div>
-                    <div class="type-count" id="qnaCount">0개 질문</div>
-                </div>
-                
-                <!-- Q&A 등록 폼 -->
-                <div class="qna-form-container">
-                    <div class="qna-form">
-                        <h3>💬 질문하기</h3>
-                        <form id="qnaForm">
-                            <div class="form-group">
-                                <label for="qnaAuthor">이름</label>
-                                <input type="text" id="qnaAuthor" placeholder="이름을 입력하세요" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="qnaGrade">학년</label>
-                                <select id="qnaGrade" required>
-                                    <option value="">선택하세요</option>
-                                    <option value="1">1학년</option>
-                                    <option value="2">2학년</option>
-                                    <option value="3">3학년</option>
-                                    <option value="4">4학년</option>
-                                    <option value="5">5학년</option>
-                                    <option value="6">6학년</option>
-                                    <option value="선생님">선생님</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="qnaCategory">카테고리</label>
-                                <select id="qnaCategory" required>
-                                    <option value="">선택하세요</option>
-                                    <option value="브릭모델 만들기">브릭모델 만들기</option>
-                                    <option value="작품 등록">작품 등록</option>
-                                    <option value="사이트 이용">사이트 이용</option>
-                                    <option value="기타">기타</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="qnaTitle">질문 제목</label>
-                                <input type="text" id="qnaTitle" placeholder="질문 제목을 입력하세요" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="qnaContent">질문 내용</label>
-                                <textarea id="qnaContent" placeholder="궁금한 것을 자세히 적어주세요..." required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary" id="qnaSubmitBtn">질문 등록하기</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Q&A 목록 -->
-                <div class="qna-list" id="qnaList"></div>
-            </div>
         </div>
     </div>
 
@@ -1730,7 +1216,6 @@
         let likes = {};
         let likedArtworks = new Set();
         let settings = {};
-        let qnaList = []; // Q&A 데이터 배열 추가
         const defaultSettings = {
             title: '대불초등학교 브릭모델 전시관',
             headerImage: '',
@@ -1764,7 +1249,6 @@
                 comments = data.comments || {}; 
                 likes = data.likes || {}; 
                 settings = data.settings ? { ...defaultSettings, ...data.settings } : defaultSettings; 
-                qnaList = data.qnaList || []; // Q&A 데이터 로드
                 document.getElementById('upstashStatus').innerHTML = '<span class="status-indicator status-success">✅ 데이터베이스 연결됨</span>'; 
                 return true; 
             } catch (error) { 
@@ -1785,7 +1269,7 @@
                 const response = await fetch('/api/data', { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ artworks, comments, likes, settings, qnaList }) // Q&A 데이터 포함
+                    body: JSON.stringify({ artworks, comments, likes, settings }) 
                 }); 
                 if (!response.ok) throw new Error(`Server response error: ${response.status}`); 
                 console.log('✅ Data successfully saved to DB.'); 
@@ -1827,10 +1311,6 @@
                 document.getElementById('resultSection').classList.add('active');
             } else if (type === '학습지(활동지)') {
                 document.getElementById('worksheetSection').classList.add('active');
-            } else if (type === 'qna') {
-                document.getElementById('qnaSection').classList.add('active');
-                renderQnaList(); // Q&A 목록 렌더링
-                return; // 작품 렌더링 건너뛰기
             }
             
             // 작품 렌더링
@@ -1955,7 +1435,6 @@
                 renderArtworksByType(); 
                 updateGradeInfo('all'); 
                 setupDragAndDrop(); 
-                setupQnaForm(); // Q&A 폼 설정
             } else { 
                 document.getElementById('galleryContainer').innerHTML = 
                     `<div style="text-align: center; color: white; padding: 50px;">
@@ -2341,18 +1820,15 @@
             const confirmText = prompt('확인을 위해 "초기화"를 입력하세요:'); 
             if (confirmText !== '초기화') return; 
             const backupArtworks = [...artworks]; 
-            const backupQnaList = [...qnaList]; 
             artworks = []; 
             comments = {}; 
             likes = {}; 
-            qnaList = []; // Q&A 데이터도 초기화
             settings = defaultSettings; 
             if (await saveDataToDB()) { 
                 showMessage('모든 데이터가 초기화되었습니다.', 'success'); 
                 location.reload(); 
             } else { 
                 artworks = backupArtworks; 
-                qnaList = backupQnaList; 
                 showMessage('초기화에 실패했습니다.', 'error'); 
             } 
         }
@@ -2798,7 +2274,6 @@
                 comments, 
                 likes, 
                 settings, 
-                qnaList, // Q&A 데이터 포함
                 exportDate: new Date().toISOString() 
             }; 
             const dataStr = JSON.stringify(data, null, 2); 
