@@ -1506,10 +1506,10 @@
                     <p style="color: #7f8c8d; font-size: 1.1rem; margin-bottom: 20px;">${artwork.author} (${artwork.grade})</p>
                 </div>
                 <p style="line-height: 1.8; color: #555; font-size: 1.1rem; text-align: center; margin-bottom: 20px;">${artwork.description}</p>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <button class="btn btn-primary like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${artwork.id}'); this.classList.toggle('liked'); this.innerHTML='❤️ ' + (likes[artwork.id] || 0);">❤️ ${likeCount} 좋아요</button>
-                    <button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button>
-                </div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <button class="btn btn-primary like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${artwork.id}')">❤️ ${likeCount} 좋아요</button>
+                        <button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button>
+                    </div>
                 ${commentsHtml}
             `; 
             modal.style.display = 'block'; 
@@ -1545,15 +1545,36 @@
         }
         
         async function toggleLike(artworkId) { 
+            console.log('좋아요 토글:', artworkId);
+            
             if (likedArtworks.has(artworkId)) { 
                 likedArtworks.delete(artworkId); 
                 likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1); 
+                console.log('좋아요 취소:', likes[artworkId]);
             } else { 
                 likedArtworks.add(artworkId); 
                 likes[artworkId] = (likes[artworkId] || 0) + 1; 
+                console.log('좋아요 추가:', likes[artworkId]);
             } 
+            
             saveLikedToLocal(); 
-            renderArtworksByType(); 
+            
+            // 현재 열린 모달의 좋아요 버튼 즉시 업데이트
+            const modalLikeBtn = document.querySelector('.modal .like-btn');
+            if (modalLikeBtn) {
+                const isLiked = likedArtworks.has(artworkId);
+                modalLikeBtn.className = `btn btn-primary like-btn ${isLiked ? 'liked' : ''}`;
+                modalLikeBtn.innerHTML = `❤️ ${likes[artworkId] || 0} 좋아요`;
+            }
+            
+            // 갤러리의 모든 좋아요 버튼 업데이트
+            const galleryLikeBtns = document.querySelectorAll(`[onclick*="toggleLike('${artworkId}')"]`);
+            galleryLikeBtns.forEach(btn => {
+                const isLiked = likedArtworks.has(artworkId);
+                btn.className = `like-btn ${isLiked ? 'liked' : ''}`;
+                btn.innerHTML = `❤️ ${likes[artworkId] || 0}`;
+            });
+            
             await saveDataToDB(); 
             if (isAdminMode) updateAdminStats(); 
         }
