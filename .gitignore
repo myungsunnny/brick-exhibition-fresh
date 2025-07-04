@@ -1,14 +1,1 @@
-# Dependency directories
-node_modules/
-
-# Local environment variables
-.env
-.env.local
-
-# Build output
-.next/
-out/
-build/
-
-# macOS specific files
-.DS_Store
+node_modules
