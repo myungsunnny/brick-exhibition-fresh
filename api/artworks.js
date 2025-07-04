@@ -14,10 +14,8 @@ export default async function handler(request, response) {
       if (artworkIds.length === 0) {
         return response.status(200).json({ success: true, artworks: [] });
       }
-
       const rawArtworks = await redis.mget(...artworkIds.map(id => `artwork:${id}`));
-
-      // DB에서 가져온 문자열을 JSON 객체로 변환
+      
       const artworks = rawArtworks
         .filter(artwork => artwork !== null)
         .map(artwork => JSON.parse(artwork)); 
@@ -38,10 +36,8 @@ export default async function handler(request, response) {
       if (!artwork || !artwork.id) {
         return response.status(400).json({ success: false, error: '작품 정보가 올바르지 않습니다.' });
       }
-
       const isEditing = await redis.exists(`artwork:${artwork.id}`);
-
-      // DB에 저장하기 전에 객체를 JSON 문자열로 변환
+      
       await redis.set(`artwork:${artwork.id}`, JSON.stringify(artwork));
       
       if (!isEditing) {
@@ -49,7 +45,6 @@ export default async function handler(request, response) {
       }
       
       return response.status(200).json({ success: true });
-
     } catch (error) {
       console.error('Artworks POST Error:', error);
       return response.status(500).json({ success: false, error: '데이터 저장에 실패했습니다.' });
@@ -63,13 +58,10 @@ export default async function handler(request, response) {
         if (!artworkId) {
             return response.status(400).json({ success: false, error: '삭제할 작품 ID가 없습니다.' });
         }
-
         await redis.del(`artwork:${artworkId}`);
         await redis.lrem('artworks', 1, artworkId);
         await redis.hdel('likes', artworkId);
-
         return response.status(200).json({ success: true });
-
     } catch (error) {
         console.error('Artworks DELETE Error:', error);
         return response.status(500).json({ success: false, error: '데이터 삭제에 실패했습니다.' });
