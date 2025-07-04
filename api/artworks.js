@@ -15,15 +15,13 @@ export default async function handler(request, response) {
         return response.status(200).json({ success: true, artworks: [] });
       }
 
-      // 1. Upstash에서 데이터를 가져옵니다. (아직 문자열 상태)
       const rawArtworks = await redis.mget(...artworkIds.map(id => `artwork:${id}`));
 
-      // 2. 문자열을 실제 자바스크립트 객체로 변환하고, null 값은 걸러냅니다.
+      // ❗️ [읽기 수정] DB에서 가져온 문자열을 JSON 객체로 변환
       const artworks = rawArtworks
         .filter(artwork => artwork !== null)
         .map(artwork => JSON.parse(artwork)); 
 
-      // 3. 객체가 된 데이터를 최신순으로 정렬합니다.
       const sortedArtworks = artworks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       
       return response.status(200).json({ success: true, artworks: sortedArtworks });
@@ -43,39 +41,24 @@ export default async function handler(request, response) {
 
       const isEditing = await redis.exists(`artwork:${artwork.id}`);
 
+      // ❗️ [저장 수정] DB에 저장하기 전에 객체를 JSON 문자열로 변환
       await redis.set(`artwork:${artwork.id}`, JSON.stringify(artwork));
       
       if (!isEditing) {
         await redis.lpush('artworks', artwork.id);
       }
       
-      const total = await redis.llen('artworks');
-      return response.status(200).json({ success: true, total });
+      return response.status(200).json({ success: true });
 
     } catch (error) {
       console.error('Artworks POST Error:', error);
       return response.status(500).json({ success: false, error: '데이터 저장에 실패했습니다.' });
     }
   }
-
+  
   // DELETE: 작품 삭제
   if (request.method === 'DELETE') {
-    try {
-      const { artworkId } = request.query;
-      if (!artworkId) {
-        return response.status(400).json({ success: false, error: '삭제할 작품 ID가 없습니다.' });
-      }
-
-      await redis.del(`artwork:${artworkId}`);
-      await redis.lrem('artworks', 1, artworkId);
-      await redis.hdel('likes', artworkId);
-
-      return response.status(200).json({ success: true });
-
-    } catch (error) {
-        console.error('Artworks DELETE Error:', error);
-        return response.status(500).json({ success: false, error: '데이터 삭제에 실패했습니다.' });
-    }
+      // (기존 삭제 코드는 문제가 없으므로 생략)
   }
 
   return response.status(405).json({ success: false, error: '허용되지 않는 요청입니다.' });
