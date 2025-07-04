@@ -277,9 +277,51 @@
             font-size: 0.8rem;
         }
         
-        /* 새로운 유형별 분류 스타일 */
+        /* 새로운 탭 스타일 */
+        .type-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .type-tab {
+            padding: 15px 25px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1rem;
+            font-weight: 500;
+            border: 2px solid transparent;
+        }
+        .type-tab:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .type-tab.active {
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            font-weight: bold;
+            border-color: rgba(255,255,255,0.5);
+            box-shadow: 0 5px 20px rgba(255,255,255,0.2);
+        }
+        
+        /* 수정된 유형별 분류 스타일 */
         .type-section {
             margin-bottom: 40px;
+            display: none;
+        }
+        .type-section.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .type-header {
             background: rgba(255,255,255,0.1);
@@ -775,6 +817,21 @@
             border-color: #667eea;
         }
         
+        /* 빈 상태 메시지 */
+        .empty-type-section {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.8);
+        }
+        .empty-type-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .empty-type-section p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
         /* 반응형 디자인 */
         @media (max-width: 768px) {
             h1 { font-size: 2rem; flex-wrap: wrap; }
@@ -793,14 +850,8 @@
             .filters-container { padding: 0 15px; }
             .filters { padding: 12px 20px; gap: 8px; flex-wrap: wrap; justify-content: center; border-radius: 20px; }
             .filter-btn { padding: 6px 12px; font-size: 0.8rem; min-width: 55px; border-radius: 15px; }
-        }
-        
-        /* 빈 상태 메시지 */
-        .empty-type-section {
-            text-align: center;
-            padding: 40px 20px;
-            color: rgba(255,255,255,0.7);
-            font-style: italic;
+            .type-tabs { gap: 8px; }
+            .type-tab { padding: 10px 15px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -1097,8 +1148,25 @@
             </div>
         </div>
 
-        <!-- 유형별 분류 섹션 -->
+        <!-- 새로운 탭 구조 -->
+        <div class="type-tabs">
+            <button class="type-tab active" data-type="all" onclick="switchTypeTab('all')">🎯 전체</button>
+            <button class="type-tab" data-type="사진" onclick="switchTypeTab('사진')">📸 사진</button>
+            <button class="type-tab" data-type="결과물" onclick="switchTypeTab('결과물')">🎨 결과물</button>
+            <button class="type-tab" data-type="학습지(활동지)" onclick="switchTypeTab('학습지(활동지)')">📝 학습지</button>
+        </div>
+
+        <!-- 수정된 갤러리 컨테이너 -->
         <div id="galleryContainer">
+            <!-- 전체 섹션 -->
+            <div class="type-section active" id="allSection">
+                <div class="type-header">
+                    <div class="type-title">🎯 전체 작품</div>
+                    <div class="type-count" id="allCount">0개 작품</div>
+                </div>
+                <div class="type-gallery" id="allGallery"></div>
+            </div>
+
             <!-- 사진 섹션 -->
             <div class="type-section" id="photoSection">
                 <div class="type-header">
@@ -1170,6 +1238,7 @@
         let isAdminMode = false;
         let isSaving = false;
         let currentGradeFilter = 'all';
+        let currentTypeFilter = 'all'; // 새로운 변수 추가
 
         async function loadDataFromDB() { 
             try { 
@@ -1223,13 +1292,40 @@
             localStorage.setItem('likedArtworks', JSON.stringify([...likedArtworks])); 
         }
         
-        // 새로운 렌더링 함수 - 유형별로 분류하여 표시
+        // 새로운 탭 전환 함수
+        function switchTypeTab(type) {
+            currentTypeFilter = type;
+            
+            // 탭 활성화 상태 업데이트
+            document.querySelectorAll('.type-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            
+            // 섹션 표시/숨김
+            document.querySelectorAll('.type-section').forEach(section => section.classList.remove('active'));
+            
+            if (type === 'all') {
+                document.getElementById('allSection').classList.add('active');
+            } else if (type === '사진') {
+                document.getElementById('photoSection').classList.add('active');
+            } else if (type === '결과물') {
+                document.getElementById('resultSection').classList.add('active');
+            } else if (type === '학습지(활동지)') {
+                document.getElementById('worksheetSection').classList.add('active');
+            }
+            
+            // 작품 렌더링
+            renderArtworksByType();
+        }
+        
+        // 수정된 렌더링 함수 - 선택된 탭에 따라 작품 표시
         function renderArtworksByType() {
+            // 모든 갤러리 초기화
+            const allGallery = document.getElementById('allGallery');
             const photoGallery = document.getElementById('photoGallery');
             const resultGallery = document.getElementById('resultGallery');
             const worksheetGallery = document.getElementById('worksheetGallery');
             
-            // 갤러리 초기화
+            allGallery.innerHTML = '';
             photoGallery.innerHTML = '';
             resultGallery.innerHTML = '';
             worksheetGallery.innerHTML = '';
@@ -1250,22 +1346,31 @@
             }
             
             // 유형별로 분류
+            const allArtworks = filteredArtworks;
             const photoArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '사진' || !artwork.artworkType);
             const resultArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '결과물');
             const worksheetArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '학습지(활동지)');
             
             // 각 유형별 개수 업데이트
+            document.getElementById('allCount').textContent = `${allArtworks.length}개 작품`;
             document.getElementById('photoCount').textContent = `${photoArtworks.length}개 작품`;
             document.getElementById('resultCount').textContent = `${resultArtworks.length}개 작품`;
             document.getElementById('worksheetCount').textContent = `${worksheetArtworks.length}개 작품`;
             
-            // 각 유형별로 작품 카드 생성
-            renderArtworkCards(photoArtworks, photoGallery);
-            renderArtworkCards(resultArtworks, resultGallery);
-            renderArtworkCards(worksheetArtworks, worksheetGallery);
-            
-            // 빈 섹션 처리
-            handleEmptySections(photoArtworks, resultArtworks, worksheetArtworks);
+            // 현재 선택된 탭에 따라 해당 작품들만 렌더링
+            if (currentTypeFilter === 'all') {
+                renderArtworkCards(allArtworks, allGallery);
+                handleEmptySection('allSection', allArtworks.length === 0, '전체');
+            } else if (currentTypeFilter === '사진') {
+                renderArtworkCards(photoArtworks, photoGallery);
+                handleEmptySection('photoSection', photoArtworks.length === 0, '사진');
+            } else if (currentTypeFilter === '결과물') {
+                renderArtworkCards(resultArtworks, resultGallery);
+                handleEmptySection('resultSection', resultArtworks.length === 0, '결과물');
+            } else if (currentTypeFilter === '학습지(활동지)') {
+                renderArtworkCards(worksheetArtworks, worksheetGallery);
+                handleEmptySection('worksheetSection', worksheetArtworks.length === 0, '학습지(활동지)');
+            }
         }
         
         function renderArtworkCards(artworkList, container) {
@@ -1308,29 +1413,17 @@
             });
         }
         
-        function handleEmptySections(photoArtworks, resultArtworks, worksheetArtworks) {
-            // 사진 섹션
-            if (photoArtworks.length === 0) {
-                document.getElementById('photoGallery').innerHTML = 
-                    '<div class="empty-type-section">아직 등록된 사진이 없습니다</div>';
-            }
+        function handleEmptySection(sectionId, isEmpty, typeName) {
+            const section = document.getElementById(sectionId);
+            const gallery = section.querySelector('.type-gallery');
             
-            // 결과물 섹션
-            if (resultArtworks.length === 0) {
-                document.getElementById('resultGallery').innerHTML = 
-                    '<div class="empty-type-section">아직 등록된 결과물이 없습니다</div>';
-            }
-            
-            // 학습지 섹션
-            if (worksheetArtworks.length === 0) {
-                document.getElementById('worksheetGallery').innerHTML = 
-                    '<div class="empty-type-section">아직 등록된 학습지가 없습니다</div>';
-            }
-            
-            // 전체가 비어있는 경우
-            if (photoArtworks.length === 0 && resultArtworks.length === 0 && worksheetArtworks.length === 0) {
-                document.getElementById('galleryContainer').innerHTML = 
-                    '<div style="text-align: center; color: white; padding: 50px;"><h3>작품이 없습니다</h3><p>선택한 학년에 등록된 작품이 없거나 검색 결과가 없습니다. 😊</p></div>';
+            if (isEmpty) {
+                gallery.innerHTML = `
+                    <div class="empty-type-section">
+                        <h3>아직 등록된 ${typeName} 작품이 없습니다</h3>
+                        <p>첫 번째 작품을 등록해보세요! 😊</p>
+                    </div>
+                `;
             }
         }
         
