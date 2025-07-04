@@ -5,6 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대불초등학교 브릭모델 전시관</title>
     <style>
+        /* [CSS 추가] 작품 유형 필터 스타일 */
+        .type-filters-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .type-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 25px;
+        }
+        .type-filter-btn {
+            padding: 8px 18px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .type-filter-btn:hover, .type-filter-btn.active {
+            background: rgba(255,255,255,0.3);
+            border-color: transparent;
+        }
+        .artwork-card .artwork-type {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+        /* ... 기존 CSS는 여기에 그대로 ... */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -68,7 +107,7 @@
         .artwork-stats { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
         .like-btn { background: none; border: none; cursor: pointer; color: #999; transition: color 0.3s; }
         .like-btn:hover, .like-btn.liked { color: #e74c3c; }
-        .admin-controls { position: absolute; top: 10px; right: 10px; display: none; gap: 5px; }
+        .admin-controls { position: absolute; top: 10px; right: 10px; display: none; gap: 5px; z-index: 5; }
         .admin-mode .admin-controls { display: flex; }
         .comments-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
         .comment { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
@@ -183,6 +222,14 @@
             <h2>✏️ 새로운 작품 등록</h2>
             <form id="artworkForm">
                 <div class="form-group">
+                    <label for="artworkType">작품 유형</label>
+                    <select id="artworkType" required>
+                        <option value="사진">사진</option>
+                        <option value="결과물">결과물</option>
+                        <option value="학습지(활동지)">학습지(활동지)</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="title">작품 제목</label>
                     <input type="text" id="title" required>
                 </div>
@@ -213,214 +260,30 @@
                         <div id="uploadText">📁 이미지를 선택하세요</div>
                         <div class="image-preview-container" id="imagePreviewContainer"></div>
                     </div>
-                    <div class="upload-progress" id="uploadProgress">
-                        <div class="upload-progress-bar" id="uploadProgressBar">0%</div>
-                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" id="submitBtn">작품 등록하기</button>
             </form>
         </div>
 
         <div class="panel admin-panel" id="adminPanel">
-            <h2>⚙️ 관리자 모드</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="statArtworks">0</div>
-                    <div class="stat-label">총 작품 수</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="statComments">0</div>
-                    <div class="stat-label">총 댓글 수</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="statLikes">0</div>
-                    <div class="stat-label">총 좋아요 수</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="statToday">0</div>
-                    <div class="stat-label">오늘 등록</div>
-                </div>
             </div>
-
-            <div class="admin-tabs">
-                <button class="admin-tab active" onclick="switchAdminTab('artworks')">작품 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('comments')">댓글 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('users')">사용자 관리</button>
-                <button class="admin-tab" onclick="switchAdminTab('settings')">사이트 설정</button>
-            </div>
-
-            <div class="admin-content active" id="artworksContent">
-                <p style="text-align:center; color: #777; margin-bottom: 15px;">💡 작품 순서를 변경하려면 행을 드래그하여 원하는 위치에 놓으세요.</p>
-                <div class="bulk-actions">
-                    <label><input type="checkbox" id="selectAll"> 전체 선택</label>
-                    <button class="btn btn-danger btn-small" onclick="bulkDelete()">선택 삭제</button>
-                    <button class="btn btn-secondary btn-small" onclick="exportData()">데이터 내보내기</button>
-                </div>
-                <div class="table-container">
-                    <table id="artworksTable">
-                        <thead>
-                            <tr>
-                                <th>선택</th>
-                                <th>제목</th>
-                                <th>이름(모둠)</th>
-                                <th>학년</th>
-                                <th>좋아요</th>
-                                <th>댓글</th>
-                                <th>등록일</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody id="artworksTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-content" id="commentsContent">
-                <div class="bulk-actions">
-                    <label><input type="checkbox" id="selectAllComments"> 전체 선택</label>
-                    <button class="btn btn-danger btn-small" onclick="bulkDeleteComments()">선택 삭제</button>
-                </div>
-                <div class="table-container">
-                    <table id="commentsTable">
-                        <thead>
-                            <tr>
-                                <th>선택</th>
-                                <th>작품</th>
-                                <th>작성자</th>
-                                <th>댓글 내용</th>
-                                <th>작성일</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody id="commentsTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-content" id="usersContent">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>이름(모둠)</th>
-                                <th>학년</th>
-                                <th>작품 수</th>
-                                <th>댓글 수</th>
-                                <th>좋아요 받은 수</th>
-                                <th>최근 활동</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-content" id="settingsContent">
-                <h3>기본 설정</h3>
-                <div class="form-group">
-                    <label for="siteTitle">사이트 제목</label>
-                    <input type="text" id="siteTitle" value="대불초등학교 브릭모델 전시관">
-                </div>
-                <div class="form-group">
-                    <label>헤더 이미지</label>
-                    <div class="image-upload" onclick="document.getElementById('headerImageFile').click()">
-                        <input type="file" id="headerImageFile" accept="image/*" onchange="previewHeaderImage()">
-                        <div id="headerUploadText">📁 이미지를 선택하세요</div>
-                        <img id="headerImagePreview" class="image-preview" alt="헤더 이미지 미리보기">
-                    </div>
-                    <button class="btn btn-danger btn-small" onclick="removeHeaderImage()">이미지 제거</button>
-                </div>
-                <div class="form-group">
-                    <label for="siteDescription">사이트 설명</label>
-                    <textarea id="siteDescription">창의적인 브릭모델 활동으로 만든 멋진 작품들을 만나보세요</textarea>
-                </div>
-                <div class="settings-options-grid">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="allowComments" checked>
-                        <label for="allowComments">댓글 허용</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="moderateComments">
-                        <label for="moderateComments">댓글 승인 필요</label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="adminPassword">관리자 비밀번호 변경</label>
-                    <input type="password" id="adminPassword" placeholder="새 비밀번호 (비워두면 변경하지 않음)">
-                </div>
-                
-                <hr>
-                
-                <h3>✏️ 작품 등록 설정</h3>
-                <div class="settings-options-grid">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="requireUploadPassword">
-                        <label for="requireUploadPassword">작품 등록 시 비밀번호 요구</label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="uploadPassword">등록용 비밀번호 변경</label>
-                    <input type="password" id="uploadPassword" placeholder="새 등록용 비밀번호 (기존 값: ****)">
-                </div>
-
-                <hr>
-
-                <h3>학년별 설명 관리</h3>
-                <div class="form-group">
-                    <label for="gradeTitleAll">전체 학년 제목</label>
-                    <input type="text" id="gradeTitleAll">
-                    <label for="gradeDescAll" class="sub-label">전체 학년 설명</label>
-                    <textarea id="gradeDescAll"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle1">1학년 제목</label>
-                    <input type="text" id="gradeTitle1">
-                    <label for="gradeDesc1" class="sub-label">1학년 설명</label>
-                    <textarea id="gradeDesc1"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle2">2학년 제목</label>
-                    <input type="text" id="gradeTitle2">
-                    <label for="gradeDesc2" class="sub-label">2학년 설명</label>
-                    <textarea id="gradeDesc2"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle3">3학년 제목</label>
-                    <input type="text" id="gradeTitle3">
-                    <label for="gradeDesc3" class="sub-label">3학년 설명</label>
-                    <textarea id="gradeDesc3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle4">4학년 제목</label>
-                    <input type="text" id="gradeTitle4">
-                    <label for="gradeDesc4" class="sub-label">4학년 설명</label>
-                    <textarea id="gradeDesc4"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle5">5학년 제목</label>
-                    <input type="text" id="gradeTitle5">
-                    <label for="gradeDesc5" class="sub-label">5학년 설명</label>
-                    <textarea id="gradeDesc5"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="gradeTitle6">6학년 제목</label>
-                    <input type="text" id="gradeTitle6">
-                    <label for="gradeDesc6" class="sub-label">6학년 설명</label>
-                    <textarea id="gradeDesc6"></textarea>
-                </div>
-                <hr>
-                <button class="btn btn-primary" onclick="saveSettings()">설정 저장</button>
-                <button class="btn btn-danger" onclick="resetAllData()">모든 데이터 초기화</button>
-            </div>
-        </div>
 
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="작품명 또는 이름(모둠)으로 검색...">
         </div>
 
+        <div class="type-filters-container">
+            <div class="type-filters">
+                <button class="type-filter-btn active" data-type="all">전체 유형</button>
+                <button class="type-filter-btn" data-type="사진">사진</button>
+                <button class="type-filter-btn" data-type="결과물">결과물</button>
+                <button class="type-filter-btn" data-type="학습지(활동지)">학습지(활동지)</button>
+            </div>
+        </div>
+
         <div class="filters-container">
             <div class="filters">
-                <button class="filter-btn active" data-category="all">전체</button>
+                <button class="filter-btn active" data-category="all">전체 학년</button>
                 <button class="filter-btn" data-category="1학년">1학년</button>
                 <button class="filter-btn" data-category="2학년">2학년</button>
                 <button class="filter-btn" data-category="3학년">3학년</button>
@@ -431,43 +294,27 @@
         </div>
 
         <div class="grade-info-section" id="gradeInfoSection">
-            <div class="grade-info-content">
-                <h3 id="gradeInfoTitle"></h3>
-                <p id="gradeInfoDescription"></p>
             </div>
-        </div>
 
         <div class="gallery" id="gallery">
-            <div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;">
-                <h3>🚀 작품을 불러오는 중...</h3>
             </div>
-        </div>
     </div>
 
     <div class="modal" id="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <div id="modalContent"></div>
         </div>
-    </div>
 
     <div class="fullscreen-overlay" id="fullscreenOverlay" onclick="closeFullscreenImage()">
-        <span class="fullscreen-close-btn">&times;</span>
-        <img src="" alt="Fullscreen Image" class="fullscreen-image" id="fullscreenImage">
-    </div>
-
+        </div>
 
     <script>
-        // 🔧 설정
+        // ... (이전 답변의 JS 코드 시작 부분과 동일) ...
         const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
         const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
-        // 📊 전역 변수
         let artworks = [];
         let comments = {};
         let likes = {};
         let likedArtworks = new Set();
         let settings = {};
-        // ⚙️ 기본 설정값
         const defaultSettings = {
             title: '대불초등학교 브릭모델 전시관',
             headerImage: '',
@@ -495,7 +342,141 @@
         function loadLikedFromLocal() { const liked = localStorage.getItem('likedArtworks'); likedArtworks = liked ? new Set(JSON.parse(liked)) : new Set(); }
         function saveLikedToLocal() { localStorage.setItem('likedArtworks', JSON.stringify([...likedArtworks])); }
         
-        function showArtworkModal(artwork) {
+        // [JS 수정] 작품 등록 폼 제출 로직
+        document.getElementById('artworkForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '등록 중...';
+            try {
+                const formData = {
+                    artworkType: document.getElementById('artworkType').value, // 유형 추가
+                    title: document.getElementById('title').value,
+                    author: document.getElementById('author').value,
+                    grade: document.getElementById('grade').value + '학년',
+                    description: document.getElementById('description').value
+                };
+                const imageFiles = document.getElementById('imageFile').files;
+                let imageUrls = [];
+                if (imageFiles.length > 0) {
+                    const uploadPromises = Array.from(imageFiles).map(file => uploadImageToCloudinary(file));
+                    imageUrls = await Promise.all(uploadPromises);
+                    if (imageUrls.some(url => !url)) throw new Error('일부 이미지 업로드에 실패했습니다.');
+                }
+                const newArtwork = { id: Date.now().toString(), ...formData, images: imageUrls, createdAt: new Date().toISOString() };
+                artworks.unshift(newArtwork);
+                if (!(await saveDataToDB())) {
+                    artworks.shift();
+                    throw new Error("DB 저장 실패");
+                }
+                renderArtworks();
+                if (isAdminMode) {
+                    updateAdminStats();
+                    renderArtworksTable();
+                }
+                this.reset();
+                document.getElementById('imagePreviewContainer').innerHTML = '';
+                document.getElementById('uploadText').style.display = 'block';
+                showMessage('작품이 성공적으로 등록되었습니다!', 'success');
+            } catch (error) {
+                console.error('작품 등록 오류:', error);
+                showMessage(`작품 등록에 실패했습니다: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+
+        // [JS 수정] 작품 카드 렌더링 로직
+        function renderArtworks() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            if (artworks.length === 0) {
+                gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>아직 등록된 작품이 없습니다</h3><p>첫 번째 작품을 등록해보세요! 😊</p></div>`;
+                return;
+            }
+            artworks.forEach((artwork, index) => {
+                const card = document.createElement('div');
+                card.className = 'artwork-card';
+                card.setAttribute('data-grade', artwork.grade);
+                card.setAttribute('data-type', artwork.artworkType || '사진'); // 유형 데이터 추가
+                
+                const isLiked = likedArtworks.has(artwork.id);
+                const likeCount = likes[artwork.id] || 0;
+                const artworkComments = comments[artwork.id] || [];
+                const mainImage = (artwork.images && artwork.images.length > 0) ? artwork.images[0] : '';
+                
+                card.innerHTML = `
+                    <div class="artwork-type">${artwork.artworkType || '사진'}</div>
+                    <div class="admin-controls">
+                        <button class="btn-warning" onclick="event.stopPropagation(); editArtwork('${artwork.id}')">수정</button>
+                        <button class="btn-danger" onclick="event.stopPropagation(); deleteArtwork('${artwork.id}')">삭제</button>
+                    </div>
+                    <div class="artwork-image" onclick="event.stopPropagation(); showFullscreenImage('${mainImage}')">
+                        ${mainImage ? `<img src="${mainImage}" alt="${artwork.title}" loading="lazy">` : '<div class="placeholder">🧱</div>'}
+                    </div>
+                    <div class="artwork-info">
+                        <h3 class="artwork-title">${artwork.title}</h3>
+                        <p class="artwork-author">${artwork.author} (${artwork.grade})</p>
+                        <p class="artwork-description">${artwork.description}</p>
+                        <div class="artwork-stats">
+                            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${artwork.id}')">❤️ ${likeCount}</button>
+                            <span>💬 ${artworkComments.length}</span>
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => showArtworkModal(artwork));
+                gallery.appendChild(card);
+                setTimeout(() => card.classList.add('show'), index * 50);
+            });
+            applyFilters(); // 필터 상태에 맞게 다시 그림
+        }
+
+        // [JS 추가] 필터 적용 함수
+        function applyFilters() {
+            const activeType = document.querySelector('.type-filter-btn.active').dataset.type;
+            const activeGrade = document.querySelector('.filter-btn.active').dataset.category;
+
+            document.querySelectorAll('.artwork-card').forEach(card => {
+                const cardType = card.dataset.type;
+                const cardGrade = card.dataset.grade;
+                
+                const typeMatch = (activeType === 'all' || cardType === activeType);
+                const gradeMatch = (activeGrade === 'all' || cardGrade === activeGrade);
+
+                if (typeMatch && gradeMatch) {
+                    card.style.display = 'block';
+                    setTimeout(() => card.classList.add('show'), 10);
+                } else {
+                    card.classList.remove('show');
+                    setTimeout(() => card.style.display = 'none', 300);
+                }
+            });
+        }
+
+        // [JS 추가] 유형 필터 버튼 이벤트
+        document.querySelectorAll('.type-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyFilters();
+            });
+        });
+
+        // [JS 수정] 학년 필터 버튼 이벤트
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const category = btn.dataset.category;
+                updateGradeInfo(category);
+                applyFilters();
+            });
+        });
+        
+        // ... (나머지 JS 코드는 이전 답변과 거의 동일하게 유지) ...
+        showArtworkModal(artwork) {
             const modal = document.getElementById('modal');
             const modalContent = document.getElementById('modalContent');
             const isLiked = likedArtworks.has(artwork.id);
@@ -579,11 +560,6 @@
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
-
-        function changeModalImage(imageUrl, clickedThumbnail) { document.getElementById('modalMainImage').src = imageUrl; document.querySelectorAll('.modal-thumbnail-img').forEach(thumb => thumb.classList.remove('active')); clickedThumbnail.classList.add('active'); }
-        function renderArtworks() { const gallery = document.getElementById('gallery'); gallery.innerHTML = ''; if (artworks.length === 0) { gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>아직 등록된 작품이 없습니다</h3><p>첫 번째 작품을 등록해보세요! 😊</p></div>`; return; } artworks.forEach((artwork, index) => { const card = document.createElement('div'); card.className = 'artwork-card'; card.setAttribute('data-category', artwork.grade); const isLiked = likedArtworks.has(artwork.id); const likeCount = likes[artwork.id] || 0; const artworkComments = comments[artwork.id] || []; const mainImage = (artwork.images && artwork.images.length > 0) ? artwork.images[0] : ''; card.innerHTML = `<div class="admin-controls"><button class="btn-warning" onclick="event.stopPropagation(); editArtwork('${artwork.id}')">수정</button><button class="btn-danger" onclick="event.stopPropagation(); deleteArtwork('${artwork.id}')">삭제</button></div><div class="artwork-image" onclick="event.stopPropagation(); showFullscreenImage('${mainImage}')">${mainImage ? `<img src="${mainImage}" alt="${artwork.title}" loading="lazy">` : '<div class="placeholder">🧱</div>'}</div><div class="artwork-info"><h3 class="artwork-title">${artwork.title}</h3><p class="artwork-author">${artwork.author} (${artwork.grade})</p><p class="artwork-description">${artwork.description}</p><div class="artwork-stats"><button class="like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${artwork.id}')">❤️ ${likeCount}</button><span>💬 ${artworkComments.length}</span></div></div>`; card.addEventListener('click', () => showArtworkModal(artwork)); gallery.appendChild(card); setTimeout(() => card.classList.add('show'), index * 100); }); }
-        function previewImages() { const files = document.getElementById('imageFile').files; const previewContainer = document.getElementById('imagePreviewContainer'); const uploadText = document.getElementById('uploadText'); previewContainer.innerHTML = ''; if (files.length > 0) { uploadText.style.display = 'none'; Array.from(files).forEach(file => { const reader = new FileReader(); reader.onload = e => { const img = document.createElement('img'); img.src = e.target.result; img.className = 'image-preview'; previewContainer.appendChild(img); }; reader.readAsDataURL(file); }); } else { uploadText.style.display = 'block'; } }
-        document.getElementById('artworkForm').addEventListener('submit', async function(e) { e.preventDefault(); const submitBtn = document.getElementById('submitBtn'); const originalText = submitBtn.textContent; submitBtn.disabled = true; submitBtn.textContent = '등록 중...'; try { const formData = { title: document.getElementById('title').value, author: document.getElementById('author').value, grade: document.getElementById('grade').value + '학년', description: document.getElementById('description').value }; const imageFiles = document.getElementById('imageFile').files; let imageUrls = []; if (imageFiles.length > 0) { submitBtn.textContent = `이미지 업로드 중 (0/${imageFiles.length})`; const uploadPromises = Array.from(imageFiles).map(file => uploadImageToCloudinary(file)); imageUrls = await Promise.all(uploadPromises); if (imageUrls.some(url => !url)) { throw new Error('일부 이미지 업로드에 실패했습니다.'); } } const newArtwork = { id: Date.now().toString(), ...formData, images: imageUrls, createdAt: new Date().toISOString() }; artworks.unshift(newArtwork); if (!(await saveDataToDB())) { artworks.shift(); renderArtworks(); throw new Error("DB 저장 실패"); } renderArtworks(); if (isAdminMode) { updateAdminStats(); renderArtworksTable(); } this.reset(); document.getElementById('imagePreviewContainer').innerHTML = ''; document.getElementById('uploadText').style.display = 'block'; showMessage('작품이 성공적으로 등록되었습니다!', 'success'); } catch (error) { console.error('작품 등록 오류:', error); showMessage(`작품 등록에 실패했습니다: ${error.message}`, 'error'); } finally { submitBtn.disabled = false; submitBtn.textContent = originalText; } });
         async function toggleLike(artworkId) { if (likedArtworks.has(artworkId)) { likedArtworks.delete(artworkId); likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1); } else { likedArtworks.add(artworkId); likes[artworkId] = (likes[artworkId] || 0) + 1; } saveLikedToLocal(); renderArtworks(); await saveDataToDB(); if (isAdminMode) updateAdminStats(); }
         async function addComment(artworkId, authorName, commentText) { if (!settings.allowComments) { showMessage('댓글 기능이 비활성화되어 있습니다.', 'error'); return null; } const newComment = { id: Date.now().toString(), author: authorName, text: commentText, createdAt: new Date().toISOString(), approved: !settings.moderateComments, replies: [] }; if (!comments[artworkId]) { comments[artworkId] = []; } comments[artworkId].push(newComment); if (!(await saveDataToDB())) { comments[artworkId].pop(); return null; } return newComment; }
         function toggleReplyForm(commentId) { const form = document.getElementById(`reply-form-for-${commentId}`); if(form) form.style.display = form.style.display === 'none' ? 'block' : 'none'; }
@@ -617,7 +593,6 @@
         function showFullscreenImage(imageUrl) { if (!imageUrl) return; const overlay = document.getElementById('fullscreenOverlay'); const image = document.getElementById('fullscreenImage'); image.src = imageUrl; overlay.classList.add('show'); document.body.style.overflow = 'hidden'; }
         function closeFullscreenImage() { const overlay = document.getElementById('fullscreenOverlay'); overlay.classList.remove('show'); if (document.getElementById('modal').style.display === 'none') { document.body.style.overflow = 'auto'; } }
         function shareArtwork(title) { if (navigator.share) { navigator.share({ title: `${title} - ${settings.title}`, text: `멋진 브릭모델 작품을 확인해보세요!`, url: window.location.href }); } else { navigator.clipboard.writeText(window.location.href).then(() => showMessage('링크가 클립보드에 복사되었습니다!', 'success')).catch(() => showMessage('링크 복사에 실패했습니다.', 'error')); } }
-        document.querySelectorAll('.filter-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); const category = btn.dataset.category; updateGradeInfo(category); document.querySelectorAll('.artwork-card').forEach(card => { if (category === 'all' || card.dataset.category === category) { card.style.display = 'block'; setTimeout(() => card.classList.add('show'), 10); } else { card.classList.remove('show'); setTimeout(() => card.style.display = 'none', 300); } }); }); });
         function updateGradeInfo(category) { const gradeInfoSection = document.getElementById('gradeInfoSection'); const gradeInfoTitle = document.getElementById('gradeInfoTitle'); const gradeInfoDescription = document.getElementById('gradeInfoDescription'); const info = settings.gradeDescriptions[category] || settings.gradeDescriptions['all']; gradeInfoTitle.textContent = info.title; gradeInfoDescription.textContent = info.description; updateGradeStats(category); gradeInfoSection.classList.add('active'); }
         function updateGradeStats(category) { const gradeInfoSection = document.getElementById('gradeInfoSection'); let statsHtml = ''; if (category === 'all') { const totalArtworks = artworks.length; const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0); const totalComments = Object.values(comments).reduce((sum, arr) => sum + arr.length, 0); statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${totalArtworks}</div><div class="grade-stat-label">전체 작품</div></div><div class="grade-stat"><div class="grade-stat-number">${totalLikes}</div><div class="grade-stat-label">총 좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${totalComments}</div><div class="grade-stat-label">총 댓글</div></div></div>`; } else { const gradeArtworks = artworks.filter(artwork => artwork.grade === category); const gradeLikes = gradeArtworks.reduce((sum, artwork) => sum + (likes[artwork.id] || 0), 0); const gradeComments = gradeArtworks.reduce((sum, artwork) => sum + (comments[artwork.id] || []).length, 0); statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${gradeArtworks.length}</div><div class="grade-stat-label">작품 수</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeLikes}</div><div class="grade-stat-label">좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeComments}</div><div class="grade-stat-label">댓글</div></div></div>`; } const existingStats = gradeInfoSection.querySelector('.grade-stats'); if (existingStats) existingStats.remove(); gradeInfoSection.querySelector('.grade-info-content').insertAdjacentHTML('beforeend', statsHtml); }
         document.getElementById('searchInput').addEventListener('input', e => { const searchTerm = e.target.value.toLowerCase(); document.querySelectorAll('.artwork-card').forEach(card => { const title = card.querySelector('.artwork-title').textContent.toLowerCase(); const author = card.querySelector('.artwork-author').textContent.toLowerCase(); if (title.includes(searchTerm) || author.includes(searchTerm)) { card.style.display = 'block'; card.classList.add('show'); } else { card.classList.remove('show'); setTimeout(() => { card.style.display = 'none'; }, 300); } }); });
