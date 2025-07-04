@@ -780,10 +780,10 @@
             </div>
 
         <div class="panel upload-panel" id="uploadPanel">
-             </div>
+            </div>
 
         <div class="panel admin-panel" id="adminPanel">
-             </div>
+            </div>
 
         <div class="filters-container">
             <div class="filters">
@@ -820,11 +820,7 @@
         <img src="" alt="Fullscreen Image" class="fullscreen-image" id="fullscreenImage">
     </div>
 
-
     <script>
-        // 이 안에 모든 JavaScript 코드가 포함되어 있습니다.
-        // 이전 답변에서 생략되었던 부분을 모두 포함한 완전한 코드입니다.
-
         const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
         const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
         let artworks = [];
@@ -883,17 +879,30 @@
                 renderGroupedGallery();
             });
         });
+
+        document.getElementById('searchInput').addEventListener('input', renderGroupedGallery);
         
         function renderGroupedGallery() {
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
-            const activeGrade = document.querySelector('.filter-btn.active').dataset.category;
 
-            const gradeArtworks = (activeGrade === 'all')
-                ? artworks 
-                : artworks.filter(artwork => artwork.grade === activeGrade);
+            const activeGrade = document.querySelector('.filter-btn.active').dataset.category;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredArtworks = artworks;
+
+            if (activeGrade !== 'all') {
+                filteredArtworks = filteredArtworks.filter(artwork => artwork.grade === activeGrade);
+            }
+
+            if (searchTerm) {
+                filteredArtworks = filteredArtworks.filter(artwork => 
+                    artwork.title.toLowerCase().includes(searchTerm) || 
+                    artwork.author.toLowerCase().includes(searchTerm)
+                );
+            }
             
-            if (gradeArtworks.length === 0) {
+            if (filteredArtworks.length === 0) {
                 gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>해당하는 작품이 없습니다.</h3></div>`;
                 return;
             }
@@ -902,7 +911,8 @@
             let contentAdded = false;
 
             artworkTypes.forEach(type => {
-                const worksOfType = gradeArtworks.filter(artwork => (artwork.artworkType || '사진') === type);
+                const worksOfType = filteredArtworks.filter(artwork => (artwork.artworkType || '사진') === type);
+                
                 if (worksOfType.length > 0) {
                     contentAdded = true;
                     const heading = document.createElement('h2');
@@ -910,29 +920,12 @@
                     heading.textContent = `📷 ${type}`;
                     gallery.appendChild(heading);
 
-                    worksOfType.forEach((artwork, index) => {
+                    worksOfType.forEach(artwork => {
                         const card = createArtworkCard(artwork);
                         gallery.appendChild(card);
-                        setTimeout(() => card.style.opacity = 1, index * 50);
                     });
                 }
             });
-
-            if (!contentAdded && gradeArtworks.length > 0) {
-                // 유형이 지정되지 않은 레거시 데이터가 있을 경우를 대비
-                contentAdded = true;
-                const heading = document.createElement('h2');
-                heading.className = 'type-heading';
-                heading.textContent = `기타 작품`;
-                gallery.appendChild(heading);
-                gradeArtworks.forEach((artwork, index) => {
-                    if (!artworkTypes.includes(artwork.artworkType)) {
-                        const card = createArtworkCard(artwork);
-                        gallery.appendChild(card);
-                        setTimeout(() => card.style.opacity = 1, index * 50);
-                    }
-                });
-            }
 
             if (!contentAdded) {
                 gallery.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: white; padding: 50px;"><h3>해당하는 작품이 없습니다.</h3></div>`;
@@ -991,7 +984,6 @@
         function shareArtwork(title) { if (navigator.share) { navigator.share({ title: `${title} - ${settings.title}`, text: `멋진 브릭모델 작품을 확인해보세요!`, url: window.location.href }); } else { navigator.clipboard.writeText(window.location.href).then(() => showMessage('링크가 클립보드에 복사되었습니다!', 'success')).catch(() => showMessage('링크 복사에 실패했습니다.', 'error')); } }
         function updateGradeInfo(category) { const gradeInfoSection = document.getElementById('gradeInfoSection'); const gradeInfoTitle = document.getElementById('gradeInfoTitle'); const gradeInfoDescription = document.getElementById('gradeInfoDescription'); const info = settings.gradeDescriptions[category] || settings.gradeDescriptions['all']; gradeInfoTitle.textContent = info.title; gradeInfoDescription.textContent = info.description; updateGradeStats(category); gradeInfoSection.classList.add('active'); }
         function updateGradeStats(category) { const gradeInfoSection = document.getElementById('gradeInfoSection'); let statsHtml = ''; if (category === 'all') { const totalArtworks = artworks.length; const totalLikes = Object.values(likes).reduce((sum, count) => sum + count, 0); const totalComments = Object.values(comments).reduce((sum, arr) => sum + arr.length, 0); statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${totalArtworks}</div><div class="grade-stat-label">전체 작품</div></div><div class="grade-stat"><div class="grade-stat-number">${totalLikes}</div><div class="grade-stat-label">총 좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${totalComments}</div><div class="grade-stat-label">총 댓글</div></div></div>`; } else { const gradeArtworks = artworks.filter(artwork => artwork.grade === category); const gradeLikes = gradeArtworks.reduce((sum, artwork) => sum + (likes[artwork.id] || 0), 0); const gradeComments = gradeArtworks.reduce((sum, artwork) => sum + (comments[artwork.id] || []).length, 0); statsHtml = `<div class="grade-stats"><div class="grade-stat"><div class="grade-stat-number">${gradeArtworks.length}</div><div class="grade-stat-label">작품 수</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeLikes}</div><div class="grade-stat-label">좋아요</div></div><div class="grade-stat"><div class="grade-stat-number">${gradeComments}</div><div class="grade-stat-label">댓글</div></div></div>`; } const existingStats = gradeInfoSection.querySelector('.grade-stats'); if (existingStats) existingStats.remove(); gradeInfoSection.querySelector('.grade-info-content').insertAdjacentHTML('beforeend', statsHtml); }
-        document.getElementById('searchInput').addEventListener('input', e => { const searchTerm = e.target.value.toLowerCase(); document.querySelectorAll('.artwork-card').forEach(card => { const title = card.querySelector('.artwork-title').textContent.toLowerCase(); const author = card.querySelector('.artwork-author').textContent.toLowerCase(); if (title.includes(searchTerm) || author.includes(searchTerm)) { card.style.display = 'block'; } else { card.style.display = 'none'; } }); document.querySelectorAll('.type-heading').forEach(heading => { const nextArtworks = heading.nextElementSibling; if (!nextArtworks || nextArtworks.style.display === 'none') { heading.style.display = 'none'; } else { heading.style.display = 'block'; } }); });
         document.getElementById('selectAll').addEventListener('change', function() { document.querySelectorAll('.artwork-checkbox').forEach(c => c.checked = this.checked); });
         document.getElementById('selectAllComments').addEventListener('change', function() { document.querySelectorAll('.comment-checkbox').forEach(c => c.checked = this.checked); });
         function applyHeaderSettings() { const headerImageElem = document.getElementById('headerImage'); const headerTitleElem = document.getElementById('headerTitleText'); headerTitleElem.textContent = settings.title; document.title = settings.title; document.querySelector('.subtitle').textContent = settings.description; if (settings.headerImage && settings.headerImage.trim() !== '') { headerImageElem.src = settings.headerImage; headerImageElem.style.display = 'inline-block'; } else { headerImageElem.style.display = 'none'; } }
