@@ -17,7 +17,6 @@ export default async function handler(request, response) {
       const sortedArtworks = artworks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       return response.status(200).json({ success: true, artworks: sortedArtworks });
     } catch (error) {
-      console.error('Artworks GET Error:', error);
       return response.status(500).json({ success: false, error: '데이터를 불러오는데 실패했습니다.' });
     }
   }
@@ -33,7 +32,6 @@ export default async function handler(request, response) {
       }
       return response.status(200).json({ success: true });
     } catch (error) {
-      console.error('Artworks POST Error:', error);
       return response.status(500).json({ success: false, error: '데이터 저장에 실패했습니다.' });
     }
   }
@@ -47,7 +45,6 @@ export default async function handler(request, response) {
         await redis.hdel('likes', artworkId);
         return response.status(200).json({ success: true });
     } catch (error) {
-        console.error('Artworks DELETE Error:', error);
         return response.status(500).json({ success: false, error: '데이터 삭제에 실패했습니다.' });
     }
   }
