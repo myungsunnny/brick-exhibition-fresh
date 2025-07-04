@@ -12,8 +12,13 @@ export default async function handler(request, response) {
     try {
       const artworkIds = await redis.lrange('artworks', 0, -1);
       if (artworkIds.length === 0) {
-        return response.status(200).json({ success: true, artworks: [] });
+        return response.status(200).json({ 
+            success: true, 
+            version: "v2-final-fix",
+            artworks: [] 
+        });
       }
+
       const rawArtworks = await redis.mget(...artworkIds.map(id => `artwork:${id}`));
       
       const artworks = rawArtworks
@@ -22,7 +27,11 @@ export default async function handler(request, response) {
 
       const sortedArtworks = artworks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       
-      return response.status(200).json({ success: true, artworks: sortedArtworks });
+      return response.status(200).json({ 
+          success: true,
+          version: "v2-final-fix", // 확인용 버전 코드
+          artworks: sortedArtworks 
+      });
     } catch (error) {
       console.error('Artworks GET Error:', error);
       return response.status(500).json({ success: false, error: '데이터를 불러오는데 실패했습니다.' });
