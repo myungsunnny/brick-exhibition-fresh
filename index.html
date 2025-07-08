@@ -892,8 +892,8 @@
                     <label for="artworkType">작품 유형</label>
                     <select id="artworkType" required>
                         <option value="사진">사진</option>
-                        <option value="결과물">결과물</option>
                         <option value="학습지(활동지)">학습지(활동지)</option>
+                        <option value="결과물">결과물</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1148,17 +1148,14 @@
             </div>
         </div>
 
-        <!-- 새로운 탭 구조 -->
         <div class="type-tabs">
             <button class="type-tab active" data-type="all" onclick="switchTypeTab('all')">🎯 전체</button>
             <button class="type-tab" data-type="사진" onclick="switchTypeTab('사진')">📸 사진</button>
-            <button class="type-tab" data-type="결과물" onclick="switchTypeTab('결과물')">🎨 결과물</button>
             <button class="type-tab" data-type="학습지(활동지)" onclick="switchTypeTab('학습지(활동지)')">📝 학습지</button>
+            <button class="type-tab" data-type="결과물" onclick="switchTypeTab('결과물')">🎨 결과물</button>
         </div>
 
-        <!-- 수정된 갤러리 컨테이너 -->
         <div id="galleryContainer">
-            <!-- 전체 섹션 -->
             <div class="type-section active" id="allSection">
                 <div class="type-header">
                     <div class="type-title">🎯 전체 작품</div>
@@ -1167,7 +1164,6 @@
                 <div class="type-gallery" id="allGallery"></div>
             </div>
 
-            <!-- 사진 섹션 -->
             <div class="type-section" id="photoSection">
                 <div class="type-header">
                     <div class="type-title">📸 사진</div>
@@ -1176,22 +1172,20 @@
                 <div class="type-gallery" id="photoGallery"></div>
             </div>
 
-            <!-- 결과물 섹션 -->
-            <div class="type-section" id="resultSection">
-                <div class="type-header">
-                    <div class="type-title">🎨 결과물</div>
-                    <div class="type-count" id="resultCount">0개 작품</div>
-                </div>
-                <div class="type-gallery" id="resultGallery"></div>
-            </div>
-
-            <!-- 학습지 섹션 -->
             <div class="type-section" id="worksheetSection">
                 <div class="type-header">
                     <div class="type-title">📝 학습지(활동지)</div>
                     <div class="type-count" id="worksheetCount">0개 작품</div>
                 </div>
                 <div class="type-gallery" id="worksheetGallery"></div>
+            </div>
+
+            <div class="type-section" id="resultSection">
+                <div class="type-header">
+                    <div class="type-title">🎨 결과물</div>
+                    <div class="type-count" id="resultCount">0개 작품</div>
+                </div>
+                <div class="type-gallery" id="resultGallery"></div>
             </div>
         </div>
     </div>
@@ -1902,8 +1896,9 @@
                 settings.gradeDescriptions['all'].title = document.getElementById('gradeTitleAll').value; 
                 settings.gradeDescriptions['all'].description = document.getElementById('gradeDescAll').value; 
                 for(let i = 1; i <= 6; i++) { 
-                    settings.gradeDescriptions[`${i}학년`].title = document.getElementById(`gradeTitle${i}`).value; 
-                    settings.gradeDescriptions[`${i}학년`].description = document.getElementById(`gradeDesc${i}`).value; 
+                    const gradeKey = `${i}학년`; 
+                    settings.gradeDescriptions[gradeKey].title = document.getElementById(`gradeTitle${i}`).value; 
+                    settings.gradeDescriptions[gradeKey].description = document.getElementById(`gradeDesc${i}`).value; 
                 } 
                 if (!(await saveDataToDB())) throw new Error("DB 저장 실패"); 
                 applyHeaderSettings(); 
@@ -2201,8 +2196,8 @@
                         <label>유형</label>
                         <select id="editArtworkType">
                             <option value="사진" ${artwork.artworkType === '사진' ? 'selected' : ''}>사진</option>
-                            <option value="결과물" ${artwork.artworkType === '결과물' ? 'selected' : ''}>결과물</option>
                             <option value="학습지(활동지)" ${artwork.artworkType === '학습지(활동지)' ? 'selected' : ''}>학습지(활동지)</option>
+                            <option value="결과물" ${artwork.artworkType === '결과물' ? 'selected' : ''}>결과물</option>
                         </select>
                     </div>
                     <div style="text-align: center; margin-top: 20px;">
