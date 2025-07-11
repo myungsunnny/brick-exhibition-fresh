@@ -2334,14 +2334,18 @@
                 ); 
             } 
         }
-        
+   
+
         function updateGradeInfo(category) { 
             const gradeInfoSection = document.getElementById('gradeInfoSection'); 
             const gradeInfoTitle = document.getElementById('gradeInfoTitle'); 
             const gradeInfoDescription = document.getElementById('gradeInfoDescription'); 
             const info = settings.gradeDescriptions[category] || settings.gradeDescriptions['all']; 
             gradeInfoTitle.textContent = info.title; 
-            gradeInfoDescription.textContent = info.description; 
+        
+            // 수정된 부분: .textContent를 .innerHTML로 바꾸고, 줄바꿈 문자를 <br> 태그로 변경
+            gradeInfoDescription.innerHTML = info.description.replace(/\n/g, '<br>');
+        
             updateGradeStats(category); 
             gradeInfoSection.classList.add('active'); 
         }
