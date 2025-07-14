@@ -891,8 +891,8 @@
                 <div class="form-group">
                     <label for="artworkType">작품 유형</label>
                     <select id="artworkType" required>
-                        <option value="사진">사진</option>
-                        <option value="학습지(활동지)">학습지(활동지)</option>
+                        <option value="활동 모습">활동 모습</option>
+                        <option value="활동지">활동지</option>
                         <option value="결과물">결과물</option>
                     </select>
                 </div>
@@ -921,7 +921,7 @@
                     <textarea id="description" placeholder="브릭모델 작품에 대해 설명해주세요..." required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>작품 사진 (여러 장 선택 가능)</label>
+                    <label>작품 활동 모습 (여러 장 선택 가능)</label>
                     <div class="image-upload" onclick="document.getElementById('imageFile').click()">
                         <input type="file" id="imageFile" accept="image/*" onchange="previewImages()" multiple>
                         <div id="uploadText">📁 이미지를 선택하세요</div>
@@ -1150,8 +1150,8 @@
 
         <div class="type-tabs">
             <button class="type-tab active" data-type="all" onclick="switchTypeTab('all')">🎯 전체</button>
-            <button class="type-tab" data-type="사진" onclick="switchTypeTab('사진')">📸 사진</button>
-            <button class="type-tab" data-type="학습지(활동지)" onclick="switchTypeTab('학습지(활동지)')">📝 학습지</button>
+            <button class="type-tab" data-type="활동 모습" onclick="switchTypeTab('활동 모습')">📸 활동 모습</button>
+            <button class="type-tab" data-type="활동지" onclick="switchTypeTab('활동지')">📝 학습지</button>
             <button class="type-tab" data-type="결과물" onclick="switchTypeTab('결과물')">🎨 결과물</button>
         </div>
 
@@ -1166,7 +1166,7 @@
 
             <div class="type-section" id="photoSection">
                 <div class="type-header">
-                    <div class="type-title">📸 사진</div>
+                    <div class="type-title">📸 활동 모습</div>
                     <div class="type-count" id="photoCount">0개 작품</div>
                 </div>
                 <div class="type-gallery" id="photoGallery"></div>
@@ -1174,7 +1174,7 @@
 
             <div class="type-section" id="worksheetSection">
                 <div class="type-header">
-                    <div class="type-title">📝 학습지(활동지)</div>
+                    <div class="type-title">📝 활동지</div>
                     <div class="type-count" id="worksheetCount">0개 작품</div>
                 </div>
                 <div class="type-gallery" id="worksheetGallery"></div>
@@ -1299,11 +1299,11 @@
             
             if (type === 'all') {
                 document.getElementById('allSection').classList.add('active');
-            } else if (type === '사진') {
+            } else if (type === '활동 모습') {
                 document.getElementById('photoSection').classList.add('active');
             } else if (type === '결과물') {
                 document.getElementById('resultSection').classList.add('active');
-            } else if (type === '학습지(활동지)') {
+            } else if (type === '활동지') {
                 document.getElementById('worksheetSection').classList.add('active');
             }
             
@@ -1341,9 +1341,9 @@
             
             // 유형별로 분류
             const allArtworks = filteredArtworks;
-            const photoArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '사진' || !artwork.artworkType);
+            const photoArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '활동 모습' || !artwork.artworkType);
             const resultArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '결과물');
-            const worksheetArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '학습지(활동지)');
+            const worksheetArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '활동지');
             
             // 각 유형별 개수 업데이트
             document.getElementById('allCount').textContent = `${allArtworks.length}개 작품`;
@@ -1355,15 +1355,15 @@
             if (currentTypeFilter === 'all') {
                 renderArtworkCards(allArtworks, allGallery);
                 handleEmptySection('allSection', allArtworks.length === 0, '전체');
-            } else if (currentTypeFilter === '사진') {
+            } else if (currentTypeFilter === '활동 모습') {
                 renderArtworkCards(photoArtworks, photoGallery);
-                handleEmptySection('photoSection', photoArtworks.length === 0, '사진');
+                handleEmptySection('photoSection', photoArtworks.length === 0, '활동 모습');
             } else if (currentTypeFilter === '결과물') {
                 renderArtworkCards(resultArtworks, resultGallery);
                 handleEmptySection('resultSection', resultArtworks.length === 0, '결과물');
-            } else if (currentTypeFilter === '학습지(활동지)') {
+            } else if (currentTypeFilter === '활동지') {
                 renderArtworkCards(worksheetArtworks, worksheetGallery);
-                handleEmptySection('worksheetSection', worksheetArtworks.length === 0, '학습지(활동지)');
+                handleEmptySection('worksheetSection', worksheetArtworks.length === 0, '활동지');
             }
         }
         
@@ -1372,7 +1372,7 @@
                 const card = document.createElement('div');
                 card.className = 'artwork-card';
                 card.setAttribute('data-grade', artwork.grade);
-                card.setAttribute('data-type', artwork.artworkType || '사진');
+                card.setAttribute('data-type', artwork.artworkType || '활동 모습');
                 
                 const isLiked = likedArtworks.has(artwork.id);
                 const likeCount = likes[artwork.id] || 0;
@@ -1380,7 +1380,7 @@
                 const mainImage = (artwork.images && artwork.images.length > 0) ? artwork.images[0] : '';
                 
                 card.innerHTML = `
-                    <div class="artwork-type">${artwork.artworkType || '사진'}</div>
+                    <div class="artwork-type">${artwork.artworkType || '활동 모습'}</div>
                     <div class="admin-controls">
                         <button class="btn-warning" onclick="event.stopPropagation(); editArtwork('${artwork.id}')">수정</button>
                         <button class="btn-danger" onclick="event.stopPropagation(); deleteArtwork('${artwork.id}')">삭제</button>
@@ -2195,8 +2195,8 @@
                     <div class="form-group">
                         <label>유형</label>
                         <select id="editArtworkType">
-                            <option value="사진" ${artwork.artworkType === '사진' ? 'selected' : ''}>사진</option>
-                            <option value="학습지(활동지)" ${artwork.artworkType === '학습지(활동지)' ? 'selected' : ''}>학습지(활동지)</option>
+                            <option value="활동 모습" ${artwork.artworkType === '활동 모습' ? 'selected' : ''}>활동 모습</option>
+                            <option value="활동지" ${artwork.artworkType === '활동지' ? 'selected' : ''}>활동지</option>
                             <option value="결과물" ${artwork.artworkType === '결과물' ? 'selected' : ''}>결과물</option>
                         </select>
                     </div>
