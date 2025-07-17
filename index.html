@@ -601,6 +601,7 @@
             opacity: 0.9;
             max-width: 800px;
             margin: 0 auto;
+            white-space: pre-wrap;
         }
         .grade-stats {
             display: flex;
@@ -928,6 +929,10 @@
                         <div class="image-preview-container" id="imagePreviewContainer"></div>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="artworkLink">관련 링크 (선택 사항)</label>
+                    <input type="url" id="artworkLink" placeholder="https://www.example.com">
+                </div>
                 <button type="submit" class="btn btn-primary" id="submitBtn">작품 등록하기</button>
             </form>
         </div>
@@ -1232,7 +1237,7 @@
         let isAdminMode = false;
         let isSaving = false;
         let currentGradeFilter = 'all';
-        let currentTypeFilter = 'all'; // 새로운 변수 추가
+        let currentTypeFilter = 'all';
 
         async function loadDataFromDB() { 
             try { 
@@ -1286,15 +1291,12 @@
             localStorage.setItem('likedArtworks', JSON.stringify([...likedArtworks])); 
         }
         
-        // 새로운 탭 전환 함수
         function switchTypeTab(type) {
             currentTypeFilter = type;
             
-            // 탭 활성화 상태 업데이트
             document.querySelectorAll('.type-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelector(`[data-type="${type}"]`).classList.add('active');
             
-            // 섹션 표시/숨김
             document.querySelectorAll('.type-section').forEach(section => section.classList.remove('active'));
             
             if (type === 'all') {
@@ -1307,13 +1309,10 @@
                 document.getElementById('worksheetSection').classList.add('active');
             }
             
-            // 작품 렌더링
             renderArtworksByType();
         }
         
-        // 수정된 렌더링 함수 - 선택된 탭에 따라 작품 표시
         function renderArtworksByType() {
-            // 모든 갤러리 초기화
             const allGallery = document.getElementById('allGallery');
             const photoGallery = document.getElementById('photoGallery');
             const resultGallery = document.getElementById('resultGallery');
@@ -1324,13 +1323,11 @@
             resultGallery.innerHTML = '';
             worksheetGallery.innerHTML = '';
             
-            // 현재 필터에 맞는 작품들 가져오기
             let filteredArtworks = artworks;
             if (currentGradeFilter !== 'all') {
                 filteredArtworks = artworks.filter(artwork => artwork.grade === currentGradeFilter);
             }
             
-            // 검색 필터 적용
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             if (searchTerm) {
                 filteredArtworks = filteredArtworks.filter(artwork => 
@@ -1339,19 +1336,16 @@
                 );
             }
             
-            // 유형별로 분류
             const allArtworks = filteredArtworks;
             const photoArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '활동 모습' || !artwork.artworkType);
             const resultArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '결과물');
             const worksheetArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '활동지');
             
-            // 각 유형별 개수 업데이트
             document.getElementById('allCount').textContent = `${allArtworks.length}개 작품`;
             document.getElementById('photoCount').textContent = `${photoArtworks.length}개 작품`;
             document.getElementById('resultCount').textContent = `${resultArtworks.length}개 작품`;
             document.getElementById('worksheetCount').textContent = `${worksheetArtworks.length}개 작품`;
             
-            // 현재 선택된 탭에 따라 해당 작품들만 렌더링
             if (currentTypeFilter === 'all') {
                 renderArtworkCards(allArtworks, allGallery);
                 handleEmptySection('allSection', allArtworks.length === 0, '전체');
@@ -1392,6 +1386,7 @@
                         <h3 class="artwork-title">${artwork.title}</h3>
                         <p class="artwork-author">${artwork.author} (${artwork.grade})</p>
                         <p class="artwork-description">${artwork.description}</p>
+                        ${artwork.link ? `<a href="${artwork.link}" target="_blank" class="btn btn-secondary btn-small" style="margin-top: 10px;" onclick="event.stopPropagation()">🔗 링크 보기</a>` : ''}
                         <div class="artwork-stats">
                             <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${artwork.id}')">❤️ ${likeCount}</button>
                             <span>💬 ${artworkComments.length}</span>
@@ -1402,7 +1397,6 @@
                 card.addEventListener('click', () => showArtworkModal(artwork));
                 container.appendChild(card);
                 
-                // 애니메이션 효과
                 setTimeout(() => card.classList.add('show'), index * 100);
             });
         }
@@ -1440,7 +1434,6 @@
             console.log('✅ 초기화 완료'); 
         });
         
-        // 학년 필터 이벤트 리스너 수정
         document.querySelectorAll('.filter-btn').forEach(btn => { 
             btn.addEventListener('click', () => { 
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
@@ -1451,7 +1444,6 @@
             }); 
         });
         
-        // 검색 이벤트 리스너 수정
         document.getElementById('searchInput').addEventListener('input', e => { 
             renderArtworksByType();
         });
@@ -1482,7 +1474,8 @@
                 const newArtwork = { 
                     id: Date.now().toString(), 
                     ...formData, 
-                    images: imageUrls, 
+                    images: imageUrls,
+                    link: document.getElementById('artworkLink').value.trim(),
                     createdAt: new Date().toISOString() 
                 }; 
                 artworks.unshift(newArtwork); 
@@ -1593,10 +1586,11 @@
                     <p style="color: #7f8c8d; font-size: 1.1rem; margin-bottom: 20px;">${artwork.author} (${artwork.grade})</p>
                 </div>
                 <p style="line-height: 1.8; color: #555; font-size: 1.1rem; text-align: center; margin-bottom: 20px;">${artwork.description}</p>
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <button class="btn btn-primary like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${artwork.id}')">❤️ ${likeCount} 좋아요</button>
-                        <button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button>
-                    </div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="btn btn-primary like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${artwork.id}')">❤️ ${likeCount} 좋아요</button>
+                    ${artwork.link ? `<a href="${artwork.link}" target="_blank" class="btn btn-primary">🚀 링크 바로가기</a>` : ''}
+                    <button class="btn btn-secondary" onclick="shareArtwork('${artwork.title}')">📤 공유하기</button>
+                </div>
                 ${commentsHtml}
             `; 
             modal.style.display = 'block'; 
@@ -1632,21 +1626,16 @@
         }
         
         async function toggleLike(artworkId) { 
-            console.log('좋아요 토글:', artworkId);
-            
             if (likedArtworks.has(artworkId)) { 
                 likedArtworks.delete(artworkId); 
                 likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1); 
-                console.log('좋아요 취소:', likes[artworkId]);
             } else { 
                 likedArtworks.add(artworkId); 
                 likes[artworkId] = (likes[artworkId] || 0) + 1; 
-                console.log('좋아요 추가:', likes[artworkId]);
             } 
             
             saveLikedToLocal(); 
             
-            // 현재 열린 모달의 좋아요 버튼 즉시 업데이트
             const modalLikeBtn = document.querySelector('.modal .like-btn');
             if (modalLikeBtn) {
                 const isLiked = likedArtworks.has(artworkId);
@@ -1654,7 +1643,6 @@
                 modalLikeBtn.innerHTML = `❤️ ${likes[artworkId] || 0} 좋아요`;
             }
             
-            // 갤러리의 모든 좋아요 버튼 업데이트
             const galleryLikeBtns = document.querySelectorAll(`[onclick*="toggleLike('${artworkId}')"]`);
             galleryLikeBtns.forEach(btn => {
                 const isLiked = likedArtworks.has(artworkId);
@@ -2334,18 +2322,16 @@
                 ); 
             } 
         }
-   
-
+        
         function updateGradeInfo(category) { 
             const gradeInfoSection = document.getElementById('gradeInfoSection'); 
             const gradeInfoTitle = document.getElementById('gradeInfoTitle'); 
             const gradeInfoDescription = document.getElementById('gradeInfoDescription'); 
             const info = settings.gradeDescriptions[category] || settings.gradeDescriptions['all']; 
             gradeInfoTitle.textContent = info.title; 
-        
-            // 수정된 부분: .textContent를 .innerHTML로 바꾸고, 줄바꿈 문자를 <br> 태그로 변경
+            
             gradeInfoDescription.innerHTML = info.description.replace(/\n/g, '<br>');
-        
+            
             updateGradeStats(category); 
             gradeInfoSection.classList.add('active'); 
         }
