@@ -1284,10 +1284,10 @@
 
         async function addArtworkToDB(newArtwork) {
             try {
-                const response = await fetch('/api/addArtwork', { // 새로운 API 경로
+                const response = await fetch('/api/addArtwork', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newArtwork) // 새 작품 데이터만 전송
+                    body: JSON.stringify(newArtwork)
                 });
                 if (!response.ok) throw new Error(`Server response error: ${response.status}`);
                 
@@ -1683,8 +1683,7 @@
             await saveDataToDB(); 
             if (isAdminMode) updateAdminStats(); 
         }
-        // 기존의 addComment와 submitComment 함수를 지우고 아래 코드로 교체하세요.
-
+        
         async function submitComment(artworkId) {
             const authorInput = document.getElementById('commentAuthor');
             const textInput = document.getElementById('commentText');
@@ -1721,7 +1720,6 @@
                     throw new Error('서버에 댓글 저장 실패');
                 }
         
-                // 성공 시 로컬 데이터에도 댓글 추가
                 if (!comments[artworkId]) {
                     comments[artworkId] = [];
                 }
@@ -1734,10 +1732,10 @@
                     showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success');
                 } else {
                     showMessage('댓글이 등록되었습니다.', 'success');
-                    showArtworkModal(artworks.find(a => a.id === artworkId)); // 모달 새로고침
+                    showArtworkModal(artworks.find(a => a.id === artworkId));
                 }
-        
-                renderArtworksByType(); // 카드 댓글 수 업데이트
+
+                renderArtworksByType();
                 if (isAdminMode) {
                     updateAdminStats();
                     renderCommentsTable();
@@ -1749,40 +1747,89 @@
             }
         }
         
+        async function addReply(artworkId, parentCommentId) { 
+            const author = document.getElementById(`replyAuthor-${parentCommentId}`).value.trim(); 
+            const text = document.getElementById(`replyText-${parentCommentId}`).value.trim(); 
+            if (!author || !text) { 
+                showMessage('답글 이름과 내용을 모두 입력해주세요.', 'error'); 
+                return; 
+            } 
+            const parentComment = comments[artworkId]?.find(c => c.id === parentCommentId); 
+            if (!parentComment) return; 
+            if (!parentComment.replies) parentComment.replies = []; 
+            const newReply = { 
+                id: Date.now().toString(), 
+                author: author, 
+                text: text, 
+                createdAt: new Date().toISOString(), 
+                parentId: parentCommentId 
+            }; 
+            parentComment.replies.push(newReply); 
+            if (await saveDataToDB()) { 
+                showMessage('답글이 등록되었습니다.', 'success'); 
+                showArtworkModal(artworks.find(a => a.id === artworkId)); 
+            } else { 
+                parentComment.replies.pop(); 
+                showMessage('답글 등록에 실패했습니다.', 'error'); 
+            } 
+        }
         
-        // 기존 deleteArtwork 함수를 아래 코드로 교체하세요.
-
         async function deleteArtwork(artworkId) {
-            if (!confirm('정말로 이 작품을 삭제하시겠습니까?')) return;
-        
-            const originalArtworks = [...artworks]; // 복원을 위해 원본 데이터 임시 저장
-        
-            // UI에서 먼저 작품을 제거 (Optimistic UI Update)
+            if (!confirm('정말로 이 작품을 삭제하시겠습니까? 삭제 전 데이터가 백업됩니다.')) return;
+
+            const artworkToDelete = artworks.find(artwork => artwork.id === artworkId);
+            if (!artworkToDelete) {
+                showMessage('삭제할 작품을 찾을 수 없습니다.', 'error');
+                return;
+            }
+
+            try {
+                const artworkJson = JSON.stringify(artworkToDelete, null, 2);
+                const blob = new Blob([artworkJson], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `[백업] ${artworkToDelete.title}_${artworkToDelete.id}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showMessage('작품 데이터가 백업되었습니다. 곧 삭제됩니다.', 'success');
+            } catch (error) {
+                showMessage('백업 파일 생성에 실패했습니다. 삭제를 취소합니다.', 'error');
+                console.error('Backup creation failed:', error);
+                return;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const originalArtworks = [...artworks];
+
             artworks = artworks.filter(artwork => artwork.id !== artworkId);
-            renderArtworksByType(); // 화면 즉시 업데이트
-        
+            renderArtworksByType(); 
+
             try {
                 const response = await fetch(`/api/deleteArtwork`, {
-                    method: 'POST', // DELETE 대신 POST를 사용 (Vercel에서 더 간단함)
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: artworkId }) // 작품 ID만 전송
+                    body: JSON.stringify({ id: artworkId })
                 });
-        
+
                 if (!response.ok) {
                     throw new Error('서버에서 작품 삭제 실패');
                 }
-        
-                showMessage('작품이 삭제되었습니다.', 'success');
+
+                showMessage('작품이 영구적으로 삭제되었습니다.', 'success');
                 if (isAdminMode) {
                     renderArtworksTable();
                     updateAdminStats();
                 }
-        
+
             } catch (error) {
                 console.error('작품 삭제 오류:', error);
                 showMessage('작품 삭제에 실패했습니다.', 'error');
-                artworks = originalArtworks; // 실패 시 원래 데이터로 복원
-                renderArtworksByType(); // 화면 복원
+                artworks = originalArtworks;
+                renderArtworksByType();
             }
         }
         
@@ -1908,8 +1955,6 @@
             } 
         }
         
-                // 기존 saveSettings 함수를 아래 코드로 교체하세요.
-        
         async function saveSettings() {
             const saveBtn = event.target;
             saveBtn.disabled = true;
@@ -1926,14 +1971,13 @@
                     }
                 }
         
-                // 업데이트할 설정 객체 생성
                 const updatedSettings = {
                     title: document.getElementById('siteTitle').value,
                     description: document.getElementById('siteDescription').value,
                     allowComments: document.getElementById('allowComments').checked,
                     moderateComments: document.getElementById('moderateComments').checked,
                     requireUploadPassword: document.getElementById('requireUploadPassword').checked,
-                    headerImage: settings.headerImage, // 이미지 URL 업데이트
+                    headerImage: settings.headerImage,
                     gradeDescriptions: {
                         'all': { title: document.getElementById('gradeTitleAll').value, description: document.getElementById('gradeDescAll').value },
                         '1학년': { title: document.getElementById('gradeTitle1').value, description: document.getElementById('gradeDesc1').value },
@@ -1944,7 +1988,7 @@
                         '6학년': { title: document.getElementById('gradeTitle6').value, description: document.getElementById('gradeDesc6').value }
                     }
                 };
-        
+
                 const newPassword = document.getElementById('adminPassword').value;
                 if (newPassword.trim() !== '') {
                     updatedSettings.adminPassword = newPassword;
@@ -1955,7 +1999,6 @@
                     updatedSettings.uploadPassword = newUploadPassword;
                 }
                 
-                // 서버에 설정만 업데이트하도록 요청
                 const response = await fetch('/api/updateSettings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1966,7 +2009,6 @@
                     throw new Error("DB 저장 실패");
                 }
                 
-                // 로컬 settings 객체도 업데이트
                 settings = { ...settings, ...updatedSettings };
         
                 applyHeaderSettings();
@@ -2174,8 +2216,6 @@
             renderCommentsTable();
             renderUsersTable();
         }
-        
-        
         
         function showMessage(text, type = 'success') { 
             const existing = document.querySelector('.message'); 
