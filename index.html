@@ -208,24 +208,6 @@
             border-radius: 8px;
             object-fit: cover;
         }
-        .upload-progress {
-            margin-top: 10px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none;
-        }
-        .upload-progress-bar {
-            height: 20px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.8rem;
-        }
         .btn {
             padding: 12px 30px;
             border: none;
@@ -277,7 +259,6 @@
             font-size: 0.8rem;
         }
         
-        /* 새로운 탭 스타일 */
         .type-tabs {
             display: flex;
             justify-content: center;
@@ -310,7 +291,6 @@
             box-shadow: 0 5px 20px rgba(255,255,255,0.2);
         }
         
-        /* 수정된 유형별 분류 스타일 */
         .type-section {
             margin-bottom: 40px;
             display: none;
@@ -969,7 +949,7 @@
                 <p style="text-align:center; color: #777; margin-bottom: 15px;">💡 작품 순서를 변경하려면 행을 드래그하여 원하는 위치에 놓으세요.</p>
                 <div class="bulk-actions">
                     <label><input type="checkbox" id="selectAll"> 전체 선택</label>
-                    <button class="btn btn-danger btn-small" onclick="bulkDelete()">선택 삭제</button>
+                    <button class="btn btn-danger btn-small" onclick="bulkDeleteArtworks()">선택 삭제</button>
                     <button class="btn btn-secondary btn-small" onclick="exportData()">데이터 내보내기</button>
                 </div>
                 <div class="table-container">
@@ -1255,30 +1235,6 @@
                 document.getElementById('upstashStatus').innerHTML = `<span class="status-indicator status-error">❌ DB 연결 실패</span>`; 
                 showMessage('데이터베이스에서 정보를 가져오는 데 실패했습니다. 페이지를 새로고침 해주세요.', 'error'); 
                 return false; 
-            } 
-        }
-
-        async function saveDataToDB() { 
-            if (isSaving) { 
-                console.warn("A save operation is already in progress."); 
-                return false; 
-            } 
-            isSaving = true; 
-            try { 
-                const response = await fetch('/api/data', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ artworks, comments, likes, settings }) 
-                }); 
-                if (!response.ok) throw new Error(`Server response error: ${response.status}`); 
-                console.log('✅ Data successfully saved to DB.'); 
-                return true; 
-            } catch (error) { 
-                console.error('Data saving failure:', error); 
-                showMessage('데이터를 데이터베이스에 저장하는 데 실패했습니다.', 'error'); 
-                return false; 
-            } finally { 
-                isSaving = false; 
             } 
         }
 
@@ -1655,13 +1611,10 @@
             } 
         }
         
-         // 기존 toggleLike 함수를 아래 코드로 교체하세요.
-
         async function toggleLike(artworkId) {
             const isLiked = likedArtworks.has(artworkId);
             const action = isLiked ? 'unlike' : 'like';
-        
-            // UI를 먼저 업데이트해서 빠르게 반응하는 것처럼 보이게 함
+
             if (action === 'like') {
                 likedArtworks.add(artworkId);
                 likes[artworkId] = (likes[artworkId] || 0) + 1;
@@ -1670,30 +1623,28 @@
                 likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1);
             }
             saveLikedToLocal();
-            updateLikeButtons(artworkId); // 버튼 UI 업데이트 함수 호출
-        
+            updateLikeButtons(artworkId);
+
             try {
                 const response = await fetch('/api/toggleLike', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ artworkId, action }) // artworkId와 행동(like/unlike)만 전송
+                    body: JSON.stringify({ artworkId, action })
                 });
-        
+
                 if (!response.ok) {
                     throw new Error('서버에서 좋아요 처리 실패');
                 }
-        
-                // 성공 시 서버로부터 최종 좋아요 수를 받아 한번 더 동기화
+
                 const result = await response.json();
                 likes[artworkId] = result.newLikes;
                 updateLikeButtons(artworkId);
                 if (isAdminMode) updateAdminStats();
-        
+
             } catch (error) {
                 console.error('좋아요 처리 오류:', error);
                 showMessage('좋아요 처리에 실패했습니다.', 'error');
-        
-                // 실패 시 원래 상태로 되돌림
+
                 if (action === 'like') {
                     likedArtworks.delete(artworkId);
                     likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1);
@@ -1702,20 +1653,17 @@
                     likes[artworkId] = (likes[artworkId] || 0) + 1;
                 }
                 saveLikedToLocal();
-                updateLikeButtons(artworkId); // 버튼 UI 원래대로 복원
+                updateLikeButtons(artworkId);
             }
         }
-        
-        // 좋아요 버튼 UI를 업데이트하는 함수를 새로 추가합니다.
+
         function updateLikeButtons(artworkId) {
             const isLiked = likedArtworks.has(artworkId);
             const likeCount = likes[artworkId] || 0;
             
-            // 갤러리와 모달의 모든 관련 버튼을 찾아서 업데이트
             const allLikeBtns = document.querySelectorAll(`[onclick*="toggleLike('${artworkId}')"]`);
             allLikeBtns.forEach(btn => {
                 btn.classList.toggle('liked', isLiked);
-                // 모달 안의 버튼과 갤러리 버튼의 텍스트 형식이 다르므로 확인 후 업데이트
                 if (btn.textContent.includes('좋아요')) {
                     btn.innerHTML = `❤️ ${likeCount} 좋아요`;
                 } else {
@@ -1788,30 +1736,42 @@
         }
         
         async function addReply(artworkId, parentCommentId) { 
-            const author = document.getElementById(`replyAuthor-${parentCommentId}`).value.trim(); 
-            const text = document.getElementById(`replyText-${parentCommentId}`).value.trim(); 
+            const authorInput = document.getElementById(`replyAuthor-${parentCommentId}`);
+            const textInput = document.getElementById(`replyText-${parentCommentId}`);
+            const author = authorInput.value.trim(); 
+            const text = textInput.value.trim(); 
             if (!author || !text) { 
                 showMessage('답글 이름과 내용을 모두 입력해주세요.', 'error'); 
                 return; 
-            } 
-            const parentComment = comments[artworkId]?.find(c => c.id === parentCommentId); 
-            if (!parentComment) return; 
-            if (!parentComment.replies) parentComment.replies = []; 
+            }
+
             const newReply = { 
                 id: Date.now().toString(), 
                 author: author, 
                 text: text, 
-                createdAt: new Date().toISOString(), 
-                parentId: parentCommentId 
-            }; 
-            parentComment.replies.push(newReply); 
-            if (await saveDataToDB()) { 
-                showMessage('답글이 등록되었습니다.', 'success'); 
-                showArtworkModal(artworks.find(a => a.id === artworkId)); 
-            } else { 
-                parentComment.replies.pop(); 
-                showMessage('답글 등록에 실패했습니다.', 'error'); 
-            } 
+                createdAt: new Date().toISOString()
+            };
+
+            const parentComment = comments[artworkId]?.find(c => c.id === parentCommentId);
+            if (!parentComment) return;
+
+            if (!parentComment.replies) parentComment.replies = [];
+            parentComment.replies.push(newReply);
+            showArtworkModal(artworks.find(a => a.id === artworkId));
+
+            try {
+                const response = await fetch('/api/addReply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artworkId, parentCommentId, reply: newReply })
+                });
+                if (!response.ok) throw new Error('Server failed to add reply');
+                showMessage('답글이 등록되었습니다.', 'success');
+            } catch (error) {
+                parentComment.replies.pop();
+                showArtworkModal(artworks.find(a => a.id === artworkId));
+                showMessage('답글 등록에 실패했습니다.', 'error');
+            }
         }
         
         async function deleteArtwork(artworkId) {
@@ -1873,50 +1833,64 @@
             }
         }
         
-        async function saveArtworkEdit(artworkId) { 
-            const artworkIndex = artworks.findIndex(a => a.id === artworkId); 
-            if (artworkIndex === -1) return; 
-            const originalArtwork = { ...artworks[artworkIndex] }; 
-            artworks[artworkIndex].title = document.getElementById('editTitle').value; 
-            artworks[artworkIndex].author = document.getElementById('editAuthor').value; 
-            artworks[artworkIndex].grade = document.getElementById('editGrade').value; 
-            artworks[artworkIndex].description = document.getElementById('editDescription').value; 
-            artworks[artworkIndex].artworkType = document.getElementById('editArtworkType').value; 
-            if (await saveDataToDB()) { 
-                closeModal(); 
-                renderArtworksByType(); 
-                renderArtworksTable(); 
-                showMessage('작품이 수정되었습니다.', 'success'); 
-            } else { 
-                artworks[artworkIndex] = originalArtwork; 
-                showMessage('작품 수정에 실패했습니다.', 'error'); 
-            } 
+        async function saveArtworkEdit(artworkId) {
+            const artworkIndex = artworks.findIndex(a => a.id === artworkId);
+            if (artworkIndex === -1) return;
+
+            const originalArtwork = JSON.parse(JSON.stringify(artworks[artworkIndex]));
+
+            const updatedArtwork = {
+                ...artworks[artworkIndex],
+                title: document.getElementById('editTitle').value,
+                author: document.getElementById('editAuthor').value,
+                grade: document.getElementById('editGrade').value,
+                description: document.getElementById('editDescription').value,
+                artworkType: document.getElementById('editArtworkType').value
+            };
+            
+            artworks[artworkIndex] = updatedArtwork;
+            closeModal();
+            renderArtworksByType();
+            if(isAdminMode) renderArtworksTable();
+
+            try {
+                const response = await fetch('/api/editArtwork', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedArtwork)
+                });
+                if (!response.ok) throw new Error('Server failed to save changes');
+                showMessage('작품이 수정되었습니다.', 'success');
+            } catch (error) {
+                artworks[artworkIndex] = originalArtwork; // Revert on failure
+                renderArtworksByType();
+                if(isAdminMode) renderArtworksTable();
+                showMessage('작품 수정에 실패했습니다.', 'error');
+            }
         }
         
-// 기존의 editComment와 deleteComment 함수를 지우고 아래 코드로 교체하세요.
-
         async function editComment(artworkId, commentId) {
             const comment = comments[artworkId]?.find(c => c.id === commentId);
             if (!comment) return;
-        
+
             const newText = prompt('댓글을 수정하세요:', comment.text);
             if (newText === null || newText.trim() === '') return;
-        
+
             const originalText = comment.text;
             comment.text = newText.trim();
-            showArtworkModal(artworks.find(a => a.id === artworkId)); // 화면에 먼저 바뀐 내용을 보여줌
-        
+            showArtworkModal(artworks.find(a => a.id === artworkId));
+
             try {
                 const response = await fetch('/api/editComment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ artworkId, commentId, newText: comment.text })
                 });
-                if (!response.ok) throw new Error('서버에서 댓글 수정 실패');
+                if (!response.ok) throw new Error('Server failed to edit comment');
                 showMessage('댓글이 수정되었습니다.', 'success');
                 renderCommentsTable();
             } catch (error) {
-                comment.text = originalText; // 실패하면 원래 내용으로 되돌림
+                comment.text = originalText;
                 showArtworkModal(artworks.find(a => a.id === artworkId));
                 showMessage('댓글 수정에 실패했습니다.', 'error');
             }
@@ -1926,31 +1900,29 @@
             if (!confirm('정말로 이 댓글을 삭제하시겠습니까? 답글도 모두 삭제됩니다.')) return;
             
             const originalComments = JSON.parse(JSON.stringify(comments));
-        
-            // 화면에서 먼저 댓글을 지워서 빠르게 반응하는 것처럼 보이게 함
+
             if (comments[artworkId]) {
                 comments[artworkId] = comments[artworkId].filter(c => c.id !== commentId);
             }
             showArtworkModal(artworks.find(a => a.id === artworkId));
             renderArtworksByType();
             if(isAdminMode) renderCommentsTable();
-        
+
             try {
-                // 서버에 "이 댓글 하나만 지워줘" 라고 요청
                 const response = await fetch('/api/deleteComment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ artworkId, commentId })
                 });
-        
-                if (!response.ok) throw new Error('서버에서 댓글 삭제 실패');
+
+                if (!response.ok) throw new Error('Server failed to delete comment');
                 
                 showMessage('댓글이 삭제되었습니다.', 'success');
                 if (isAdminMode) updateAdminStats();
-        
+
             } catch (error) {
-                console.error('댓글 삭제 실패:', error);
-                comments = originalComments; // 실패하면 원래대로 복원
+                console.error('Comment deletion failed:', error);
+                comments = originalComments;
                 showArtworkModal(artworks.find(a => a.id === artworkId));
                 renderArtworksByType();
                 if(isAdminMode) renderCommentsTable();
@@ -1958,52 +1930,46 @@
             }
         }
         
-        async function resetAllData() { 
-            if (!confirm('정말로 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return; 
-            const confirmText = prompt('확인을 위해 "초기화"를 입력하세요:'); 
-            if (confirmText !== '초기화') return; 
-            const backupArtworks = [...artworks]; 
-            artworks = []; 
-            comments = {}; 
-            likes = {}; 
-            settings = defaultSettings; 
-            if (await saveDataToDB()) { 
-                showMessage('모든 데이터가 초기화되었습니다.', 'success'); 
-                location.reload(); 
-            } else { 
-                artworks = backupArtworks; 
-                showMessage('초기화에 실패했습니다.', 'error'); 
-            } 
+        async function resetAllData() {
+            if (!confirm('정말로 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+            const confirmText = prompt('확인을 위해 "초기화"를 입력하세요:');
+            if (confirmText !== '초기화') return;
+            
+            try {
+                const response = await fetch('/api/resetAllData', { method: 'POST' });
+                if (!response.ok) throw new Error('Server failed to reset data');
+                showMessage('모든 데이터가 초기화되었습니다. 페이지를 새로고칩니다.', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                showMessage('초기화에 실패했습니다.', 'error');
+            }
         }
         
-        // 기존 updateArtworkOrder 함수를 아래 코드로 교체하세요.
-
         async function updateArtworkOrder() {
             const tableBody = document.getElementById('artworksTableBody');
             const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
-            const originalArtworks = [...artworks]; // 복원을 위해 원본 순서 임시 저장
-        
-            // 화면(로컬 데이터)에 먼저 새 순서를 적용
+            const originalArtworks = [...artworks];
+
             artworks = newOrderedIds.map(id => originalArtworks.find(a => a.id === id)).filter(Boolean);
             
             try {
                 const response = await fetch('/api/updateArtworkOrder', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderedIds: newOrderedIds }) // 새로운 작품 순서(ID 배열)만 전송
+                    body: JSON.stringify({ orderedIds: newOrderedIds })
                 });
-        
+
                 if (!response.ok) {
                     throw new Error('서버에서 순서 저장 실패');
                 }
-        
-                renderArtworksByType(); // 메인 갤러리에도 새 순서 적용
+
+                renderArtworksByType();
                 showMessage('작품 순서가 저장되었습니다.', 'success');
-        
+
             } catch (error) {
                 console.error('순서 저장 오류:', error);
-                artworks = originalArtworks; // 실패 시 원래 순서로 복원
-                renderArtworksTable(); // 관리자 테이블도 원래 순서로 복원
+                artworks = originalArtworks;
+                renderArtworksTable();
                 showMessage('순서 저장에 실패했습니다.', 'error');
             }
         }
@@ -2124,12 +2090,12 @@
             document.getElementById('uploadPassword').value = ''; 
             for(let i = 1; i <= 6; i++) { 
                 const gradeKey = `${i}학년`; 
-                if (settings.gradeDescriptions[gradeKey]) { 
+                if (settings.gradeDescriptions && settings.gradeDescriptions[gradeKey]) { 
                     document.getElementById(`gradeTitle${i}`).value = settings.gradeDescriptions[gradeKey].title; 
                     document.getElementById(`gradeDesc${i}`).value = settings.gradeDescriptions[gradeKey].description; 
                 } 
             } 
-            if (settings.gradeDescriptions['all']) { 
+            if (settings.gradeDescriptions && settings.gradeDescriptions['all']) { 
                 document.getElementById('gradeTitleAll').value = settings.gradeDescriptions['all'].title; 
                 document.getElementById('gradeDescAll').value = settings.gradeDescriptions['all'].description; 
             } 
@@ -2224,7 +2190,7 @@
                 artworkComments.forEach(comment => { 
                     const row = document.createElement('tr'); 
                     row.innerHTML = `
-                        <td><input type="checkbox" class="comment-checkbox" data-id="${comment.id}"></td>
+                        <td><input type="checkbox" class="comment-checkbox" data-artwork-id="${artworkId}" data-comment-id="${comment.id}"></td>
                         <td>${artwork ? artwork.title : '삭제된 작품'}</td>
                         <td>${comment.author}</td>
                         <td>${comment.text.substring(0, 50)}${comment.text.length > 50 ? '...' : ''}</td>
@@ -2376,49 +2342,71 @@
             document.body.style.overflow = 'hidden'; 
         }
         
-        async function bulkDelete() { 
-            const selected = document.querySelectorAll('.artwork-checkbox:checked'); 
+        async function bulkDeleteArtworks() { 
+            const selected = [...document.querySelectorAll('.artwork-checkbox:checked')].map(cb => cb.dataset.id); 
             if (selected.length === 0) return showMessage('삭제할 작품을 선택하세요.', 'error'); 
             if (!confirm(`선택한 ${selected.length}개의 작품을 삭제하시겠습니까?`)) return; 
-            const idsToDelete = [...selected].map(cb => cb.dataset.id); 
-            artworks = artworks.filter(artwork => !idsToDelete.includes(artwork.id)); 
-            idsToDelete.forEach(id => { 
-                delete comments[id]; 
-                delete likes[id]; 
-            }); 
-            if (await saveDataToDB()) { 
-                showMessage(`${selected.length}개의 작품이 삭제되었습니다.`, 'success'); 
-                renderArtworksByType(); 
-                renderArtworksTable(); 
-                updateAdminStats(); 
-            } else { 
-                loadDataFromDB().then(() => { 
-                    renderArtworksByType(); 
-                    renderArtworksTable(); 
-                }); 
-            } 
+            
+            const originalData = { artworks: [...artworks], comments: JSON.parse(JSON.stringify(comments)), likes: JSON.parse(JSON.stringify(likes)) };
+
+            artworks = artworks.filter(artwork => !selected.includes(artwork.id)); 
+            selected.forEach(id => { delete comments[id]; delete likes[id]; });
+            renderArtworksByType();
+            renderArtworksTable();
+            updateAdminStats();
+
+            try {
+                const response = await fetch('/api/bulkDeleteArtworks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idsToDelete: selected })
+                });
+                if (!response.ok) throw new Error('Server failed to bulk delete artworks');
+                showMessage(`${selected.length}개의 작품이 삭제되었습니다.`, 'success');
+            } catch (error) {
+                artworks = originalData.artworks;
+                comments = originalData.comments;
+                likes = originalData.likes;
+                renderArtworksByType();
+                renderArtworksTable();
+                updateAdminStats();
+                showMessage('일괄 삭제에 실패했습니다.', 'error');
+            }
         }
         
-        async function bulkDeleteComments() { 
-            const selected = document.querySelectorAll('.comment-checkbox:checked'); 
+        async function bulkDeleteComments() {
+            const selected = [...document.querySelectorAll('.comment-checkbox:checked')].map(cb => ({
+                artworkId: cb.dataset.artworkId,
+                commentId: cb.dataset.commentId
+            }));
+
             if (selected.length === 0) return showMessage('삭제할 댓글을 선택하세요.', 'error'); 
             if (!confirm(`선택한 ${selected.length}개의 댓글을 삭제하시겠습니까?`)) return; 
-            const idsToDelete = new Set([...selected].map(cb => cb.dataset.id)); 
-            Object.keys(comments).forEach(artId => { 
-                comments[artId] = comments[artId].filter(c => !idsToDelete.has(c.id)); 
-                if (comments[artId].length === 0) delete comments[artId]; 
-            }); 
-            if (await saveDataToDB()) { 
-                showMessage(`${idsToDelete.size}개의 댓글이 삭제되었습니다.`, 'success'); 
-                renderCommentsTable(); 
-                renderArtworksByType(); 
-                updateAdminStats(); 
-            } else { 
-                loadDataFromDB().then(() => { 
-                    renderCommentsTable(); 
-                    renderArtworksByType(); 
-                }); 
-            } 
+            
+            const originalComments = JSON.parse(JSON.stringify(comments));
+
+            selected.forEach(item => {
+                if (comments[item.artworkId]) {
+                    comments[item.artworkId] = comments[item.artworkId].filter(c => c.id !== item.commentId);
+                }
+            });
+            renderCommentsTable();
+            updateAdminStats();
+
+            try {
+                const response = await fetch('/api/bulkDeleteComments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ commentsToDelete: selected })
+                });
+                if (!response.ok) throw new Error('Server failed to bulk delete comments');
+                showMessage(`${selected.length}개의 댓글이 삭제되었습니다.`, 'success');
+            } catch (error) {
+                comments = originalComments;
+                renderCommentsTable();
+                updateAdminStats();
+                showMessage('일괄 삭제에 실패했습니다.', 'error');
+            }
         }
         
         function removeHeaderImage() { 
@@ -2505,7 +2493,7 @@
             const gradeInfoSection = document.getElementById('gradeInfoSection'); 
             const gradeInfoTitle = document.getElementById('gradeInfoTitle'); 
             const gradeInfoDescription = document.getElementById('gradeInfoDescription'); 
-            const info = settings.gradeDescriptions[category] || settings.gradeDescriptions['all']; 
+            const info = (settings.gradeDescriptions && settings.gradeDescriptions[category]) || settings.gradeDescriptions['all']; 
             gradeInfoTitle.textContent = info.title; 
             
             gradeInfoDescription.innerHTML = info.description.replace(/\n/g, '<br>');
