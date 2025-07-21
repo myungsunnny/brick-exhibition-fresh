@@ -892,8 +892,8 @@
                 <div class="form-group">
                     <label for="artworkType">작품 유형</label>
                     <select id="artworkType" required>
-                        <option value="활동 모습">활동 모습</option>
-                        <option value="활동지">활동지</option>
+                        <option value="사진">활동 모습</option>
+                        <option value="학습지(활동지)">활동지</option>
                         <option value="결과물">결과물</option>
                     </select>
                 </div>
@@ -1155,8 +1155,8 @@
 
         <div class="type-tabs">
             <button class="type-tab active" data-type="all" onclick="switchTypeTab('all')">🎯 전체</button>
-            <button class="type-tab" data-type="활동 모습" onclick="switchTypeTab('활동 모습')">📸 활동 모습</button>
-            <button class="type-tab" data-type="활동지" onclick="switchTypeTab('활동지')">📝 활동지</button>
+            <button class="type-tab" data-type="사진" onclick="switchTypeTab('사진')">📸 활동 모습</button>
+            <button class="type-tab" data-type="학습지(활동지)" onclick="switchTypeTab('학습지(활동지)')">📝 활동지</button>
             <button class="type-tab" data-type="결과물" onclick="switchTypeTab('결과물')">🎨 결과물</button>
         </div>
 
@@ -1282,6 +1282,23 @@
             } 
         }
 
+        async function addArtworkToDB(newArtwork) {
+            try {
+                const response = await fetch('/api/addArtwork', { // 새로운 API 경로
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newArtwork) // 새 작품 데이터만 전송
+                });
+                if (!response.ok) throw new Error(`Server response error: ${response.status}`);
+                
+                console.log('✅ Artwork successfully added via API.');
+                return true;
+            } catch (error) {
+                console.error('Adding artwork via API failed:', error);
+                return false;
+            }
+        }
+
         function loadLikedFromLocal() { 
             const liked = localStorage.getItem('likedArtworks'); 
             likedArtworks = liked ? new Set(JSON.parse(liked)) : new Set(); 
@@ -1301,11 +1318,11 @@
             
             if (type === 'all') {
                 document.getElementById('allSection').classList.add('active');
-            } else if (type === '활동 모습') {
+            } else if (type === '사진') {
                 document.getElementById('photoSection').classList.add('active');
             } else if (type === '결과물') {
                 document.getElementById('resultSection').classList.add('active');
-            } else if (type === '활동지') {
+            } else if (type === '학습지(활동지)') {
                 document.getElementById('worksheetSection').classList.add('active');
             }
             
@@ -1337,9 +1354,9 @@
             }
             
             const allArtworks = filteredArtworks;
-            const photoArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '활동 모습' || !artwork.artworkType);
+            const photoArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '사진' || !artwork.artworkType);
             const resultArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '결과물');
-            const worksheetArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '활동지');
+            const worksheetArtworks = filteredArtworks.filter(artwork => artwork.artworkType === '학습지(활동지)');
             
             document.getElementById('allCount').textContent = `${allArtworks.length}개 작품`;
             document.getElementById('photoCount').textContent = `${photoArtworks.length}개 작품`;
@@ -1349,13 +1366,13 @@
             if (currentTypeFilter === 'all') {
                 renderArtworkCards(allArtworks, allGallery);
                 handleEmptySection('allSection', allArtworks.length === 0, '전체');
-            } else if (currentTypeFilter === '활동 모습') {
+            } else if (currentTypeFilter === '사진') {
                 renderArtworkCards(photoArtworks, photoGallery);
                 handleEmptySection('photoSection', photoArtworks.length === 0, '활동 모습');
             } else if (currentTypeFilter === '결과물') {
                 renderArtworkCards(resultArtworks, resultGallery);
                 handleEmptySection('resultSection', resultArtworks.length === 0, '결과물');
-            } else if (currentTypeFilter === '활동지') {
+            } else if (currentTypeFilter === '학습지(활동지)') {
                 renderArtworkCards(worksheetArtworks, worksheetGallery);
                 handleEmptySection('worksheetSection', worksheetArtworks.length === 0, '활동지');
             }
@@ -1366,15 +1383,22 @@
                 const card = document.createElement('div');
                 card.className = 'artwork-card';
                 card.setAttribute('data-grade', artwork.grade);
-                card.setAttribute('data-type', artwork.artworkType || '활동 모습');
+                card.setAttribute('data-type', artwork.artworkType || '사진');
                 
                 const isLiked = likedArtworks.has(artwork.id);
                 const likeCount = likes[artwork.id] || 0;
                 const artworkComments = comments[artwork.id] || [];
                 const mainImage = (artwork.images && artwork.images.length > 0) ? artwork.images[0] : '';
                 
+                let displayTypeName = artwork.artworkType || '사진';
+                if (displayTypeName === '사진') {
+                    displayTypeName = '활동 모습';
+                } else if (displayTypeName === '학습지(활동지)') {
+                    displayTypeName = '활동지';
+                }
+
                 card.innerHTML = `
-                    <div class="artwork-type">${artwork.artworkType || '활동 모습'}</div>
+                    <div class="artwork-type">${displayTypeName}</div>
                     <div class="admin-controls">
                         <button class="btn-warning" onclick="event.stopPropagation(); editArtwork('${artwork.id}')">수정</button>
                         <button class="btn-danger" onclick="event.stopPropagation(); deleteArtwork('${artwork.id}')">삭제</button>
@@ -1448,57 +1472,63 @@
             renderArtworksByType();
         });
         
-        document.getElementById('artworkForm').addEventListener('submit', async function(e) { 
-            e.preventDefault(); 
-            const submitBtn = document.getElementById('submitBtn'); 
-            const originalText = submitBtn.textContent; 
-            submitBtn.disabled = true; 
-            submitBtn.textContent = '등록 중...'; 
-            try { 
-                const formData = { 
-                    artworkType: document.getElementById('artworkType').value, 
-                    title: document.getElementById('title').value, 
-                    author: document.getElementById('author').value, 
-                    grade: document.getElementById('grade').value + '학년', 
-                    description: document.getElementById('description').value 
-                }; 
-                const imageFiles = document.getElementById('imageFile').files; 
-                let imageUrls = []; 
-                if (imageFiles.length > 0) { 
-                    const uploadPromises = Array.from(imageFiles).map(file => uploadImageToCloudinary(file)); 
-                    imageUrls = await Promise.all(uploadPromises); 
-                    if (imageUrls.some(url => !url)) { 
-                        throw new Error('일부 이미지 업로드에 실패했습니다.'); 
-                    } 
-                } 
-                const newArtwork = { 
-                    id: Date.now().toString(), 
-                    ...formData, 
+        document.getElementById('artworkForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '등록 중...';
+
+            try {
+                const imageFiles = document.getElementById('imageFile').files;
+                let imageUrls = [];
+                if (imageFiles.length > 0) {
+                    const uploadPromises = Array.from(imageFiles).map(file => uploadImageToCloudinary(file));
+                    imageUrls = await Promise.all(uploadPromises);
+                    if (imageUrls.some(url => !url)) {
+                        throw new Error('일부 이미지 업로드에 실패했습니다.');
+                    }
+                }
+
+                const newArtwork = {
+                    id: Date.now().toString(),
+                    artworkType: document.getElementById('artworkType').value,
+                    title: document.getElementById('title').value,
+                    author: document.getElementById('author').value,
+                    grade: document.getElementById('grade').value + '학년',
+                    description: document.getElementById('description').value,
                     images: imageUrls,
                     link: document.getElementById('artworkLink').value.trim(),
-                    createdAt: new Date().toISOString() 
-                }; 
-                artworks.unshift(newArtwork); 
-                if (!(await saveDataToDB())) { 
-                    artworks.shift(); 
-                    throw new Error("DB 저장 실패"); 
-                } 
-                renderArtworksByType(); 
-                if (isAdminMode) { 
-                    updateAdminStats(); 
-                    renderArtworksTable(); 
-                } 
-                this.reset(); 
-                document.getElementById('imagePreviewContainer').innerHTML = ''; 
-                document.getElementById('uploadText').style.display = 'block'; 
-                showMessage('작품이 성공적으로 등록되었습니다!', 'success'); 
-            } catch (error) { 
-                console.error('작품 등록 오류:', error); 
-                showMessage(`작품 등록에 실패했습니다: ${error.message}`, 'error'); 
-            } finally { 
-                submitBtn.disabled = false; 
-                submitBtn.textContent = originalText; 
-            } 
+                    createdAt: new Date().toISOString()
+                };
+
+                artworks.unshift(newArtwork);
+
+                const success = await addArtworkToDB(newArtwork);
+
+                if (!success) {
+                    artworks.shift();
+                    throw new Error("서버에 작품을 저장하는 데 실패했습니다.");
+                }
+
+                renderArtworksByType();
+                if (isAdminMode) {
+                    updateAdminStats();
+                    renderArtworksTable();
+                }
+                this.reset();
+                document.getElementById('imagePreviewContainer').innerHTML = '';
+                document.getElementById('uploadText').style.display = 'block';
+                showMessage('작품이 성공적으로 등록되었습니다!', 'success');
+
+            } catch (error) {
+                console.error('작품 등록 오류:', error);
+                showMessage(`작품 등록에 실패했습니다: ${error.message}`, 'error');
+                renderArtworksByType();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
         });
         
         function showArtworkModal(artwork) { 
@@ -2183,8 +2213,8 @@
                     <div class="form-group">
                         <label>유형</label>
                         <select id="editArtworkType">
-                            <option value="활동 모습" ${artwork.artworkType === '활동 모습' ? 'selected' : ''}>활동 모습</option>
-                            <option value="활동지" ${artwork.artworkType === '활동지' ? 'selected' : ''}>활동지</option>
+                            <option value="사진" ${artwork.artworkType === '사진' ? 'selected' : ''}>활동 모습</option>
+                            <option value="학습지(활동지)" ${artwork.artworkType === '학습지(활동지)' ? 'selected' : ''}>활동지</option>
                             <option value="결과물" ${artwork.artworkType === '결과물' ? 'selected' : ''}>결과물</option>
                         </select>
                     </div>
