@@ -1898,48 +1898,78 @@
             } 
         }
         
-        async function saveSettings() { 
-            const saveBtn = event.target; 
-            saveBtn.disabled = true; 
-            saveBtn.textContent = '저장 중...'; 
-            const originalSettings = JSON.parse(JSON.stringify(settings)); 
-            try { 
-                const headerImageFile = document.getElementById('headerImageFile').files[0]; 
-                if (headerImageFile) { 
-                    const imageUrl = await uploadImageToCloudinary(headerImageFile); 
-                    if (imageUrl) settings.headerImage = imageUrl; 
-                    else throw new Error("헤더 이미지 업로드 실패"); 
-                } 
-                settings.title = document.getElementById('siteTitle').value; 
-                settings.description = document.getElementById('siteDescription').value; 
-                settings.allowComments = document.getElementById('allowComments').checked; 
-                settings.moderateComments = document.getElementById('moderateComments').checked; 
-                const newPassword = document.getElementById('adminPassword').value; 
-                if (newPassword.trim() !== '') settings.adminPassword = newPassword; 
-                settings.requireUploadPassword = document.getElementById('requireUploadPassword').checked; 
-                const newUploadPassword = document.getElementById('uploadPassword').value; 
-                if (newUploadPassword.trim() !== '') { 
-                    settings.uploadPassword = newUploadPassword; 
-                } 
-                settings.gradeDescriptions['all'].title = document.getElementById('gradeTitleAll').value; 
-                settings.gradeDescriptions['all'].description = document.getElementById('gradeDescAll').value; 
-                for(let i = 1; i <= 6; i++) { 
-                    const gradeKey = `${i}학년`; 
-                    settings.gradeDescriptions[gradeKey].title = document.getElementById(`gradeTitle${i}`).value; 
-                    settings.gradeDescriptions[gradeKey].description = document.getElementById(`gradeDesc${i}`).value; 
-                } 
-                if (!(await saveDataToDB())) throw new Error("DB 저장 실패"); 
-                applyHeaderSettings(); 
-                loadSettingsForm(); 
-                showMessage('설정이 저장되었습니다.', 'success'); 
-                updateGradeInfo(document.querySelector('.filter-btn.active').dataset.category); 
-            } catch(error) { 
-                settings = originalSettings; 
-                showMessage(error.message, 'error'); 
-            } finally { 
-                saveBtn.disabled = false; 
-                saveBtn.textContent = '설정 저장'; 
-            } 
+                // 기존 saveSettings 함수를 아래 코드로 교체하세요.
+        
+        async function saveSettings() {
+            const saveBtn = event.target;
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+        
+            try {
+                const headerImageFile = document.getElementById('headerImageFile').files[0];
+                if (headerImageFile) {
+                    const imageUrl = await uploadImageToCloudinary(headerImageFile);
+                    if (imageUrl) {
+                        settings.headerImage = imageUrl;
+                    } else {
+                        throw new Error("헤더 이미지 업로드 실패");
+                    }
+                }
+        
+                // 업데이트할 설정 객체 생성
+                const updatedSettings = {
+                    title: document.getElementById('siteTitle').value,
+                    description: document.getElementById('siteDescription').value,
+                    allowComments: document.getElementById('allowComments').checked,
+                    moderateComments: document.getElementById('moderateComments').checked,
+                    requireUploadPassword: document.getElementById('requireUploadPassword').checked,
+                    headerImage: settings.headerImage, // 이미지 URL 업데이트
+                    gradeDescriptions: {
+                        'all': { title: document.getElementById('gradeTitleAll').value, description: document.getElementById('gradeDescAll').value },
+                        '1학년': { title: document.getElementById('gradeTitle1').value, description: document.getElementById('gradeDesc1').value },
+                        '2학년': { title: document.getElementById('gradeTitle2').value, description: document.getElementById('gradeDesc2').value },
+                        '3학년': { title: document.getElementById('gradeTitle3').value, description: document.getElementById('gradeDesc3').value },
+                        '4학년': { title: document.getElementById('gradeTitle4').value, description: document.getElementById('gradeDesc4').value },
+                        '5학년': { title: document.getElementById('gradeTitle5').value, description: document.getElementById('gradeDesc5').value },
+                        '6학년': { title: document.getElementById('gradeTitle6').value, description: document.getElementById('gradeDesc6').value }
+                    }
+                };
+        
+                const newPassword = document.getElementById('adminPassword').value;
+                if (newPassword.trim() !== '') {
+                    updatedSettings.adminPassword = newPassword;
+                }
+        
+                const newUploadPassword = document.getElementById('uploadPassword').value;
+                if (newUploadPassword.trim() !== '') {
+                    updatedSettings.uploadPassword = newUploadPassword;
+                }
+                
+                // 서버에 설정만 업데이트하도록 요청
+                const response = await fetch('/api/updateSettings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedSettings)
+                });
+        
+                if (!response.ok) {
+                    throw new Error("DB 저장 실패");
+                }
+                
+                // 로컬 settings 객체도 업데이트
+                settings = { ...settings, ...updatedSettings };
+        
+                applyHeaderSettings();
+                loadSettingsForm();
+                showMessage('설정이 저장되었습니다.', 'success');
+                updateGradeInfo(document.querySelector('.filter-btn.active').dataset.category);
+        
+            } catch(error) {
+                showMessage(error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '설정 저장';
+            }
         }
         
         function loadSettingsForm() { 
