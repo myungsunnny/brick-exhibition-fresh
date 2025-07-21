@@ -1,50 +1,24 @@
-import { Redis } from '@upstash/redis';
+import { redis } from './utils/redis.js'; // redis.js 경로 확인!
 
-// Vercel 환경 변수에서 URL과 토큰을 가져와 Redis 클라이언트 초기화
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
-export default async function handler(request, response) {
-  // GET 요청: 모든 데이터를 DB에서 가져옴
-  if (request.method === 'GET') {
-    try {
-      // mget을 사용해 여러 키를 한번에 효율적으로 조회
-      const data = await redis.mget('artworks', 'comments', 'likes', 'settings');
-      
-      const artworks = data[0] || [];
-      const comments = data[1] || {};
-      const likes = data[2] || {};
-      const settings = data[3] || null; // 설정은 없을 수 있으므로 null 처리
-
-      return response.status(200).json({ artworks, comments, likes, settings });
-    } catch (error) {
-      console.error('Data fetching error:', error);
-      return response.status(500).json({ error: '데이터를 불러오는 데 실패했습니다.' });
+export default async function handler(req, res) {
+    // GET 요청만 허용
+    if (req.method !== 'GET') {
+        return res.status(405).json({ message: 'Method Not Allowed' });
     }
-  }
 
-  // POST 요청: 모든 데이터를 DB에 저장함
-  if (request.method === 'POST') {
     try {
-      const { artworks, comments, likes, settings } = request.body;
+        // 1. 데이터베이스에서 전체 데이터를 읽어옵니다.
+        const dataString = await redis.get('gallery_data');
 
-      // mset을 사용해 여러 키를 한번에 저장
-      await redis.mset({
-        artworks: JSON.stringify(artworks),
-        comments: JSON.stringify(comments),
-        likes: JSON.stringify(likes),
-        settings: JSON.stringify(settings)
-      });
-      
-      return response.status(200).json({ message: '데이터가 성공적으로 저장되었습니다.' });
+        // 2. 데이터가 없으면 기본 구조를, 있으면 그대로 사용합니다. (JSON.parse 제거)
+        const data = dataString ? dataString : { artworks: [], comments: {}, likes: {}, settings: {} };
+
+        // 3. 데이터를 클라이언트에 전송합니다.
+        res.status(200).json(data);
+
     } catch (error) {
-      console.error('Data saving error:', error);
-      return response.status(500).json({ error: '데이터 저장에 실패했습니다.' });
+        // 에러 발생 시 로그를 남기고 에러 응답 전송
+        console.error('Error in /api/data:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-  }
-
-  // 허용되지 않은 메소드 처리
-  return response.status(405).json({ error: `Method ${request.method} Not Allowed` });
 }
