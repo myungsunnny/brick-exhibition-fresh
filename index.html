@@ -1773,6 +1773,14 @@
                 showMessage('답글 등록에 실패했습니다.', 'error');
             }
         }
+
+
+        function toggleReplyForm(commentId) {
+            const form = document.getElementById(`reply-form-for-${commentId}`);
+            if (form) {
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            }
+        }
         
         async function deleteArtwork(artworkId) {
             if (!confirm('정말로 이 작품을 삭제하시겠습니까? 삭제 전 데이터가 백업됩니다.')) return;
