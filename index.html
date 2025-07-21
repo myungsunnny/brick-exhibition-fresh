@@ -1683,62 +1683,72 @@
             await saveDataToDB(); 
             if (isAdminMode) updateAdminStats(); 
         }
+        // 기존의 addComment와 submitComment 함수를 지우고 아래 코드로 교체하세요.
+
+        async function submitComment(artworkId) {
+            const authorInput = document.getElementById('commentAuthor');
+            const textInput = document.getElementById('commentText');
+            const author = authorInput.value.trim();
+            const text = textInput.value.trim();
         
-        async function addComment(artworkId, authorName, commentText) { 
-            if (!settings.allowComments) { 
-                showMessage('댓글 기능이 비활성화되어 있습니다.', 'error'); 
-                return null; 
-            } 
-            const newComment = { 
-                id: Date.now().toString(), 
-                author: authorName, 
-                text: commentText, 
-                createdAt: new Date().toISOString(), 
-                approved: !settings.moderateComments, 
-                replies: [] 
-            }; 
-            if (!comments[artworkId]) { 
-                comments[artworkId] = []; 
-            } 
-            comments[artworkId].push(newComment); 
-            if (!(await saveDataToDB())) { 
-                comments[artworkId].pop(); 
-                return null; 
-            } 
-            return newComment; 
+            if (!author || !text) {
+                showMessage('이름과 댓글을 모두 입력해주세요.', 'error');
+                return;
+            }
+        
+            if (!settings.allowComments) {
+                showMessage('댓글 기능이 비활성화되어 있습니다.', 'error');
+                return;
+            }
+        
+            const newComment = {
+                id: Date.now().toString(),
+                author: author,
+                text: text,
+                createdAt: new Date().toISOString(),
+                approved: !settings.moderateComments,
+                replies: []
+            };
+        
+            try {
+                const response = await fetch('/api/addComment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artworkId, comment: newComment })
+                });
+        
+                if (!response.ok) {
+                    throw new Error('서버에 댓글 저장 실패');
+                }
+        
+                // 성공 시 로컬 데이터에도 댓글 추가
+                if (!comments[artworkId]) {
+                    comments[artworkId] = [];
+                }
+                comments[artworkId].push(newComment);
+                
+                authorInput.value = '';
+                textInput.value = '';
+                
+                if (settings.moderateComments) {
+                    showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success');
+                } else {
+                    showMessage('댓글이 등록되었습니다.', 'success');
+                    showArtworkModal(artworks.find(a => a.id === artworkId)); // 모달 새로고침
+                }
+        
+                renderArtworksByType(); // 카드 댓글 수 업데이트
+                if (isAdminMode) {
+                    updateAdminStats();
+                    renderCommentsTable();
+                }
+        
+            } catch (error) {
+                console.error('댓글 등록 오류:', error);
+                showMessage('댓글 등록에 실패했습니다.', 'error');
+            }
         }
         
-        function toggleReplyForm(commentId) { 
-            const form = document.getElementById(`reply-form-for-${commentId}`); 
-            if(form) form.style.display = form.style.display === 'none' ? 'block' : 'none'; 
-        }
-        
-        async function addReply(artworkId, parentCommentId) { 
-            const author = document.getElementById(`replyAuthor-${parentCommentId}`).value.trim(); 
-            const text = document.getElementById(`replyText-${parentCommentId}`).value.trim(); 
-            if (!author || !text) { 
-                showMessage('답글 이름과 내용을 모두 입력해주세요.', 'error'); 
-                return; 
-            } 
-            const parentComment = comments[artworkId]?.find(c => c.id === parentCommentId); 
-            if (!parentComment) return; 
-            if (!parentComment.replies) parentComment.replies = []; 
-            const newReply = { 
-                id: Date.now().toString(), 
-                author: author, 
-                text: text, 
-                createdAt: new Date().toISOString(), 
-                parentId: parentCommentId 
-            }; 
-            parentComment.replies.push(newReply); 
-            if (await saveDataToDB()) { 
-                showMessage('답글이 등록되었습니다.', 'success'); 
-                showArtworkModal(artworks.find(a => a.id === artworkId)); 
-            } else { 
-                parentComment.replies.pop(); 
-                showMessage('답글 등록에 실패했습니다.', 'error'); 
-            } 
-        }
         
         // 기존 deleteArtwork 함수를 아래 코드로 교체하세요.
 
@@ -2165,30 +2175,7 @@
             renderUsersTable();
         }
         
-        async function submitComment(artworkId) { 
-            const author = document.getElementById('commentAuthor').value.trim(); 
-            const text = document.getElementById('commentText').value.trim(); 
-            if (!author || !text) { 
-                showMessage('이름과 댓글을 모두 입력해주세요.', 'error'); 
-                return; 
-            } 
-            const newComment = await addComment(artworkId, author, text); 
-            if (newComment) { 
-                document.getElementById('commentAuthor').value = ''; 
-                document.getElementById('commentText').value = ''; 
-                if (settings.moderateComments) { 
-                    showMessage('댓글이 등록되었습니다. 관리자 승인 후 표시됩니다.', 'success'); 
-                } else { 
-                    showMessage('댓글이 등록되었습니다.', 'success'); 
-                    showArtworkModal(artworks.find(a => a.id === artworkId)); 
-                } 
-                renderArtworksByType(); 
-                if (isAdminMode) { 
-                    updateAdminStats(); 
-                    renderCommentsTable(); 
-                } 
-            } 
-        }
+        
         
         function showMessage(text, type = 'success') { 
             const existing = document.querySelector('.message'); 
