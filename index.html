@@ -1740,30 +1740,40 @@
             } 
         }
         
-        async function deleteArtwork(artworkId) { 
-            if (!confirm('정말로 이 작품을 삭제하시겠습니까?')) return; 
-            const originalData = { 
-                artworks: [...artworks], 
-                comments: JSON.parse(JSON.stringify(comments)), 
-                likes: JSON.parse(JSON.stringify(likes)) 
-            }; 
-            artworks = artworks.filter(artwork => artwork.id !== artworkId); 
-            delete comments[artworkId]; 
-            delete likes[artworkId]; 
-            renderArtworksByType(); 
-            if (!(await saveDataToDB())) { 
-                artworks = originalData.artworks; 
-                comments = originalData.comments; 
-                likes = originalData.likes; 
-                renderArtworksByType(); 
-                showMessage('작품 삭제에 실패했습니다.', 'error'); 
-            } else { 
-                showMessage('작품이 삭제되었습니다.', 'success'); 
-                if (isAdminMode) { 
-                    renderArtworksTable(); 
-                    updateAdminStats(); 
-                } 
-            } 
+        // 기존 deleteArtwork 함수를 아래 코드로 교체하세요.
+
+        async function deleteArtwork(artworkId) {
+            if (!confirm('정말로 이 작품을 삭제하시겠습니까?')) return;
+        
+            const originalArtworks = [...artworks]; // 복원을 위해 원본 데이터 임시 저장
+        
+            // UI에서 먼저 작품을 제거 (Optimistic UI Update)
+            artworks = artworks.filter(artwork => artwork.id !== artworkId);
+            renderArtworksByType(); // 화면 즉시 업데이트
+        
+            try {
+                const response = await fetch(`/api/deleteArtwork`, {
+                    method: 'POST', // DELETE 대신 POST를 사용 (Vercel에서 더 간단함)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: artworkId }) // 작품 ID만 전송
+                });
+        
+                if (!response.ok) {
+                    throw new Error('서버에서 작품 삭제 실패');
+                }
+        
+                showMessage('작품이 삭제되었습니다.', 'success');
+                if (isAdminMode) {
+                    renderArtworksTable();
+                    updateAdminStats();
+                }
+        
+            } catch (error) {
+                console.error('작품 삭제 오류:', error);
+                showMessage('작품 삭제에 실패했습니다.', 'error');
+                artworks = originalArtworks; // 실패 시 원래 데이터로 복원
+                renderArtworksByType(); // 화면 복원
+            }
         }
         
         async function saveArtworkEdit(artworkId) { 
