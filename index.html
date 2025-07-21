@@ -1735,40 +1735,52 @@
             }
         }
         
-        async function addReply(artworkId, parentCommentId) { 
+        // 기존 addReply 함수를 이 코드로 교체하세요.
+
+        async function addReply(artworkId, parentCommentId) {
             const authorInput = document.getElementById(`replyAuthor-${parentCommentId}`);
             const textInput = document.getElementById(`replyText-${parentCommentId}`);
-            const author = authorInput.value.trim(); 
-            const text = textInput.value.trim(); 
-            if (!author || !text) { 
-                showMessage('답글 이름과 내용을 모두 입력해주세요.', 'error'); 
-                return; 
+            const author = authorInput.value.trim();
+            const text = textInput.value.trim();
+        
+            if (!author || !text) {
+                showMessage('답글 이름과 내용을 모두 입력해주세요.', 'error');
+                return;
             }
-
-            const newReply = { 
-                id: Date.now().toString(), 
-                author: author, 
-                text: text, 
+        
+            const newReply = {
+                id: Date.now().toString(),
+                author: author,
+                text: text,
                 createdAt: new Date().toISOString()
             };
-
+        
+            // 화면에 먼저 답글을 보여줌
             const parentComment = comments[artworkId]?.find(c => c.id === parentCommentId);
             if (!parentComment) return;
-
             if (!parentComment.replies) parentComment.replies = [];
             parentComment.replies.push(newReply);
             showArtworkModal(artworks.find(a => a.id === artworkId));
-
+        
             try {
                 const response = await fetch('/api/addReply', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ artworkId, parentCommentId, reply: newReply })
                 });
-                if (!response.ok) throw new Error('Server failed to add reply');
+                if (!response.ok) throw new Error('서버에서 답글 추가 실패');
+                
                 showMessage('답글이 등록되었습니다.', 'success');
+                authorInput.value = '';
+                textInput.value = '';
+        
             } catch (error) {
-                parentComment.replies.pop();
+                console.error("답글 추가 실패:", error);
+                // 실패 시 화면에서 추가했던 답글을 다시 제거
+                const commentToFix = comments[artworkId]?.find(c => c.id === parentCommentId);
+                if (commentToFix) {
+                    commentToFix.replies = commentToFix.replies.filter(r => r.id !== newReply.id);
+                }
                 showArtworkModal(artworks.find(a => a.id === artworkId));
                 showMessage('답글 등록에 실패했습니다.', 'error');
             }
