@@ -1655,33 +1655,73 @@
             } 
         }
         
-        async function toggleLike(artworkId) { 
-            if (likedArtworks.has(artworkId)) { 
-                likedArtworks.delete(artworkId); 
-                likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1); 
-            } else { 
-                likedArtworks.add(artworkId); 
-                likes[artworkId] = (likes[artworkId] || 0) + 1; 
-            } 
-            
-            saveLikedToLocal(); 
-            
-            const modalLikeBtn = document.querySelector('.modal .like-btn');
-            if (modalLikeBtn) {
-                const isLiked = likedArtworks.has(artworkId);
-                modalLikeBtn.className = `btn btn-primary like-btn ${isLiked ? 'liked' : ''}`;
-                modalLikeBtn.innerHTML = `❤️ ${likes[artworkId] || 0} 좋아요`;
+         // 기존 toggleLike 함수를 아래 코드로 교체하세요.
+
+        async function toggleLike(artworkId) {
+            const isLiked = likedArtworks.has(artworkId);
+            const action = isLiked ? 'unlike' : 'like';
+        
+            // UI를 먼저 업데이트해서 빠르게 반응하는 것처럼 보이게 함
+            if (action === 'like') {
+                likedArtworks.add(artworkId);
+                likes[artworkId] = (likes[artworkId] || 0) + 1;
+            } else {
+                likedArtworks.delete(artworkId);
+                likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1);
             }
+            saveLikedToLocal();
+            updateLikeButtons(artworkId); // 버튼 UI 업데이트 함수 호출
+        
+            try {
+                const response = await fetch('/api/toggleLike', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artworkId, action }) // artworkId와 행동(like/unlike)만 전송
+                });
+        
+                if (!response.ok) {
+                    throw new Error('서버에서 좋아요 처리 실패');
+                }
+        
+                // 성공 시 서버로부터 최종 좋아요 수를 받아 한번 더 동기화
+                const result = await response.json();
+                likes[artworkId] = result.newLikes;
+                updateLikeButtons(artworkId);
+                if (isAdminMode) updateAdminStats();
+        
+            } catch (error) {
+                console.error('좋아요 처리 오류:', error);
+                showMessage('좋아요 처리에 실패했습니다.', 'error');
+        
+                // 실패 시 원래 상태로 되돌림
+                if (action === 'like') {
+                    likedArtworks.delete(artworkId);
+                    likes[artworkId] = Math.max(0, (likes[artworkId] || 1) - 1);
+                } else {
+                    likedArtworks.add(artworkId);
+                    likes[artworkId] = (likes[artworkId] || 0) + 1;
+                }
+                saveLikedToLocal();
+                updateLikeButtons(artworkId); // 버튼 UI 원래대로 복원
+            }
+        }
+        
+        // 좋아요 버튼 UI를 업데이트하는 함수를 새로 추가합니다.
+        function updateLikeButtons(artworkId) {
+            const isLiked = likedArtworks.has(artworkId);
+            const likeCount = likes[artworkId] || 0;
             
-            const galleryLikeBtns = document.querySelectorAll(`[onclick*="toggleLike('${artworkId}')"]`);
-            galleryLikeBtns.forEach(btn => {
-                const isLiked = likedArtworks.has(artworkId);
-                btn.className = `like-btn ${isLiked ? 'liked' : ''}`;
-                btn.innerHTML = `❤️ ${likes[artworkId] || 0}`;
+            // 갤러리와 모달의 모든 관련 버튼을 찾아서 업데이트
+            const allLikeBtns = document.querySelectorAll(`[onclick*="toggleLike('${artworkId}')"]`);
+            allLikeBtns.forEach(btn => {
+                btn.classList.toggle('liked', isLiked);
+                // 모달 안의 버튼과 갤러리 버튼의 텍스트 형식이 다르므로 확인 후 업데이트
+                if (btn.textContent.includes('좋아요')) {
+                    btn.innerHTML = `❤️ ${likeCount} 좋아요`;
+                } else {
+                    btn.innerHTML = `❤️ ${likeCount}`;
+                }
             });
-            
-            await saveDataToDB(); 
-            if (isAdminMode) updateAdminStats(); 
         }
         
         async function submitComment(artworkId) {
