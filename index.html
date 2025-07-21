@@ -1853,45 +1853,69 @@
             } 
         }
         
-        async function editComment(artworkId, commentId) { 
-            const comment = comments[artworkId]?.find(c => c.id === commentId); 
-            if (!comment) return; 
-            const newText = prompt('댓글을 수정하세요:', comment.text); 
-            if (newText !== null && newText.trim() !== '') { 
-                const originalText = comment.text; 
-                comment.text = newText.trim(); 
-                comment.editedAt = new Date().toISOString(); 
-                if (await saveDataToDB()) { 
-                    renderCommentsTable(); 
-                    if(document.getElementById('modal').style.display === 'block') { 
-                        showArtworkModal(artworks.find(a => a.id === artworkId)); 
-                    } 
-                    showMessage('댓글이 수정되었습니다.', 'success'); 
-                } else { 
-                    comment.text = originalText; 
-                    showMessage('댓글 수정에 실패했습니다.', 'error'); 
-                } 
-            } 
-        }
+// 기존의 editComment와 deleteComment 함수를 지우고 아래 코드로 교체하세요.
+
+        async function editComment(artworkId, commentId) {
+            const comment = comments[artworkId]?.find(c => c.id === commentId);
+            if (!comment) return;
         
-        async function deleteComment(artworkId, commentId) { 
-            if (!confirm('정말로 이 댓글을 삭제하시겠습니까? 답글도 모두 삭제됩니다.')) return; 
-            if (comments[artworkId]) { 
-                const originalComments = JSON.parse(JSON.stringify(comments)); 
-                comments[artworkId] = comments[artworkId].filter(c => c.id !== commentId); 
-                if (comments[artworkId].length === 0) delete comments[artworkId]; 
-                if (await saveDataToDB()) { 
-                    renderCommentsTable(); 
-                    updateAdminStats(); 
-                    if(document.getElementById('modal').style.display === 'block') { 
-                        showArtworkModal(artworks.find(a => a.id === artworkId)); 
-                    } 
-                    showMessage('댓글이 삭제되었습니다.', 'success'); 
-                } else { 
-                    comments = originalComments; 
-                    showMessage('댓글 삭제에 실패했습니다.', 'error'); 
-                } 
-            } 
+            const newText = prompt('댓글을 수정하세요:', comment.text);
+            if (newText === null || newText.trim() === '') return;
+        
+            const originalText = comment.text;
+            comment.text = newText.trim();
+            showArtworkModal(artworks.find(a => a.id === artworkId)); // 화면에 먼저 바뀐 내용을 보여줌
+        
+            try {
+                const response = await fetch('/api/editComment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artworkId, commentId, newText: comment.text })
+                });
+                if (!response.ok) throw new Error('서버에서 댓글 수정 실패');
+                showMessage('댓글이 수정되었습니다.', 'success');
+                renderCommentsTable();
+            } catch (error) {
+                comment.text = originalText; // 실패하면 원래 내용으로 되돌림
+                showArtworkModal(artworks.find(a => a.id === artworkId));
+                showMessage('댓글 수정에 실패했습니다.', 'error');
+            }
+        }
+
+        async function deleteComment(artworkId, commentId) {
+            if (!confirm('정말로 이 댓글을 삭제하시겠습니까? 답글도 모두 삭제됩니다.')) return;
+            
+            const originalComments = JSON.parse(JSON.stringify(comments));
+        
+            // 화면에서 먼저 댓글을 지워서 빠르게 반응하는 것처럼 보이게 함
+            if (comments[artworkId]) {
+                comments[artworkId] = comments[artworkId].filter(c => c.id !== commentId);
+            }
+            showArtworkModal(artworks.find(a => a.id === artworkId));
+            renderArtworksByType();
+            if(isAdminMode) renderCommentsTable();
+        
+            try {
+                // 서버에 "이 댓글 하나만 지워줘" 라고 요청
+                const response = await fetch('/api/deleteComment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artworkId, commentId })
+                });
+        
+                if (!response.ok) throw new Error('서버에서 댓글 삭제 실패');
+                
+                showMessage('댓글이 삭제되었습니다.', 'success');
+                if (isAdminMode) updateAdminStats();
+        
+            } catch (error) {
+                console.error('댓글 삭제 실패:', error);
+                comments = originalComments; // 실패하면 원래대로 복원
+                showArtworkModal(artworks.find(a => a.id === artworkId));
+                renderArtworksByType();
+                if(isAdminMode) renderCommentsTable();
+                showMessage('댓글 삭제에 실패했습니다.', 'error');
+            }
         }
         
         async function resetAllData() { 
