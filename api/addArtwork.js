@@ -1,6 +1,6 @@
 // 이 파일은 '/api/addArtwork.js' 경로에 만들어야 합니다.
 // (Upstash Redis와 연결하는 코드는 이미 있다고 가정합니다.)
-import { redis } from 'redis-cli --tls -u redis://default:AdegAAIjcDE0Mjc2NWIxY2Y0Y2Q0YmEzYTI3MDc5ZDdiN2E3MzM2OHAxMA@organic-clam-55200.upstash.io:6379'; // 실제 Redis 클라이언트 파일 경로
+import { redis } from './utils/redis.js'; // 실제 Redis 클라이언트 파일 경로
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
