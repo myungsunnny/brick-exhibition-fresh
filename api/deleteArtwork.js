@@ -7,28 +7,27 @@ export default async function handler(req, res) {
 
     try {
         const { id: artworkIdToDelete } = req.body;
-
         if (!artworkIdToDelete) {
             return res.status(400).json({ message: 'Bad Request: Missing artwork ID.' });
         }
 
-        // 1. 데이터베이스에서 현재 전체 데이터를 읽어옵니다.
-        const data = await redis.get('gallery_data') || { artworks: [] };
+        const data = await redis.get('gallery_data') || { artworks: [], comments: {}, likes: {} };
 
-        // 2. 해당 ID를 가진 작품을 제외한 새 배열을 만듭니다.
+        // --- 작품과 연결된 댓글, 좋아요도 함께 삭제하는 로직 ---
         const initialLength = data.artworks.length;
         data.artworks = data.artworks.filter(artwork => artwork.id !== artworkIdToDelete);
-
-        // 3. 작품이 실제로 삭제되었는지 확인합니다.
+        
+        // 연결된 댓글과 좋아요 삭제
+        delete data.comments[artworkIdToDelete];
+        delete data.likes[artworkIdToDelete];
+        // --- 로직 끝 ---
+        
         if (initialLength === data.artworks.length) {
-             // 삭제할 작품 ID를 찾지 못한 경우
              return res.status(404).json({ message: 'Artwork not found' });
         }
 
-        // 4. 변경된 전체 데이터를 다시 데이터베이스에 저장합니다.
         await redis.set('gallery_data', data);
-
-        res.status(200).json({ message: 'Artwork deleted successfully' });
+        res.status(200).json({ message: '작품과 관련 데이터가 성공적으로 삭제되었습니다.' });
 
     } catch (error) {
         console.error('Error in /api/deleteArtwork:', error);
