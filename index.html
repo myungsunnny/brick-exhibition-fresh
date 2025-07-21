@@ -1912,19 +1912,36 @@
             } 
         }
         
-        async function updateArtworkOrder() { 
-            const originalArtworks = [...artworks]; 
-            const tableBody = document.getElementById('artworksTableBody'); 
-            const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id); 
-            artworks = newOrderedIds.map(id => artworks.find(a => a.id === id)).filter(Boolean); 
-            if (await saveDataToDB()) { 
-                renderArtworksByType(); 
-                showMessage('작품 순서가 저장되었습니다.', 'success'); 
-            } else { 
-                artworks = originalArtworks; 
-                renderArtworksTable(); 
-                showMessage('순서 저장에 실패했습니다.', 'error'); 
-            } 
+        // 기존 updateArtworkOrder 함수를 아래 코드로 교체하세요.
+
+        async function updateArtworkOrder() {
+            const tableBody = document.getElementById('artworksTableBody');
+            const newOrderedIds = [...tableBody.querySelectorAll('tr')].map(row => row.dataset.id);
+            const originalArtworks = [...artworks]; // 복원을 위해 원본 순서 임시 저장
+        
+            // 화면(로컬 데이터)에 먼저 새 순서를 적용
+            artworks = newOrderedIds.map(id => originalArtworks.find(a => a.id === id)).filter(Boolean);
+            
+            try {
+                const response = await fetch('/api/updateArtworkOrder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderedIds: newOrderedIds }) // 새로운 작품 순서(ID 배열)만 전송
+                });
+        
+                if (!response.ok) {
+                    throw new Error('서버에서 순서 저장 실패');
+                }
+        
+                renderArtworksByType(); // 메인 갤러리에도 새 순서 적용
+                showMessage('작품 순서가 저장되었습니다.', 'success');
+        
+            } catch (error) {
+                console.error('순서 저장 오류:', error);
+                artworks = originalArtworks; // 실패 시 원래 순서로 복원
+                renderArtworksTable(); // 관리자 테이블도 원래 순서로 복원
+                showMessage('순서 저장에 실패했습니다.', 'error');
+            }
         }
         
         function toggleUploadPanel() { 
