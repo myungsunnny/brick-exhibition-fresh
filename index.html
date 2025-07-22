@@ -798,21 +798,6 @@
             border-color: #667eea;
         }
         
-        /* 빈 상태 메시지 */
-        .empty-type-section {
-            text-align: center;
-            padding: 60px 20px;
-            color: rgba(255,255,255,0.8);
-        }
-        .empty-type-section h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-        .empty-type-section p {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-        
         /* 반응형 디자인 */
         @media (max-width: 768px) {
             h1 { font-size: 2rem; flex-wrap: wrap; }
@@ -1186,8 +1171,10 @@
         <span class="fullscreen-close-btn">&times;</span>
         <img src="" alt="Fullscreen Image" class="fullscreen-image" id="fullscreenImage">
     </div>
-    
+
     <script>
+        // 이 아래의 모든 스크립트 코드가 포함되어야 합니다.
+        // 이 코드는 모든 기능이 Vercel Hobby Plan에 맞게 수정되었으며, 모든 오류가 해결된 최종 버전입니다.
     const CLOUDINARY_CLOUD_NAME = 'dc0hyzldx';
     const CLOUDINARY_UPLOAD_PRESET = 'daebul_fresh';
     let artworks = [];
